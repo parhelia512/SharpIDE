@@ -7,15 +7,25 @@ namespace Roslyn.Benchmarks;
 public class ParseSolutionBenchmarks
 {
 	private const string _solutionFilePath = "C:/Users/Matthew/Documents/Git/StatusApp/StatusApp.sln";
+	private MSBuildWorkspace _workspace = null!;
 
+	[IterationSetup]
+	public void IterationSetup()
+	{
+		_workspace = MSBuildWorkspace.Create();
+	}
 
-	//[IterationSetup]
-
+	// | ParseSolutionFileFromPath | 1.488 s | 0.0063 s | 0.0059 s |
 	[Benchmark]
 	public async Task<Solution> ParseSolutionFileFromPath()
 	{
-		var workspace = MSBuildWorkspace.Create();
-		var solution = await workspace.OpenSolutionAsync(_solutionFilePath);
+		var solution = await _workspace.OpenSolutionAsync(_solutionFilePath);
 		return solution;
+	}
+
+	[IterationCleanup]
+	public void IterationCleanup()
+	{
+		_workspace?.CloseSolution();
 	}
 }
