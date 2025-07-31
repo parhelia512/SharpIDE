@@ -1,12 +1,16 @@
 @using Ardalis.GuardClauses
 @using global::Photino.Blazor
+@using SharpIDE.Photino.Models
 
 @inject PhotinoBlazorApp PhotinoBlazorApp
+@inject AppState AppState
 
 <MudStack Class="mx-4">
-	<MudTextField T="string" Label="Solution File" Value="@_solutionFilePath" ReadOnly="true" />
-	<MudButton OnClick="@PickSolution">Pick Solution</MudButton>
-	<MudButton OnClick="@Proceed" Disabled="@(string.IsNullOrWhiteSpace(_solutionFilePath))">Open</MudButton>
+	<MudStack Row="true">
+		<MudTextField T="string" Label="Solution File" Value="@_solutionFilePath" ReadOnly="true" />
+		<MudButton OnClick="@PickSolution">Pick Solution</MudButton>
+	</MudStack>
+	<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@Proceed" Disabled="@(string.IsNullOrWhiteSpace(_solutionFilePath))">Open</MudButton>
 </MudStack>
 
 @code {
@@ -14,6 +18,11 @@
     public IMudDialogInstance MudDialog { get; set; } = null!;
 
 	private string? _solutionFilePath;
+
+	protected override void OnInitialized()
+	{
+		_solutionFilePath = AppState.SolutionFilePath;
+	}
 
 	private async Task PickSolution()
 	{
@@ -25,6 +34,7 @@
 	private void Proceed()
 	{
 		Guard.Against.NullOrWhiteSpace(_solutionFilePath);
+		AppState.SolutionFilePath = _solutionFilePath;
 		MudDialog.Close(_solutionFilePath);
 	}
 }
