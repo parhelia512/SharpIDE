@@ -13,7 +13,7 @@
 	<MudDrawer @bind-Open="@_drawerOpen" Width="400px" ClipMode="DrawerClipMode.Always">
 		@if (_solutionFilePath is not null)
 		{
-			<SolutionExplorer SolutionModel="@_solutionModel" SolutionFilePath="@_solutionFilePath"/>
+			<SolutionExplorer @bind-SelectedFile="@_selectedFile" SolutionModel="@_solutionModel" SolutionFilePath="@_solutionFilePath"/>
 		}
 		@* <NavMenu/> *@
 	</MudDrawer>
@@ -22,7 +22,7 @@
 			@* @Body *@
 			@if (_solutionFilePath is not null)
 			{
-				<CodeViewer FilePath="C:\Users\Matthew\Documents\Git\SharpIDE.Photino\src\SharpIDE.Photino\Program.cs" />
+				<CodeViewer SelectedFile="@_selectedFile" FilePath="C:\Users\Matthew\Documents\Git\SharpIDE.Photino\src\SharpIDE.Photino\Program.cs" />
 			}
 		</MudContainer>
 	</MudMainContent>
@@ -38,6 +38,7 @@
 
 	private string? _solutionFilePath;
 	private SharpIdeSolutionModel? _solutionModel;
+	private SharpIdeFile? _selectedFile;
 
 	protected override async Task OnInitializedAsync()
 	{

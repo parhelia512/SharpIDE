@@ -1,4 +1,5 @@
-﻿@using SharpIDE.Photino.Services
+﻿@using SharpIDE.Application.Features.SolutionDiscovery
+@using SharpIDE.Photino.Services
 
 @inject RefreshOpenFileService RefreshOpenFileService
 
@@ -14,13 +15,14 @@
 		height: calc(100vh - 100px);
 	}
 </style>
-@{
-}
 <StandaloneCodeEditor @ref="_codeEditorRef" Id="my-editor-id" ConstructionOptions="@EditorConstructionOptions" OnDidChangeModelContent="IfDirtyMarkDirty" OnDidBlurEditorText="@SaveFileToDisk" />
 
 @code {
 	[Parameter, EditorRequired]
     public string FilePath { get; set; } = null!;
+
+	[Parameter, EditorRequired]
+	public SharpIdeFile? SelectedFile { get; set; }
 
 	private string? _fileContent;
 	private bool _unsavedEdits = false;

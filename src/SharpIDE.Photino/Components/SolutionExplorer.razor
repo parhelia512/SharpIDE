@@ -28,6 +28,18 @@
 	[Parameter, EditorRequired]
 	public SharpIdeSolutionModel SolutionModel { get; set; } = null!;
 
+	[Parameter, EditorRequired]
+	public SharpIdeFile SelectedFile { get; set; } = null!;
+
+	[Parameter]
+	public EventCallback<SharpIdeFile> SelectedFileChanged { get; set; }
+
+	private async Task InvokeSelectedFileChanged(SharpIdeFile file)
+	{
+		SelectedFile = file;
+		await SelectedFileChanged.InvokeAsync(file);
+	}
+
 	private RenderFragment GetSolutionFolderFragment(SharpIdeSolutionFolder slnFolder) =>
 		@<text>
 			 <MudTreeViewItem TextTypo="Typo.body2" Icon="@Icons.Material.Filled.Folder" IconColor="Color.Primary" Value="@slnFolder" Text="@slnFolder.Name">
@@ -77,7 +89,8 @@
 
 	private RenderFragment GetFileFragment(SharpIdeFile file) =>
 		@<text>
-			 <MudTreeViewItem T="SharpIdeFile" Icon="@Icons.Custom.FileFormats.FileCode" TextTypo="Typo.body2" Text="@file.Name"/>
+			 <MudTreeViewItem T="SharpIdeFile" Icon="@Icons.Custom.FileFormats.FileCode" TextTypo="Typo.body2" Text="@file.Name" Value="@file" OnClick="@(async () => await InvokeSelectedFileChanged(file))"/>
 		</text>;
+
 
 }
