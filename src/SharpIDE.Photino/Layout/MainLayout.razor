@@ -10,7 +10,7 @@
 	<MudAppBar Dense="true">
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		<MudButtonGroup OverrideStyles="false">
-			<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary">Build</MudButton>
+			<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="@BuildSolution">Build</MudButton>
 			<MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary">Rebuild</MudButton>
 			<MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary">Clean</MudButton>
 		</MudButtonGroup>
@@ -47,7 +47,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		var dialogRef = await DialogService.ShowAsync<SolutionPickerDialog>("Open Solution", new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Medium });
+		var dialogRef = await DialogService.ShowAsync<SolutionPickerDialog>("Open Solution", new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Medium, BackdropClick = false });
 		var result = await dialogRef.Result;
 		if (result is null) throw new InvalidOperationException("Dialog result is null");
 		if (result.Canceled) throw new OperationCanceledException("Dialog was canceled");
@@ -57,5 +57,10 @@
 		//await BuildService.BuildSolutionAsync(_solutionFilePath);
 		var solutionModel = await VsPersistenceMapper.GetSolutionModel(_solutionFilePath);
 		_solutionModel = solutionModel;
+	}
+
+	private async Task BuildSolution()
+	{
+		await BuildService.BuildSolutionAsync(_solutionFilePath!);
 	}
 }

@@ -38,6 +38,7 @@ public class BuildService
 			//var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest); // This is a convenience to essentially do the same thing.
 			var buildResult = await buildCompleteTcs.Task.ConfigureAwait(false);
 			timer.Stop();
+			BuildManager.DefaultBuildManager.EndBuild();
 			Console.WriteLine($"Build result: {buildResult.OverallResult} in {timer.ElapsedMilliseconds}ms");
 		}).ConfigureAwait(false);
 	}
