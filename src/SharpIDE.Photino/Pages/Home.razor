@@ -1,13 +1,13 @@
 ﻿@page "/"
 @using SharpIDE.Application.Features.SolutionDiscovery
 
-<CodeViewer FilePath="C:\Users\Matthew\Documents\Git\amazon\src\Utilities\ClientPortal.Utilities.DebugConsole\DataversePlayground.cs" />
+<CodeViewer FilePath="C:\Users\matth\Documents\Git\SharpIDE.Photino\src\SharpIDE.Photino\Program.cs" />
 
 @code
 {
 	protected override async Task OnInitializedAsync()
 	{
 		await Task.Delay(100);
-		await RoslynTest.Analyse("C:/Users/Matthew/Documents/Git/amazon/ClientPortal.sln");
+		await RoslynTest.Analyse("C:/Users/matth/Documents/Git/SharpIDE.Photino/SharpIDE.Photino.sln");
 	}
 }
