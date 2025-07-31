@@ -9,6 +9,11 @@
 <MudLayout>
 	<MudAppBar Dense="true">
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+		<MudButtonGroup OverrideStyles="false">
+			<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary">Build</MudButton>
+			<MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary">Rebuild</MudButton>
+			<MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary">Clean</MudButton>
+		</MudButtonGroup>
 	</MudAppBar>
 	<MudDrawer @bind-Open="@_drawerOpen" Width="400px" ClipMode="DrawerClipMode.Always">
 		@if (_solutionFilePath is not null)
