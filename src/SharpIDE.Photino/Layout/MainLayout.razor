@@ -23,6 +23,9 @@
 			<MudButton>
 				<MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Medium" Color="Color.Success" />
 			</MudButton>
+			<MudButton OnClick="@OpenSettingsDialog">
+				<MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Default" />
+			</MudButton>
 		</MudStack>
 	</MudAppBar>
 	<MudDrawer @bind-Open="@_drawerOpen" Width="400px" ClipMode="DrawerClipMode.Always">
@@ -89,4 +92,10 @@
 	{
 		await BuildService.MsBuildSolutionAsync(_solutionFilePath!, buildType);
 	}
+
+	private async Task OpenSettingsDialog()
+	{
+		var dialogRef = await DialogService.ShowAsync<IdeSettingsDialog>("SharpIDE Settings", new DialogOptions { MaxWidth = MaxWidth.Medium, CloseButton = true });
+	}
+
 }

@@ -92,6 +92,7 @@ public class Program
 		if (deserializedAppState is not null)
 		{
 			appState.SolutionFilePath = deserializedAppState.SolutionFilePath;
+			appState.IdeSettings = deserializedAppState.IdeSettings;
 		}
 	}
 }
