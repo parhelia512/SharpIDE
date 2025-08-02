@@ -13,29 +13,27 @@
 		transition-duration: 0.0s !important;
 	}
 </style>
-	<MudMenu Style="flex-direction: column; width: 100%" ActivationEvent="@MouseEvent.RightClick" PositionAtCursor="true" Dense="true" Modal="false">
-		<ActivatorContent>
-			<MudTreeView T="ISharpIdeNode" Dense="true" ExpandOnClick="true">
-				<MudTreeViewItem T="ISharpIdeNode" TextTypo="Typo.body2" Expanded="true" Icon="@Icons.Material.Filled.Folder" IconColor="Color.Primary" Value="@SolutionModel" Text="@SolutionModel.Name">
-					@foreach (var folder in SolutionModel.Folders)
-					{
-						@GetSolutionFolderFragment(folder)
-					}
-					@foreach (var project in SolutionModel.Projects)
-					{
-						@GetProjectFragment(project)
-					}
-				</MudTreeViewItem>
-			</MudTreeView>
-		</ActivatorContent>
-		<ChildContent>
-			<MudMenuItem Icon="@Icons.Material.Filled.PlayArrow" IconColor="Color.Success" Label="Run" />
-			<MudMenuItem Label="Build" />
-			<MudMenuItem Label="Rebuild" />
-			<MudMenuItem Label="Clean" />
-			<MudMenuItem Label="Restore" />
-		</ChildContent>
-	</MudMenu>
+
+<MudTreeView T="ISharpIdeNode" Dense="true" ExpandOnClick="true">
+	<MudTreeViewItem T="ISharpIdeNode" TextTypo="Typo.body2" Expanded="true" Icon="@Icons.Material.Filled.Folder" IconColor="Color.Primary" Value="@SolutionModel" Text="@SolutionModel.Name">
+		@foreach (var folder in SolutionModel.Folders)
+		{
+			@GetSolutionFolderFragment(folder)
+		}
+		@foreach (var project in SolutionModel.Projects)
+		{
+			@GetProjectFragment(project)
+		}
+	</MudTreeViewItem>
+</MudTreeView>
+
+<MudMenu PositionAtCursor @ref="_contextMenuRef" Dense="true" Modal="false">
+	<MudMenuItem Icon="@Icons.Material.Filled.PlayArrow" IconColor="Color.Success" Label="Run" />
+	<MudMenuItem Label="Build" />
+	<MudMenuItem Label="Rebuild" />
+	<MudMenuItem Label="Clean" />
+	<MudMenuItem Label="Restore" />
+</MudMenu>
 
 @code {
 	[Parameter, EditorRequired]
@@ -47,10 +45,17 @@
 	[Parameter]
 	public EventCallback<SharpIdeFile> SelectedFileChanged { get; set; }
 
+	private MudMenu _contextMenuRef = null!;
+
 	private async Task InvokeSelectedFileChanged(SharpIdeFile file)
 	{
 		SelectedFile = file;
 		await SelectedFileChanged.InvokeAsync(file);
+	}
+
+	private async Task OpenProjectContextMenu(MouseEventArgs args)
+	{
+		await _contextMenuRef.OpenMenuAsync(args);
 	}
 
 	private RenderFragment GetSolutionFolderFragment(SharpIdeSolutionFolder slnFolder) =>
@@ -76,20 +81,23 @@
 
 	private RenderFragment GetProjectFragment(SharpIdeProjectModel project) =>
 		@<text>
-			 <MudTreeViewItem T="ISharpIdeNode" TextTypo="Typo.body2" Icon="@Icons.Custom.FileFormats.FileCode" IconColor="Color.Success" Text="@project.Name" Value="project" @bind-Expanded="@project.Expanded">
-				 @if (project.Expanded)
-				 {
-					 @foreach (var folder in project.Folders)
+			 <div @onclick="@OpenProjectContextMenu" @oncontextmenu="@OpenProjectContextMenu" @oncontextmenu:preventDefault @oncontextmenu:stopPropagation>
+				 <MudTreeViewItem T="ISharpIdeNode" TextTypo="Typo.body2" Icon="@Icons.Custom.FileFormats.FileCode" IconColor="Color.Success" Text="@project.Name" Value="project" @bind-Expanded="@project.Expanded">
+					 @if (project.Expanded)
 					 {
+						 @foreach (var folder in project.Folders)
+						 {
 							 @GetFolderFragment(folder)
+						 }
+
+						 @foreach (var file in project.Files)
+						 {
+							 @GetFileFragment(file)
+						 }
 					 }
-					 @foreach (var file in project.Files)
-					 {
-						 @GetFileFragment(file)
-					 }
-				 }
-			 </MudTreeViewItem>
-		</text>;
+				 </MudTreeViewItem>
+			 </div>
+		 </text>;
 
 	private RenderFragment GetFolderFragment(SharpIdeFolder folder) =>
 		@<text>
