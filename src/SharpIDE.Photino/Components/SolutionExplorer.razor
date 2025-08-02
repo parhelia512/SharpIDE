@@ -53,8 +53,9 @@
 		await SelectedFileChanged.InvokeAsync(file);
 	}
 
-	private async Task OpenProjectContextMenu(MouseEventArgs args)
+	private async Task OpenProjectContextMenu(MouseEventArgs args, SharpIdeProjectModel project)
 	{
+		Console.WriteLine($"Opening context menu for project: {project.Name}");
 		await _contextMenuRef.OpenMenuAsync(args);
 	}
 
@@ -81,7 +82,7 @@
 
 	private RenderFragment GetProjectFragment(SharpIdeProjectModel project) =>
 		@<text>
-			 <div @onclick="@OpenProjectContextMenu" @oncontextmenu="@OpenProjectContextMenu" @oncontextmenu:preventDefault @oncontextmenu:stopPropagation>
+			 <div @onclick="@(async s => await OpenProjectContextMenu(s, project))" @oncontextmenu="@(async s => await OpenProjectContextMenu(s, project))" @oncontextmenu:preventDefault @oncontextmenu:stopPropagation>
 				 <MudTreeViewItem T="ISharpIdeNode" TextTypo="Typo.body2" Icon="@Icons.Custom.FileFormats.FileCode" IconColor="Color.Success" Text="@project.Name" Value="project" @bind-Expanded="@project.Expanded">
 					 @if (project.Expanded)
 					 {
