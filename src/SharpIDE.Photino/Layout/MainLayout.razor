@@ -56,17 +56,10 @@
 </MudLayout>
 
 @code {
-	bool _drawerOpen = true;
-	bool _terminalDrawerOpen = false;
-
-	void DrawerToggle()
-	{
-		_drawerOpen = !_drawerOpen;
-	}
-	void TerminalDrawerToggle()
-	{
-		_terminalDrawerOpen = !_terminalDrawerOpen;
-	}
+	private bool _drawerOpen = true;
+	private bool _terminalDrawerOpen = false;
+	private void DrawerToggle() => _drawerOpen = !_drawerOpen;
+	private void TerminalDrawerToggle() => _terminalDrawerOpen = !_terminalDrawerOpen;
 
 	private string? _solutionFilePath;
 	private SharpIdeSolutionModel? _solutionModel;
