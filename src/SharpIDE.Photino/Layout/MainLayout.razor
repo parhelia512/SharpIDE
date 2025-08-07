@@ -32,7 +32,16 @@
 			<MudButton Style="min-width: 20px;" OnClick="@OpenSettingsDialog">
 				<MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Default"/>
 			</MudButton>
-			<RunPopover SolutionModel="@_solutionModel" />
+			@if (_solutionModel is not null)
+			{
+				<RunPopover SolutionModel="@_solutionModel" />
+			}
+			else
+			{
+				<MudButton Disabled="true" Style="min-width: 20px">
+					<MudIcon Icon="@Icons.Material.Filled.PlayArrow" Disabled="true" Size="Size.Medium" Color="Color.Default"/>
+				</MudButton>
+			}
 		</MudStack>
 	</MudAppBar>
 
