@@ -1,5 +1,8 @@
 ﻿@using SharpIDE.Application.Features.Events
+@using SharpIDE.Application.Features.Run
 @using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence
+
+@inject RunService RunService
 
 @implements IDisposable
 
@@ -18,9 +21,18 @@
 							<MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Class="pa-0 ma-0">
 								<MudText>@project.Name</MudText>
 								<MudSpacer/>
-								<MudButton Style="min-width: 20px;">
-									<MudIcon Icon="@(project.Running ? Icons.Material.Filled.Stop : Icons.Material.Filled.PlayArrow)" Size="Size.Medium" Color="@(project.Running ? Color.Error : Color.Success)"/>
-								</MudButton>
+								@if (project.Running)
+								{
+									<MudButton Style="min-width: 20px;">
+										<MudIcon Icon="@Icons.Material.Filled.Stop" Size="Size.Medium" Color="Color.Error"/>
+									</MudButton>
+								}
+								else
+								{
+									<MudButton Style="min-width: 20px;" OnClick="@(async () => await RunService.RunProject(project))">
+										<MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Medium" Color="Color.Success"/>
+									</MudButton>
+								}
 							</MudStack>
 						</MudListItem>
 					}
