@@ -1,19 +1,66 @@
-﻿@using SharpIDE.Application.Features.Run
+﻿@using SharpIDE.Application.Features.Events
+@using SharpIDE.Application.Features.Run
 @using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence
+
+@implements IDisposable
 
 @inject RunService RunService
 
 <MudStack Style="height: 100%">
-	<MudText>Run</MudText>
-	@foreach(var projects in SolutionModel.AllProjects)
-	{
-		<MudButton OnClick="@(async () => await RunService.RunProject(projects))" Variant="Variant.Filled" Color="Color.Primary" Style="margin: 4px;">
-			<MudText>@projects.Name</MudText>
-		</MudButton>
-	}
+	<style>
+		.lowercase-tab-header {
+			text-transform: none;
+		}
+	</style>
+	@* <MudText>Run</MudText> *@
+	<MudTabs KeepPanelsAlive="true" TabPanelClass="lowercase-tab-header">
+		<ChildContent>
+			@foreach (var tab in OpenTabs)
+			{
+				<MudTabPanel ID="@tab" Text="@tab.Name">
+					Tab content
+				</MudTabPanel>
+			}
+		</ChildContent>
+		<TabPanelHeader>
+			@if (context.ID is SharpIdeProjectModel project)
+			{
+				@if (project.Running)
+				{
+					<MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success"/>
+				}
+				else
+				{
+					<MudIconButton Class="ml-2 pa-1" Color="Color.Inherit" Size="Size.Small" Icon="@Icons.Material.Filled.Close" OnClick="@(() => CloseTab(project))"/>
+				}
+			}
+			else throw new InvalidOperationException("Tab ID must be of type SharpIdeProjectModel");
+		</TabPanelHeader>
+	</MudTabs>
 </MudStack>
 
 @code {
 	[Parameter, EditorRequired]
 	public SharpIdeSolutionModel SolutionModel { get; set; } = null!;
+
+	private IEnumerable<SharpIdeProjectModel> OpenTabs => SolutionModel.AllProjects.Where(s => s.OpenInRunPanel);
+
+	protected override async Task OnInitializedAsync()
+	{
+		var tasks = SolutionModel.AllProjects.Select(p => p.MsBuildEvaluationProjectTask);
+		await Task.WhenAll(tasks);
+		GlobalEvents.ProjectsRunningChanged += OnProjectsRunningChanged;
+	}
+
+	private void CloseTab(SharpIdeProjectModel project)
+	{
+		project.OpenInRunPanel = false;
+	}
+
+	private async Task OnProjectsRunningChanged()
+	{
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public void Dispose() => GlobalEvents.ProjectsRunningChanged -= OnProjectsRunningChanged;
 }

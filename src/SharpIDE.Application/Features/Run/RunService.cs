@@ -50,6 +50,7 @@ public class RunService
 			});
 
 			project.Running = true;
+			project.OpenInRunPanel = true;
 			GlobalEvents.InvokeProjectsRunningChanged();
 			await process.WaitForExitAsync().WaitAsync(project.RunningCancellationTokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 			if (project.RunningCancellationTokenSource.IsCancellationRequested)

@@ -34,4 +34,7 @@ public class SharpIdeProjectModel : ISharpIdeNode
 	public Project MsBuildEvaluationProject => MsBuildEvaluationProjectTask.IsCompletedSuccessfully
 		? MsBuildEvaluationProjectTask.Result
 		: throw new InvalidOperationException("Do not attempt to access the MsBuildEvaluationProject before it has been loaded");
+
+	public bool IsRunnable => MsBuildEvaluationProject.GetPropertyValue("OutputType") is "Exe" or "WinExe";
+	public bool OpenInRunPanel { get; set; }
 }
