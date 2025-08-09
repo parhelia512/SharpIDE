@@ -70,6 +70,8 @@ public class RunService
 			}
 
 			await logsDrained.Task;
+			project.RunningCancellationTokenSource.Dispose();
+			project.RunningCancellationTokenSource = null;
 			project.Running = false;
 			GlobalEvents.InvokeProjectsRunningChanged();
 
@@ -88,7 +90,5 @@ public class RunService
 		if (project.RunningCancellationTokenSource is null) throw new InvalidOperationException($"Project {project.Name} does not have a running cancellation token source.");
 
 		await project.RunningCancellationTokenSource.CancelAsync();
-		project.RunningCancellationTokenSource.Dispose();
-		project.RunningCancellationTokenSource = null;
 	}
 }
