@@ -36,21 +36,20 @@ public static class RoslynAnalysis
 		foreach (var project in solution.Projects)
 		{
 			//Console.WriteLine($"Project: {project.Name}");
+			var compilation = await project.GetCompilationAsync();
+			Guard.Against.Null(compilation, nameof(compilation));
+
+			// Get diagnostics (built-in or custom analyzers)
+			var diagnostics = compilation.GetDiagnostics();
+			var nonHiddenDiagnostics = diagnostics.Where(d => d.Severity is not Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden).ToList();
+
+			foreach (var diagnostic in nonHiddenDiagnostics)
+			{
+				Console.WriteLine(diagnostic);
+				// Optionally run CodeFixProviders here
+			}
 			foreach (var document in project.Documents)
 			{
-				Console.WriteLine($"Document: {document.Name}");
-				 var compilation = await project.GetCompilationAsync();
-				 Guard.Against.Null(compilation, nameof(compilation));
-
-				 // Get diagnostics (built-in or custom analyzers)
-				 var diagnostics = compilation.GetDiagnostics();
-				 var nonHiddenDiagnostics = diagnostics.Where(d => d.Severity is not Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden).ToList();
-
-				 foreach (var diagnostic in nonHiddenDiagnostics)
-				 {
-				 	Console.WriteLine(diagnostic);
-				 	// Optionally run CodeFixProviders here
-				 }
 				// var syntaxTree = await document.GetSyntaxTreeAsync();
 				// var root = await syntaxTree!.GetRootAsync();
 				// var classifiedSpans = await Classifier.GetClassifiedSpansAsync(document, root.FullSpan);
@@ -62,6 +61,5 @@ public static class RoslynAnalysis
 				// }
 			}
 		}
-
 	}
 }
