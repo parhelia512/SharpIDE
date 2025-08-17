@@ -8,7 +8,7 @@
 	<MudTreeViewItem T="string" TextTypo="Typo.body2" EndTextTypo="Typo.caption" Expanded="false" Icon="@Icons.Material.Filled.Code" IconColor="Color.Success" Value="@ProjectModel.Name" Text="@ProjectModel.Name" EndText="@($"{_diagnostics.Length} diagnostics")">
 		@foreach (var diagnostic in _diagnostics)
 		{
-			<MudTreeViewItem T="string" TextTypo="Typo.body2" Icon="@Icons.Material.Filled.Warning" IconColor="@GetDiagnosticIconColour(diagnostic)" Value="@diagnostic.ToString()">
+			<MudTreeViewItem T="string" TextTypo="Typo.body2" OnClick="@(async () => await OpenDocumentContainingDiagnostic(diagnostic))" Icon="@Icons.Material.Filled.Warning" IconColor="@GetDiagnosticIconColour(diagnostic)" Value="@diagnostic.ToString()">
 				<BodyContent>
 					<MudText Typo="Typo.body2">
 						@diagnostic.GetMessage()
@@ -33,6 +33,11 @@
 		DiagnosticSeverity.Info => Color.Info,
 		_ => Color.Info
 	};
+
+	private async Task OpenDocumentContainingDiagnostic(Diagnostic diagnostic)
+	{
+
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
