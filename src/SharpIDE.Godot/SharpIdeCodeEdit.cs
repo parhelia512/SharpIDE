@@ -59,9 +59,10 @@ public partial class SharpIdeCodeEdit : CodeEdit
 			startPos.X -= startRect.Size.X;
 		}
 		var endPos = endRect.End;
-		startPos.Y -= 1;
-		endPos.Y   -= 1;
-		DrawLine(startPos, endPos, color, thickness);
+		startPos.Y -= 3;
+		endPos.Y   -= 3;
+		DrawDashedLine(startPos, endPos, color, thickness);
+		//DrawLine(startPos, endPos, color, thickness);
 	}
 	public override void _Draw()
 	{
@@ -77,7 +78,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 				var color = diagnostic.Severity switch
 				{
 					DiagnosticSeverity.Error => new Color(1, 0, 0),
-					DiagnosticSeverity.Warning => new Color(1, 1, 0),
+					DiagnosticSeverity.Warning => new Color("ffb700"),
 					_ => new Color(0, 1, 0) // Info or other
 				};
 				UnderlineRange(line, startCol, endCol, color);
