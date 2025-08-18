@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Godot;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Classification;
 
 namespace SharpIDE.Godot;
 
@@ -12,6 +14,8 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private int _currentLine;
 	private int _selectionStartCol;
 	private int _selectionEndCol;
+	
+	private CustomHighlighter _syntaxHighlighter = new();
 
 	private ImmutableArray<Diagnostic> _diagnostics = [];
 	
@@ -27,7 +31,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 			_currentLine = GetCaretLine();
 			GD.Print($"Selection changed to line {_currentLine}, start {_selectionStartCol}, end {_selectionEndCol}");
 		};
-		this.SyntaxHighlighter = new CustomHighlighter();
+		this.SyntaxHighlighter = _syntaxHighlighter;
 	}
 	
 	public void UnderlineRange(int line, int caretStartCol, int caretEndCol, Color color, float thickness = 1.5f)
@@ -84,6 +88,12 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	public void ProvideDiagnostics(ImmutableArray<Diagnostic> diagnostics)
 	{
 		_diagnostics = diagnostics;
+	}
+	public void ProvideSyntaxHighlighting(IEnumerable<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)> classifiedSpans)
+	{
+		_syntaxHighlighter.ClassifiedSpans = classifiedSpans;
+		_syntaxHighlighter.UpdateCache(); // not sure if correct
+		QueueRedraw(); // TODO: Not working
 	}
 
 	private void OnCodeFixesRequested()

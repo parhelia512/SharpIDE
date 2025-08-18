@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeRefactorings;
@@ -141,6 +142,23 @@ public static class RoslynAnalysis
 		var diagnostics = semanticModel.GetDiagnostics(cancellationToken: cancellationToken);
 		diagnostics = diagnostics.Where(d => d.Severity is not DiagnosticSeverity.Hidden).ToImmutableArray();
 		return diagnostics;
+	}
+
+	public static async Task<IEnumerable<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)>> GetDocumentSyntaxHighlighting(SharpIdeFile fileModel)
+	{
+		await _solutionLoadedTcs.Task;
+		var cancellationToken = CancellationToken.None;
+		var project = _workspace!.CurrentSolution.Projects.Single(s => s.FilePath == ((IChildSharpIdeNode)fileModel).GetNearestProjectNode()!.FilePath);
+		var document = project.Documents.Single(s => s.FilePath == fileModel.Path);
+		Guard.Against.Null(document, nameof(document));
+
+		var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
+		var root = await syntaxTree!.GetRootAsync(cancellationToken);
+		var classifiedSpans = await Classifier.GetClassifiedSpansAsync(document, root.FullSpan, cancellationToken);
+
+		var result = classifiedSpans.Select(s => (syntaxTree.GetMappedLineSpan(s.TextSpan), s));
+
+		return result;
 	}
 
 	public static async Task<ImmutableArray<CodeAction>> GetCodeFixesAsync(Diagnostic diagnostic)

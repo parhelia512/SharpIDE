@@ -51,7 +51,10 @@ layout_mode = 2
 [node name="SharpIdeCodeEdit" type="CodeEdit" parent="VBoxContainer/HBoxContainer/HSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/current_line_color = Color(0.0588235, 0.0588235, 0.0588235, 1)
+theme_override_colors/background_color = Color(0.117647, 0.117647, 0.117647, 1)
 theme_override_fonts/font = ExtResource("2_rk34b")
+theme_override_font_sizes/font_size = 18
 highlight_current_line = true
 gutters_draw_line_numbers = true
 code_completion_enabled = true

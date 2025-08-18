@@ -37,8 +37,11 @@ public partial class IdeRoot : Control
 			var diFile = infraProject.Files.Single(s => s.Name == "DependencyInjection.cs");
 			var fileContents = await File.ReadAllTextAsync(diFile.Path);
 			_sharpIdeCodeEdit.SetText(fileContents);
+			var syntaxHighlighting = await RoslynAnalysis.GetDocumentSyntaxHighlighting(diFile);
+			_sharpIdeCodeEdit.ProvideSyntaxHighlighting(syntaxHighlighting);
 			var diagnostics = await RoslynAnalysis.GetDocumentDiagnostics(diFile);
 			_sharpIdeCodeEdit.ProvideDiagnostics(diagnostics);
+			
 		}
 		catch (Exception e)
 		{
