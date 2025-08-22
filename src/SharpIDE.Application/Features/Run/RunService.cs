@@ -29,7 +29,8 @@ public class RunService
 				FileName = "dotnet",
 				Arguments = $"run --project \"{project.FilePath}\" --no-restore",
 				RedirectStandardOutput = true,
-				RedirectStandardError = true
+				RedirectStandardError = true,
+				EnvironmentVariables = []
 			};
 
 			var process = new Process2
