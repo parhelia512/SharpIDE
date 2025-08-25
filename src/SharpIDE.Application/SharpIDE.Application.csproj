@@ -13,7 +13,7 @@
       <HintPath>.\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.641201" />
+    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.641201" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Shared.VSCodeDebugProtocol" Version="18.0.10427.1" />
     <!-- If any Microsoft.Build.*.dll (Excluding Locator) ends up in the output, it will be prioritised for loading by MSBuild Nodes  -->
     <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
