@@ -29,7 +29,6 @@ public class RunService
 		var launchProfile = launchProfiles.FirstOrDefault();
 		try
 		{
-			// TODO: handle running Blazor projects
 			var processStartInfo = new ProcessStartInfo2
 			{
 				FileName = "dotnet",
