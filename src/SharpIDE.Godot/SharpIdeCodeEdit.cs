@@ -76,14 +76,13 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		if (breakpointAdded)
 		{
 			breakpoints.Add(new Breakpoint { Line = lineForDebugger } );
-			SetLineBackgroundColor(lineInt, new Color("3a2323"));
 		}
 		else
 		{
 			var breakpoint = breakpoints.Single(b => b.Line == lineForDebugger);
 			breakpoints.Remove(breakpoint);
-			SetLineBackgroundColor(lineInt, Colors.Transparent);
 		}
+		SetLineColour(lineInt);
 		GD.Print($"Breakpoint {(breakpointAdded ? "added" : "removed")} at line {lineForDebugger}");
 	}
 
@@ -249,10 +248,28 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private void SendDebuggerStepOver()
 	{
 		if (_executionStopInfo is null) return;
+		var godotLine = _executionStopInfo.Line - 1;
+		SetLineAsExecuting(godotLine, false);
+		SetLineColour(godotLine);
 		_ = GodotTask.Run(async () =>
 		{
 			await Singletons.RunService.SendDebuggerStepOver(_executionStopInfo.ThreadId);
 		});
+	}
+
+	private readonly Color _breakpointLineColor = new Color("3a2323");
+	private readonly Color _executingLineColor = new Color("665001");
+	private void SetLineColour(int line)
+	{
+		var breakpointed = IsLineBreakpointed(line);
+		var executing = IsLineExecuting(line);
+		var lineColour = (breakpointed, executing) switch
+		{
+			(_, true) => _executingLineColor,
+			(true, false) => _breakpointLineColor,
+			(false, false) => Colors.Transparent
+		};
+		SetLineBackgroundColor(line, lineColour);
 	}
 
 	private void SetDiagnosticsModel(ImmutableArray<(FileLinePositionSpan fileSpan, Diagnostic diagnostic)> diagnostics)
