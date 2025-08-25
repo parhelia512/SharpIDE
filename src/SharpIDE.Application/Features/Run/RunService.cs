@@ -40,6 +40,8 @@ public class RunService
 				RedirectStandardError = true,
 				EnvironmentVariables = []
 			};
+			processStartInfo.EnvironmentVariables["DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION"] = "1";
+			// processStartInfo.EnvironmentVariables["TERM"] = "xterm"; // may be necessary on linux/macOS
 			if (launchProfile is not null)
 			{
 				foreach (var envVar in launchProfile.EnvironmentVariables)
