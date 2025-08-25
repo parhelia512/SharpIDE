@@ -30,7 +30,7 @@ public partial class IdeRoot : Control
 		_runMenuButton.Pressed += () =>
 		{
 			var popupMenuPosition = _runMenuButton.GlobalPosition;
-			const int buttonHeight = 40;
+			const int buttonHeight = 37;
 			_runMenuPopup.Position = new Vector2I((int)popupMenuPosition.X, (int)popupMenuPosition.Y + buttonHeight);
 			_runMenuPopup.Popup();
 		};

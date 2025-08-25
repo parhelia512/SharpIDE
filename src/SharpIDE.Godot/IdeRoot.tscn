@@ -65,7 +65,6 @@ icon = ExtResource("2_8x8ub")
 [node name="RunMenuPopup" type="Popup" parent="VBoxContainer/Panel/HBoxContainer/RunMenuButton"]
 unique_name_in_owner = true
 size = Vector2i(151, 100)
-visible = true
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Panel/HBoxContainer/RunMenuButton/RunMenuPopup"]
 anchors_preset = 15
