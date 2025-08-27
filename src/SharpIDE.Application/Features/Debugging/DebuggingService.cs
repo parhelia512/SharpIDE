@@ -57,9 +57,13 @@ public class DebuggingService
 		{
 			;
 		});
+		debugProtocolHost.RegisterEventType<ExitedEvent>(async void (@event) =>
+		{
+			await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding); // The VS Code Debug Protocol throws if you try to send a request from the dispatcher thread
+			debugProtocolHost.SendRequestSync(new DisconnectRequest());
+		});
 		debugProtocolHost.RegisterClientRequestType<HandshakeRequest, HandshakeArguments, HandshakeResponse>(responder =>
 		{
-			var args = responder.Arguments;
 			var signatureResponse = VsSigner.Sign(responder.Arguments.Value);
 			responder.SetResponse(new HandshakeResponse(signatureResponse));
 		});
