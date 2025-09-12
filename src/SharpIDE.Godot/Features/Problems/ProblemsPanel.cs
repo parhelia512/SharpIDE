@@ -25,6 +25,7 @@ public partial class ProblemsPanel : Control
                 _projects.AddRange(s!.AllProjects);
             });
         _vBoxContainer = GetNode<VBoxContainer>("ScrollContainer/VBoxContainer");
+        _vBoxContainer.GetChildren().ToList().ForEach(c => c.QueueFree());
         _vBoxContainer.BindChildren(_projects, _problemsPanelProjectEntryScene);
     }
 }
