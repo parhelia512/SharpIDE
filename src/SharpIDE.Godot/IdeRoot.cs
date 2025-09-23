@@ -7,6 +7,7 @@ using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.CodeEditor;
 using SharpIDE.Godot.Features.CustomControls;
 using SharpIDE.Godot.Features.Run;
+using SharpIDE.Godot.Features.Search;
 using SharpIDE.Godot.Features.SolutionExplorer;
 
 namespace SharpIDE.Godot;
@@ -16,6 +17,7 @@ public partial class IdeRoot : Control
 	private Button _openSlnButton = null!;
 	private Button _buildSlnButton = null!;
 	private FileDialog _fileDialog = null!;
+	private SearchWindow _searchWindow = null!;
 	private CodeEditorPanel _codeEditorPanel = null!;
 	private SolutionExplorerPanel _solutionExplorerPanel = null!;
 	private InvertedVSplitContainer _invertedVSplitContainer = null!;
@@ -35,6 +37,7 @@ public partial class IdeRoot : Control
 		_runMenuButton = GetNode<Button>("%RunMenuButton");
 		_codeEditorPanel = GetNode<CodeEditorPanel>("%CodeEditorPanel");
 		_fileDialog = GetNode<FileDialog>("%OpenSolutionDialog");
+		_searchWindow = GetNode<SearchWindow>("%SearchWindow");
 		_solutionExplorerPanel = GetNode<SolutionExplorerPanel>("%SolutionExplorerPanel");
 		_runPanel = GetNode<RunPanel>("%RunPanel");
 		_invertedVSplitContainer = GetNode<InvertedVSplitContainer>("%InvertedVSplitContainer");
@@ -102,5 +105,13 @@ public partial class IdeRoot : Control
 			//var runnableProject = solutionModel.AllProjects.First(s => s.IsRunnable);
 			//await this.InvokeAsync(() => _runPanel.NewRunStarted(runnableProject));
 		});
+	}
+	
+	public override void _UnhandledKeyInput(InputEvent @event)
+	{
+		if (@event.IsActionPressed(InputStringNames.FindInFiles))
+		{
+			_searchWindow.Popup();
+		}
 	}
 }

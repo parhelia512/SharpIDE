@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://b2oniigcp5ew5"]
+[gd_scene load_steps=17 format=3 uid="uid://b2oniigcp5ew5"]
 
 [ext_resource type="FontFile" uid="uid://38igu11xwba6" path="res://Inter-VariableFont.ttf" id="1_7ptyn"]
 [ext_resource type="Script" uid="uid://bavypuy7b375x" path="res://IdeRoot.cs" id="1_whawi"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://co6dkhdolriej" path="res://Features/Build/BuildPanel.tscn" id="9_rllbf"]
 [ext_resource type="PackedScene" uid="uid://tqpmww430cor" path="res://Features/Problems/ProblemsPanel.tscn" id="11_b7c1a"]
 [ext_resource type="PackedScene" uid="uid://dkjips8oudqou" path="res://Features/Debug_/DebugPanel.tscn" id="11_s2dv6"]
+[ext_resource type="PackedScene" uid="uid://8lk0qj233a7p" path="res://Features/Search/SearchWindow.tscn" id="13_7ptyn"]
 
 [sub_resource type="Theme" id="Theme_s2dv6"]
 default_font = ExtResource("1_7ptyn")
@@ -165,3 +166,7 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.sln", "*.slnx")
 use_native_dialog = true
+
+[node name="SearchWindow" parent="." instance=ExtResource("13_7ptyn")]
+unique_name_in_owner = true
+visible = false
