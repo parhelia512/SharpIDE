@@ -6,6 +6,7 @@
     <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\tools\AspNetCoreServiceDefaults\AspNetCoreServiceDefaults.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\SharpIDE.Application\SharpIDE.Application.csproj" />
   </ItemGroup>
   <ItemGroup>

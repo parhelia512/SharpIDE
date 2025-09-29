@@ -9,6 +9,8 @@ public partial class IdeDiagnosticsPanel : Control
     {
         _graphEdit = GetNode<GraphEdit>("%GraphEdit");
         //_graphEdit.ConnectionRequest += GraphEditOnConnectionRequest;
+        //var graphNode = GetNode<Node>("%GraphNode");
+        
     }
 
     // private void GraphEditOnConnectionRequest(StringName fromNode, long fromPort, StringName toNode, long toPort)

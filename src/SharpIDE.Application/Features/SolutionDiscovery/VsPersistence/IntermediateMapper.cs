@@ -1,4 +1,5 @@
-﻿using Ardalis.GuardClauses;
+﻿using System.Diagnostics;
+using Ardalis.GuardClauses;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
@@ -9,6 +10,7 @@ public static class IntermediateMapper
 	internal static async Task<IntermediateSolutionModel> GetIntermediateModel(string solutionFilePath,
 		CancellationToken cancellationToken = default)
 	{
+		using var _ = SharpIdeOtel.Source.StartActivity();
 		var serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 		Guard.Against.Null(serializer, nameof(serializer));
 		var vsSolution = await serializer.OpenAsync(solutionFilePath, cancellationToken);

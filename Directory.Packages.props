@@ -46,6 +46,12 @@
     <PackageVersion Include="R3" Version="1.3.0" />
     <PackageVersion Include="XtermBlazor" Version="2.1.2" />
   </ItemGroup>
+	<ItemGroup Label="Aspire">
+		<PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+		<PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+		<PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+		<PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
+	</ItemGroup>
   <ItemGroup Label="Pinned Transitive Dependencies">
     <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.Razor.Features" Version="5.0.0-2.25465.103" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Remote.ServiceHub" Version="5.0.0-2.25465.103" />

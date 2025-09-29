@@ -1,5 +1,6 @@
 using Godot;
 using Microsoft.Build.Locator;
+using Microsoft.Extensions.Hosting;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
@@ -30,6 +31,7 @@ public partial class IdeRoot : Control
 	public override void _Ready()
 	{
 		MSBuildLocator.RegisterDefaults();
+		GodotServiceDefaults.AddServiceDefaults();
 		
 		_openSlnButton = GetNode<Button>("%OpenSlnButton");
 		_buildSlnButton = GetNode<Button>("%BuildSlnButton");
