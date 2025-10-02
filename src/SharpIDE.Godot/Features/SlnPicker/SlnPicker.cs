@@ -41,7 +41,7 @@ public partial class SlnPicker : Control
     private void PopulatePreviousSolutions()
     {
         _previousSlnsVBoxContainer.QueueFreeChildren();
-        foreach (var previousSln in Singletons.AppState.RecentSlns.Reverse())
+        foreach (var previousSln in Singletons.AppState.RecentSlns.AsEnumerable().Reverse())
         {
             var node = _previousSlnEntryScene.Instantiate<PreviousSlnEntry>();
             node.RecentSln = previousSln;

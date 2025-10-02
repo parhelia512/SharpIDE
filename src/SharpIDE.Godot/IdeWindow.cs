@@ -79,7 +79,9 @@ public partial class IdeWindow : Control
                 return;
             }
             ideRoot.SetSlnFilePath(slnPath);
-            Singletons.AppState.RecentSlns.Add(new RecentSln { FilePath = slnPath, Name = Path.GetFileName(slnPath) });
+            var recentSln = new RecentSln { FilePath = slnPath, Name = Path.GetFileName(slnPath) };
+            Singletons.AppState.RecentSlns.RemoveAll(s => s == recentSln); // Move to end (most recent)
+            Singletons.AppState.RecentSlns.Add(recentSln);
             
             await this.InvokeAsync(() =>
             {

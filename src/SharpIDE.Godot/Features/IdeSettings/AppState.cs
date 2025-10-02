@@ -4,7 +4,7 @@ public class AppState
 {
     public string? LastOpenSolutionFilePath { get; set; }
     public IdeSettings IdeSettings { get; set; } = new IdeSettings();
-    public HashSet<RecentSln> RecentSlns { get; set; } = [];
+    public List<RecentSln> RecentSlns { get; set; } = [];
 }
 
 public class IdeSettings
