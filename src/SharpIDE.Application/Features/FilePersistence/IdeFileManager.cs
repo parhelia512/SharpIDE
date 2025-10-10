@@ -76,15 +76,11 @@ public class IdeFileManager
 
 	private static async Task WriteAllText(SharpIdeFile file, string text)
 	{
-		file.SuppressDiskChangeEvents.Value = true;
+		file.SuppressDiskChangeEvents = true;
 		await File.WriteAllTextAsync(file.Path, text);
 		Console.WriteLine($"Saved file {file.Path}");
-		_ = Task.Delay(300).ContinueWith(_ =>
-		{
-			Console.WriteLine($"Re-enabling disk change events for {file.Path}");
-			file.SuppressDiskChangeEvents.Value = false;
-			Console.WriteLine($"Value is now {file.SuppressDiskChangeEvents.Value}");
-		}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+		file.LastIdeWriteTime = DateTimeOffset.Now;
+		file.SuppressDiskChangeEvents = false;
 	}
 
 	public async Task SaveAllOpenFilesAsync()

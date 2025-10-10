@@ -16,7 +16,8 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode
 	public bool IsCsharpFile => Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
 	public bool IsRoslynWorkspaceFile => IsCsharpFile || IsRazorFile || IsCshtmlFile;
 	public required ReactiveProperty<bool> IsDirty { get; init; }
-	public required ReactiveProperty<bool> SuppressDiskChangeEvents { get; init; }
+	public required bool SuppressDiskChangeEvents { get; set; } // probably has concurrency issues
+	public required DateTimeOffset? LastIdeWriteTime { get; set; }
 	public EventWrapper<Task> FileContentsChangedExternallyFromDisk { get; } = new(() => Task.CompletedTask);
 	public EventWrapper<Task> FileContentsChangedExternally { get; } = new(() => Task.CompletedTask);
 
@@ -27,7 +28,7 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode
 		Name = name;
 		Parent = parent;
 		IsDirty = new ReactiveProperty<bool>(false);
-		SuppressDiskChangeEvents = new ReactiveProperty<bool>(false);
+		SuppressDiskChangeEvents = false;
 		allFiles.Add(this);
 	}
 }
