@@ -57,9 +57,7 @@ public static partial class SymbolInfoComponents
 
     private static void AddFieldTypeName(this RichTextLabel label, IFieldSymbol fieldSymbol)
     {
-        label.PushColor(GetSymbolColourByType(fieldSymbol.Type));
-        label.AddText(fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-        label.Pop();
+        label.AddType(fieldSymbol.Type);
         label.AddText(" ");
     }
     

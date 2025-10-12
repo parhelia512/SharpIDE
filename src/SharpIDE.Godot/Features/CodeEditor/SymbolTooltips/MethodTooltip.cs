@@ -124,9 +124,7 @@ public static partial class SymbolInfoComponents
                 label.Pop();
                 label.AddText(" ");
             }
-            label.PushColor(parameterSymbol.Type.GetSymbolColourByType());
-            label.AddText(parameterSymbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-            label.Pop();
+            label.AddType(parameterSymbol.Type);
             label.AddText(" ");
             label.PushColor(CachedColors.VariableBlue);
             label.AddText(parameterSymbol.Name);
@@ -209,9 +207,7 @@ public static partial class SymbolInfoComponents
             label.AddText(typeParameter.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             label.Pop();
             label.AddText(" is ");
-            label.PushColor(typeArgument.GetSymbolColourByType());
-            label.AddText(typeArgument.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-            label.Pop();
+            label.AddType(typeArgument);
             if (index < methodSymbol.TypeArguments.Length - 1)
             {
                 label.Newline();

@@ -351,6 +351,14 @@ public static partial class SymbolInfoComponents
         label.Pop(); // table
     }
     
+    private static void AddType(this RichTextLabel label, ITypeSymbol symbol)
+    {
+        var colour = symbol.GetSymbolColourByType();
+        label.PushColor(colour);
+        label.AddText(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+        label.Pop();
+    }
+    
     // TODO: handle arrays etc, where there are multiple colours in one type
     private static Color GetSymbolColourByType(this ITypeSymbol symbol)
     {

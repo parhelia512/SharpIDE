@@ -34,9 +34,7 @@ public static partial class SymbolInfoComponents
     
     private static void AddParameterTypeName(this RichTextLabel label, IParameterSymbol symbol)
     {
-        label.PushColor(GetSymbolColourByType(symbol.Type));
-        label.AddText(symbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-        label.Pop();
+        label.AddType(symbol.Type);
         label.AddText(" ");
     }
     

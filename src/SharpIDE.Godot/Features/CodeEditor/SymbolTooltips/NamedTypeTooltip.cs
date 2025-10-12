@@ -33,9 +33,7 @@ public static partial class SymbolInfoComponents
     
     private static void AddNamedTypeSymbolName(this RichTextLabel label, INamedTypeSymbol symbol)
     {
-        label.PushColor(GetSymbolColourByType(symbol));
-        label.AddText(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-        label.Pop();
+        label.AddType(symbol);
     }
     
     private static void AddInheritedTypes(this RichTextLabel label, INamedTypeSymbol symbol)
@@ -43,9 +41,7 @@ public static partial class SymbolInfoComponents
         if (symbol.BaseType is not null && symbol.BaseType.SpecialType != SpecialType.System_Object)
         {
             label.AddText(" : ");
-            label.PushColor(GetSymbolColourByType(symbol.BaseType));
-            label.AddText(symbol.BaseType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-            label.Pop();
+            label.AddType(symbol.BaseType);
         }
         if (symbol.Interfaces.Length > 0)
         {
@@ -59,10 +55,8 @@ public static partial class SymbolInfoComponents
             }
             for (int i = 0; i < symbol.Interfaces.Length; i++)
             {
-                var iface = symbol.Interfaces[i];
-                label.PushColor(GetSymbolColourByType(iface));
-                label.AddText(iface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
-                label.Pop();
+                var @interface = symbol.Interfaces[i];
+                label.AddType(@interface);
                 if (i < symbol.Interfaces.Length - 1)
                 {
                     label.AddText(", ");
