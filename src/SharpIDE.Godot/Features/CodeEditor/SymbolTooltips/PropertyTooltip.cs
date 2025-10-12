@@ -25,8 +25,11 @@ public partial class SymbolInfoComponents
         label.AddPropertyName(symbol);
         label.AddGetSetAccessors(symbol);
         label.AddContainingNamespaceAndClass(symbol);
+        label.Newline();
+        //label.AddTypeParameterArguments(symbol);
+        label.Pop(); // font
+        label.AddDocs(symbol);
         
-        label.Pop();
         label.Pop();
         return label;
     }

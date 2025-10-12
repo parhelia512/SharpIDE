@@ -410,10 +410,10 @@ public static partial class SymbolInfoComponents
     }
 
     private static readonly Color HrColour = new Color("4d4d4d");
-    private static void AddDocs(this RichTextLabel label, IMethodSymbol methodSymbol)
+    private static void AddDocs(this RichTextLabel label, ISymbol symbol)
     {
-        if (methodSymbol.IsOverride) methodSymbol = methodSymbol.OverriddenMethod!;
-        var xmlDocs = methodSymbol.GetDocumentationCommentXml();
+        if (symbol.IsOverride) symbol = symbol.GetOverriddenMember()!;
+        var xmlDocs = symbol.GetDocumentationCommentXml();
         if (string.IsNullOrWhiteSpace(xmlDocs)) return;
         label.AddHr(100, 1, HrColour);
         label.Newline();
