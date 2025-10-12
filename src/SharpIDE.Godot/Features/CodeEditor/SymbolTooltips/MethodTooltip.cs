@@ -19,6 +19,7 @@ public static partial class SymbolInfoComponents
         label.AddVirtualModifier(methodSymbol);
         label.AddAbstractModifier(methodSymbol);
         label.AddOverrideModifier(methodSymbol);
+        label.AddMethodAsyncModifier(methodSymbol);
         label.AddMethodReturnType(methodSymbol);
         label.AddText(" ");
         label.AddMethodName(methodSymbol);
@@ -41,6 +42,17 @@ public static partial class SymbolInfoComponents
         {
             label.PushColor(CachedColors.KeywordBlue);
             label.AddText("static");
+            label.Pop();
+            label.AddText(" ");
+        }
+    }
+    
+    private static void AddMethodAsyncModifier(this RichTextLabel label, IMethodSymbol methodSymbol)
+    {
+        if (methodSymbol.IsAsync)
+        {
+            label.PushColor(CachedColors.KeywordBlue);
+            label.AddText("async");
             label.Pop();
             label.AddText(" ");
         }
