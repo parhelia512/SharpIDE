@@ -6,6 +6,7 @@ namespace SharpIDE.Godot.Features.Search;
 
 public partial class SearchWindow : PopupPanel
 {
+    private Label _resultCountLabel = null!;
     private LineEdit _lineEdit = null!;
     private VBoxContainer _searchResultsContainer = null!;
     public SharpIdeSolutionModel Solution { get; set; } = null!;
@@ -15,6 +16,8 @@ public partial class SearchWindow : PopupPanel
     
     public override void _Ready()
     {
+        _resultCountLabel = GetNode<Label>("%ResultCountLabel");
+        _resultCountLabel.Text = "";
         _lineEdit = GetNode<LineEdit>("%SearchLineEdit");
         _lineEdit.Text = "";
         _searchResultsContainer = GetNode<VBoxContainer>("%SearchResultsVBoxContainer");
@@ -41,6 +44,7 @@ public partial class SearchWindow : PopupPanel
     private async Task Search(string text, CancellationToken cancellationToken)
     {
         var result = await SearchService.FindInFiles(Solution, text, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
         await this.InvokeAsync(() =>
         {
             _searchResultsContainer.GetChildren().ToList().ForEach(s => s.QueueFree());
@@ -51,6 +55,7 @@ public partial class SearchWindow : PopupPanel
                 resultNode.ParentSearchWindow = this;
                 _searchResultsContainer.AddChild(resultNode);
             }
+            _resultCountLabel.Text = $"{result.Count} files(s) found";
         });
     }
 }

@@ -17,6 +17,7 @@ public partial class SearchAllFilesWindow : PopupPanel
     public override void _Ready()
     {
         _resultCountLabel = GetNode<Label>("%ResultCountLabel");
+        _resultCountLabel.Text = "";
         _lineEdit = GetNode<LineEdit>("%SearchLineEdit");
         _lineEdit.Text = "";
         _searchResultsContainer = GetNode<VBoxContainer>("%SearchResultsVBoxContainer");

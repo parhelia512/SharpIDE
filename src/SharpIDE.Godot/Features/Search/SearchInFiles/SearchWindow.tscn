@@ -46,7 +46,8 @@ layout_mode = 2
 layout_mode = 2
 text = "Find Text in Files"
 
-[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="ResultCountLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = " 30 matches in 5 files"
@@ -59,6 +60,7 @@ text = "Test"
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+follow_focus = true
 
 [node name="SearchResultsVBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
 unique_name_in_owner = true
