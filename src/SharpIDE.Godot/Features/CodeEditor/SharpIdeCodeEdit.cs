@@ -412,8 +412,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 
 	private void SetSyntaxHighlightingModel(IEnumerable<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)> classifiedSpans, IEnumerable<SharpIdeRazorClassifiedSpan> razorClassifiedSpans)
 	{
-		_syntaxHighlighter.ClassifiedSpans = classifiedSpans.ToHashSet();
-		_syntaxHighlighter.RazorClassifiedSpans = razorClassifiedSpans.ToHashSet();
+		_syntaxHighlighter.SetHighlightingData(classifiedSpans, razorClassifiedSpans);
 		Callable.From(() =>
 		{
 			_syntaxHighlighter.ClearHighlightingCache();

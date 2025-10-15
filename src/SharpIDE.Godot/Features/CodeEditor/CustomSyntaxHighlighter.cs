@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Collections.Immutable;
+using Godot;
 using Godot.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
@@ -9,11 +10,29 @@ namespace SharpIDE.Godot;
 public partial class CustomHighlighter : SyntaxHighlighter
 {
     private readonly Dictionary _emptyDict = new();
-    public HashSet<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)> ClassifiedSpans = [];
-    public HashSet<SharpIdeRazorClassifiedSpan> RazorClassifiedSpans = [];
+
+    private System.Collections.Generic.Dictionary<int, ImmutableArray<SharpIdeRazorClassifiedSpan>> _razorClassifiedSpansByLine = [];
+    private System.Collections.Generic.Dictionary<int, ImmutableArray<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)>> _classifiedSpansByLine = [];
+    
+    
+    public void SetHighlightingData(IEnumerable<(FileLinePositionSpan fileSpan, ClassifiedSpan classifiedSpan)> classifiedSpans, IEnumerable<SharpIdeRazorClassifiedSpan> razorClassifiedSpans)
+    {
+        // separate each line here
+        var razorSpansForLine = razorClassifiedSpans
+            .Where(s => s.Span.Length is not 0)
+            .GroupBy(s => s.Span.LineIndex)
+            .ToList();
+        _razorClassifiedSpansByLine = razorSpansForLine.ToDictionary(g => g.Key, g => g.ToImmutableArray());
+        
+        var spansGroupedByFileSpan = classifiedSpans
+            .Where(s => s.classifiedSpan.TextSpan.Length is not 0)
+            .GroupBy(span => span.fileSpan.StartLinePosition.Line)
+            .ToList();
+        _classifiedSpansByLine = spansGroupedByFileSpan.ToDictionary(g => g.Key, g => g.ToImmutableArray());
+    }
     public override Dictionary _GetLineSyntaxHighlighting(int line)
     {
-        var highlights = (ClassifiedSpans, RazorClassifiedSpans) switch
+        var highlights = (_classifiedSpansByLine, _razorClassifiedSpansByLine) switch
         {
             ({ Count: 0 }, { Count: 0 }) => _emptyDict,
             ({ Count: > 0 }, _) => MapClassifiedSpansToHighlights(line),
@@ -28,14 +47,12 @@ public partial class CustomHighlighter : SyntaxHighlighter
     private Dictionary MapRazorClassifiedSpansToHighlights(int line)
     {
         var highlights = new Dictionary();
+        if (_razorClassifiedSpansByLine.TryGetValue(line, out var razorSpansForLine) is false) return highlights;
+        
+        // group by span (start, length matches)
+        var spansGroupedByFileSpan = razorSpansForLine.GroupBy(span => span.Span);
 
-        // Filter spans on the given line, ignore empty spans
-        var spansForLine = RazorClassifiedSpans
-            .Where(s => s.Span.LineIndex == line && s.Span.Length is not 0)
-            .GroupBy(s => s.Span)
-            .ToList();
-
-        foreach (var razorSpanGrouping in spansForLine)
+        foreach (var razorSpanGrouping in spansGroupedByFileSpan)
         {
             var spans = razorSpanGrouping.ToList();
             if (spans.Count > 2) throw new NotImplementedException("More than 2 classified spans is not supported yet.");
@@ -101,10 +118,11 @@ public partial class CustomHighlighter : SyntaxHighlighter
     private Dictionary MapClassifiedSpansToHighlights(int line)
     {
         var highlights = new Dictionary();
+        if (_classifiedSpansByLine.TryGetValue(line, out var spansForLine) is false) return highlights;
         
         // consider no linq or ZLinq
-        var spansGroupedByFileSpan = ClassifiedSpans
-            .Where(s => s.fileSpan.StartLinePosition.Line == line && s.classifiedSpan.TextSpan.Length is not 0)
+        // group by span (start, length matches)
+        var spansGroupedByFileSpan = spansForLine
             .GroupBy(span => span.fileSpan)
             .Select(group => (fileSpan: group.Key, classifiedSpans: group.Select(s => s.classifiedSpan).ToList()));
 

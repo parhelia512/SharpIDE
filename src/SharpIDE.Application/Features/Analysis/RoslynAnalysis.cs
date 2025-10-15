@@ -339,7 +339,7 @@ public static class RoslynAnalysis
 		var timer = Stopwatch.StartNew();
 		var sharpIdeProjectModel = ((IChildSharpIdeNode) fileModel).GetNearestProjectNode()!;
 		var project = _workspace!.CurrentSolution.Projects.Single(s => s.FilePath == sharpIdeProjectModel!.FilePath);
-		if (!fileModel.Name.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+		if (fileModel.IsRazorFile is false)
 		{
 			return [];
 			//throw new InvalidOperationException("File is not a .razor file");
@@ -444,7 +444,7 @@ public static class RoslynAnalysis
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(GetDocumentSyntaxHighlighting)}");
 		await _solutionLoadedTcs.Task;
 		var project = _workspace!.CurrentSolution.Projects.Single(s => s.FilePath == ((IChildSharpIdeNode)fileModel).GetNearestProjectNode()!.FilePath);
-		if (fileModel.Name.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) is false)
+		if (fileModel.IsCsharpFile is false)
 		{
 			//throw new InvalidOperationException("File is not a .cs");
 			return [];
@@ -603,7 +603,10 @@ public static class RoslynAnalysis
 	public static async Task<(ISymbol?, LinePositionSpan?)> LookupSymbol(SharpIdeFile fileModel, LinePosition linePosition)
 	{
 		await _solutionLoadedTcs.Task;
-		var (symbol, linePositionSpan) = fileModel.IsRazorFile ? await LookupSymbolInRazor(fileModel, linePosition) : await LookupSymbolInCs(fileModel, linePosition);
+		var (symbol, linePositionSpan) =
+			fileModel.IsRazorFile ? await LookupSymbolInRazor(fileModel, linePosition)
+			: fileModel.IsCsharpFile ? await LookupSymbolInCs(fileModel, linePosition)
+			: (null, null);
 		return (symbol, linePositionSpan);
 	}
 
