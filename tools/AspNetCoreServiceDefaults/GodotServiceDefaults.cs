@@ -7,8 +7,8 @@ namespace Microsoft.Extensions.Hosting;
 
 public static class GodotServiceDefaults
 {
-	private static TracerProvider _tracerProvider;
-	private static MeterProvider _meterProvider;
+	private static TracerProvider _tracerProvider = null!;
+	private static MeterProvider _meterProvider = null!;
 	public static void AddServiceDefaults()
 	{
 		var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");

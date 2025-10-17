@@ -32,7 +32,7 @@ public static class LaunchSettingsParser
 			LaunchBrowser = s.Value.LaunchBrowser,
 			LaunchUrl = s.Value.LaunchUrl,
 			ApplicationUrl = s.Value.ApplicationUrl,
-			EnvironmentVariables = s.Value.EnvironmentVariables
+			EnvironmentVariables = s.Value.EnvironmentVariables ?? []
 		}).ToList();
 		return result;
 	}
@@ -57,11 +57,11 @@ public class LaunchSettings
 
 public class Profile
 {
-	public string CommandName { get; set; }
+	public string? CommandName { get; set; }
 	public bool DotnetRunMessages { get; set; }
 	public bool LaunchBrowser { get; set; }
-	public string LaunchUrl { get; set; }
-	public string ApplicationUrl { get; set; }
-	public Dictionary<string, string> EnvironmentVariables { get; set; }
+	public string? LaunchUrl { get; set; }
+	public string? ApplicationUrl { get; set; }
+	public Dictionary<string, string>? EnvironmentVariables { get; set; }
 }
 
