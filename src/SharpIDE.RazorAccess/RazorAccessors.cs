@@ -9,6 +9,7 @@ public static class RazorAccessors
 {
 	//private static RazorProjectEngine? _razorProjectEngine;
 
+	// I didn't end up using the Razor ClassifiedSpans
 	public static (ImmutableArray<SharpIdeRazorClassifiedSpan>, List<SharpIdeRazorSourceMapping>) GetSpansAndMappingsForRazorCodeDocument(RazorCodeDocument razorCodeDocument, RazorCSharpDocument razorCSharpDocument)
 	{
 		var razorSpans = RazorCodeDocumentExtensions.GetClassifiedSpans(razorCodeDocument);
@@ -18,11 +19,11 @@ public static class RazorAccessors
 		return result;
 	}
 
-	public static ImmutableArray<RazorCodeDocumentExtensions.ClassifiedSpan> GetClassifiedSpansForRazorCodeDocument(RazorCodeDocument razorCodeDocument)
-	{
-		var razorSpans = RazorCodeDocumentExtensions.GetClassifiedSpans(razorCodeDocument);
-		return razorSpans;
-	}
+	// public static ImmutableArray<RazorCodeDocumentExtensions.ClassifiedSpan> GetClassifiedSpansForRazorCodeDocument(RazorCodeDocument razorCodeDocument)
+	// {
+	// 	var razorSpans = RazorCodeDocumentExtensions.GetClassifiedSpans(razorCodeDocument);
+	// 	return razorSpans;
+	// }
 
 	// public static (ImmutableArray<SharpIdeRazorClassifiedSpan>, SourceText Text, List<SharpIdeRazorSourceMapping>) GetClassifiedSpans(SourceText sourceText, SourceText importsSourceText, string razorDocumentFilePath, string projectDirectory)
 	// {
