@@ -17,6 +17,17 @@ public class IdeFileExternalChangeHandler
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileChanged.Subscribe(OnFileChanged);
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileCreated.Subscribe(OnFileCreated);
 		GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryCreated.Subscribe(OnFolderCreated);
+		GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryDeleted.Subscribe(OnFolderDeleted);
+	}
+
+	private async Task OnFolderDeleted(string folderPath)
+	{
+		var sharpIdeFolder = SolutionModel.AllFolders.SingleOrDefault(f => f.Path == folderPath);
+		if (sharpIdeFolder is null)
+		{
+			return;
+		}
+		await _sharpIdeSolutionModificationService.RemoveDirectory(sharpIdeFolder);
 	}
 
 	private async Task OnFolderCreated(string folderPath)

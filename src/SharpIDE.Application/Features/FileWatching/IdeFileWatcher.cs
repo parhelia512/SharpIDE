@@ -68,7 +68,16 @@ public sealed class IdeFileWatcher : IDisposable
 
 	private void HandleDeleted(string fullPath)
 	{
-		Console.WriteLine($"FileSystemWatcher: Deleted - {fullPath}");
+		var isDirectory = Path.HasExtension(fullPath) is false;
+		if (isDirectory)
+		{
+			GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryDeleted.InvokeParallelFireAndForget(fullPath);
+		}
+		else
+		{
+			GlobalEvents.Instance.FileSystemWatcherInternal.FileDeleted.InvokeParallelFireAndForget(fullPath);
+		}
+		//Console.WriteLine($"FileSystemWatcher: Deleted - {fullPath}");
 	}
 
 	private void HandleCreated(string fullPath)

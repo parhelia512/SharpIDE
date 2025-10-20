@@ -3,6 +3,7 @@ using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.FileWatching;
 
+/// Does not do any file system operations, only modifies the in-memory solution model
 public class SharpIdeSolutionModificationService
 {
 	public SharpIdeSolutionModel SolutionModel { get; set; } = null!;
