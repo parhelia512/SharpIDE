@@ -7,6 +7,7 @@ using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.Run;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+using SharpIDE.Godot.Features.IdeSettings;
 
 namespace SharpIDE.Godot.Features.CodeEditor;
 
@@ -30,7 +31,20 @@ public partial class CodeEditorPanel : MarginContainer
         tabBar.TabClosePressed += OnTabClosePressed;
 		GlobalEvents.Instance.DebuggerExecutionStopped.Subscribe(OnDebuggerExecutionStopped);
     }
-    
+
+    public override void _ExitTree()
+    {
+        var thisSolution = Singletons.AppState.RecentSlns.Single(s => s.FilePath == Solution.FilePath);
+        thisSolution.IdeSolutionState.OpenTabs = _tabContainer.GetChildren().OfType<SharpIdeCodeEdit>()
+            .Select(t => new OpenTab
+            {
+                FilePath = t.SharpIdeFile.Path,
+                CaretLine = t.GetCaretLine(),
+                CaretColumn = t.GetCaretColumn()
+            })
+            .ToList();
+    }
+
     public override void _UnhandledKeyInput(InputEvent @event)
     {
         if (@event.IsActionPressed(InputStringNames.StepOver))

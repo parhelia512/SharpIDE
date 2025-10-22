@@ -16,4 +16,5 @@ public record RecentSln
 {
     public required string Name { get; set; }
     public required string FilePath { get; set; }
+    public IdeSolutionState IdeSolutionState { get; set; } = new IdeSolutionState();
 }
