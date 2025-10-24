@@ -1,15 +1,18 @@
 ﻿using FileWatcherEx;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.Logging;
 using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.FileWatching;
 
-public sealed class IdeFileWatcher : IDisposable
+public sealed class IdeFileWatcher(ILogger<IdeFileWatcher> logger) : IDisposable
 {
 	private Matcher? _matcher;
 	private FileSystemWatcherEx? _fileWatcher;
 	private SharpIdeSolutionModel? _solution;
+
+	private readonly ILogger<IdeFileWatcher> _logger = logger;
 
 	public void StartWatching(SharpIdeSolutionModel solution)
 	{
@@ -72,7 +75,7 @@ public sealed class IdeFileWatcher : IDisposable
 		{
 			GlobalEvents.Instance.FileSystemWatcherInternal.FileRenamed.InvokeParallelFireAndForget(oldFullPath, fullPath);
 		}
-		//Console.WriteLine($"FileSystemWatcher: Renamed - {oldFullPath}, {fullPath}");
+		_logger.LogTrace("FileSystemWatcher: Renamed - {OldFullPath} -> {FullPath}", oldFullPath, fullPath);
 	}
 
 	private void HandleDeleted(string fullPath)
@@ -86,7 +89,7 @@ public sealed class IdeFileWatcher : IDisposable
 		{
 			GlobalEvents.Instance.FileSystemWatcherInternal.FileDeleted.InvokeParallelFireAndForget(fullPath);
 		}
-		//Console.WriteLine($"FileSystemWatcher: Deleted - {fullPath}");
+		_logger.LogTrace("FileSystemWatcher: Deleted - {FullPath}", fullPath);
 	}
 
 	private void HandleCreated(string fullPath)
@@ -100,7 +103,7 @@ public sealed class IdeFileWatcher : IDisposable
 		{
 			GlobalEvents.Instance.FileSystemWatcherInternal.FileCreated.InvokeParallelFireAndForget(fullPath);
 		}
-		//Console.WriteLine($"FileSystemWatcher: Created - {fullPath}");
+		_logger.LogTrace("FileSystemWatcher: Created - {FullPath}", fullPath);
 	}
 
 	// The only changed event we care about is files, not directories
@@ -110,7 +113,7 @@ public sealed class IdeFileWatcher : IDisposable
 	private void HandleChanged(string fullPath)
 	{
 		if (Path.HasExtension(fullPath) is false) return; // we don't care about directory changes
-		//Console.WriteLine($"FileSystemWatcher: Changed - {fullPath}");
+		_logger.LogTrace("FileSystemWatcher: Changed - {FullPath}", fullPath);
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileChanged.InvokeParallelFireAndForget(fullPath);
 	}
 
