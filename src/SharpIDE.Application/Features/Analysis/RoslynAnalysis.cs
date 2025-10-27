@@ -667,12 +667,30 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 		return changedFilesWithText;
 	}
 
-	public async Task<ISymbol?> GetEnclosingSymbolForReferenceLocation(ReferenceLocation referenceLocation)
+	public record IdeReferenceLocationResult(ReferenceLocation ReferenceLocation, SharpIdeFile? File, ISymbol? EnclosingSymbol);
+	public async Task<IdeReferenceLocationResult?> GetIdeReferenceLocationResult(ReferenceLocation referenceLocation)
 	{
 		var semanticModel = await referenceLocation.Document.GetSemanticModelAsync();
 		if (semanticModel is null) return null;
 		var enclosingSymbol = ReferenceLocationExtensions.GetEnclosingMethodOrPropertyOrField(semanticModel, referenceLocation);
-		return enclosingSymbol;
+		var lineSpan = referenceLocation.Location.GetMappedLineSpan();
+		var file = _sharpIdeSolutionModel!.AllFiles.SingleOrDefault(f => f.Path == lineSpan.Path);
+		var result = new IdeReferenceLocationResult(referenceLocation, file!, enclosingSymbol);
+		return result;
+	}
+
+	public async Task<ImmutableArray<IdeReferenceLocationResult>> GetIdeReferenceLocationResults(ImmutableArray<ReferenceLocation> referenceLocations)
+	{
+		var results = new List<IdeReferenceLocationResult>();
+		foreach (var referenceLocation in referenceLocations)
+		{
+			var result = await GetIdeReferenceLocationResult(referenceLocation);
+			if (result is not null)
+			{
+				results.Add(result);
+			}
+		}
+		return results.ToImmutableArray();
 	}
 
 	public async Task<ImmutableArray<ReferencedSymbol>> FindAllSymbolReferences(ISymbol symbol, CancellationToken cancellationToken = default)
@@ -682,7 +700,7 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 
 		var solution = _workspace!.CurrentSolution;
 		var references = await SymbolFinder.FindReferencesAsync(symbol, solution, cancellationToken);
-		return references.AsImmutable();
+		return references.ToImmutableArray();
 	}
 
 	public async Task<(ISymbol?, LinePositionSpan?, TokenSemanticInfo?)> LookupSymbolSemanticInfo(SharpIdeFile fileModel, LinePosition linePosition)

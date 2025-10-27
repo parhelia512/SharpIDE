@@ -48,20 +48,15 @@ public partial class SharpIdeCodeEdit
                     else
                     {
                         // Show popup to select which reference to go to
-                        var scene = _symbolUsagePopupScene.Instantiate<SymbolLookupPopup>();
-                        var locationsAndFiles = locations.Select(s =>
-                        {
-                            var lineSpan = s.Location.GetMappedLineSpan();
-                            var file = Solution!.AllFiles.SingleOrDefault(f => f.Path == lineSpan.Path);
-                            return (s, file);
-                        }).Where(t => t.file is not null).ToImmutableArray();
-                        scene.Locations = locations;
-                        scene.LocationsAndFiles = locationsAndFiles!;
-                        scene.Symbol = semanticInfo.Value.DeclaredSymbol;
+                        var symbolLookupPopup = _symbolUsagePopupScene.Instantiate<SymbolLookupPopup>();
+                        var ideReferenceLocationResults = await _roslynAnalysis.GetIdeReferenceLocationResults(locations);
+                        symbolLookupPopup.IdeReferenceLocationResults = ideReferenceLocationResults;
+                        symbolLookupPopup.Symbol = semanticInfo.Value.DeclaredSymbol;
+                        symbolLookupPopup.Size = new Vector2I(1, 1); // Set tiny size so it autosizes up based on child content
                         await this.InvokeAsync(() =>
                         {
-                            AddChild(scene);
-                            scene.PopupCenteredClamped();
+                            AddChild(symbolLookupPopup);
+                            symbolLookupPopup.PopupCentered();
                         });
                     }
                 }

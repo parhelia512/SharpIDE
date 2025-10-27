@@ -29,33 +29,32 @@ layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_6ov2c")
 theme_override_styles/focus = SubResource("StyleBoxFlat_dtmd4")
 
-[node name="MarginContainer" type="MarginContainer" parent="Button"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 0
+mouse_behavior_recursive = 1
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_right = 5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Button/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="EnclosingSymbolLabel" type="Label" parent="Button/MarginContainer/HBoxContainer"]
+[node name="EnclosingSymbolLabel" type="Label" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Containing Symbol Name"
-text_overrun_behavior = 3
 
-[node name="FileNameLabel" type="Label" parent="Button/MarginContainer/HBoxContainer"]
+[node name="Spacer" type="Control" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FileNameLabel" type="Label" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.7411765)
 text = "FileName.cs"
 
-[node name="LineNumberLabel" type="Label" parent="Button/MarginContainer/HBoxContainer"]
+[node name="LineNumberLabel" type="Label" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.7411765)

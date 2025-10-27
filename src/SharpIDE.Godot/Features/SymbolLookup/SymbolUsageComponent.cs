@@ -1,4 +1,5 @@
 using Godot;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.SolutionDiscovery;
@@ -14,9 +15,8 @@ public partial class SymbolUsageComponent : MarginContainer
     
     public SymbolLookupPopup ParentSearchWindow { get; set; } = null!;
     public ReferenceLocation? Location { get; set; }
-    public SharpIdeFile File { get; set; } = null!;
-
-    [Inject] private readonly RoslynAnalysis _roslynAnalysis = null!;
+    public ISymbol? EnclosingSymbol { get; set; } = null!;
+    public SharpIdeFile? File { get; set; } = null!;
     
     public override void _Ready()
     {
@@ -32,7 +32,10 @@ public partial class SymbolUsageComponent : MarginContainer
     {
         var mappedLineSpan = Location!.Value.Location.GetMappedLineSpan();
         var fileLinePosition = new SharpIdeFileLinePosition { Line = mappedLineSpan.StartLinePosition.Line, Column = mappedLineSpan.StartLinePosition.Character };
-        GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelFireAndForget(File, fileLinePosition);
+        if (File is not null)
+        {
+            GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelFireAndForget(File, fileLinePosition);
+        }
         ParentSearchWindow.Hide();
     }
 
@@ -41,13 +44,8 @@ public partial class SymbolUsageComponent : MarginContainer
         if (result is null) return;
         var mappedLineSpan = result.Value.Location.GetMappedLineSpan();
         
-        _fileNameLabel.Text = File.Name;
+        _fileNameLabel.Text = File?.Name ?? Path.GetFileName(mappedLineSpan.Path);
         _lineNumberLabel.Text = (mappedLineSpan.StartLinePosition.Line + 1).ToString();
-
-        _ = Task.GodotRun(async () =>
-        {
-            var enclosingSymbol = await _roslynAnalysis.GetEnclosingSymbolForReferenceLocation(result.Value);
-            await this.InvokeAsync(() => _enclosingSymbolLabel.Text = enclosingSymbol?.Name);
-        });
+        _enclosingSymbolLabel.Text = EnclosingSymbol?.Name;
     }
 }
