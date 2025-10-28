@@ -174,12 +174,6 @@ public partial class SharpIdeCodeEdit : CodeEdit
 
 	private void OnTextChanged()
 	{
-		var codeCompletionPopupClosed = GetCodeCompletionSelectedIndex() is -1;
-		var shouldShowCodeCompletion = codeCompletionPopupClosed && HasFocus(); // This is a bad solution - it will be triggered on copy paste, undo redo, applying code fixes etc
-		if (codeCompletionPopupClosed)
-		{
-			EmitSignalCodeCompletionRequested();
-		}
 		_ = Task.GodotRun(async () =>
 		{
 			var __ = SharpIdeOtel.Source.StartActivity($"{nameof(SharpIdeCodeEdit)}.{nameof(OnTextChanged)}");
@@ -426,14 +420,15 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		var selectedIndex = GetCodeCompletionSelectedIndex();
 		var selectedText = GetCodeCompletionOption(selectedIndex);
 		if (selectedText is null) return;
-		var completionItem = selectedText["default_value"].As<RefCountedContainer<CompletionItem>>().Item;
+		var completionItem = selectedText["default_value"].As<RefCountedContainer<IdeCompletionItem>>().Item;
 		_ = Task.GodotRun(async () =>
 		{
-			await _ideApplyCompletionService.ApplyCompletion(_currentFile, completionItem);
+			await _ideApplyCompletionService.ApplyCompletion(_currentFile, completionItem.CompletionItem, completionItem.Document);
 		});
 		CancelCodeCompletion();
 	}
 
+	private record struct IdeCompletionItem(CompletionItem CompletionItem, Document Document);
 	private void OnCodeCompletionRequested()
 	{
 		var (caretLine, caretColumn) = GetCaretPosition();
@@ -443,10 +438,10 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		{
 			var linePos = new LinePosition(caretLine, caretColumn);
 				
-			var completions = await _roslynAnalysis.GetCodeCompletionsForDocumentAtPosition(_currentFile, linePos);
+			var completionsResult = await _roslynAnalysis.GetCodeCompletionsForDocumentAtPosition(_currentFile, linePos);
 			await this.InvokeAsync(() =>
 			{
-				foreach (var completionItem in completions.ItemsList)
+				foreach (var completionItem in completionsResult.CompletionList.ItemsList)
 				{
 					var symbolKindString = CollectionExtensions.GetValueOrDefault(completionItem.Properties, "SymbolKind");
 					var symbolKind = symbolKindString is null ? null : (SymbolKind?)int.Parse(symbolKindString);
@@ -465,14 +460,14 @@ public partial class SharpIdeCodeEdit : CodeEdit
 						_ => CodeCompletionKind.PlainText
 					};
 					var isKeyword = wellKnownTags.Contains(WellKnownTags.Keyword);
-					AddCodeCompletionOption(godotCompletionType, completionItem.DisplayText, completionItem.DisplayText, icon: icon, value: new RefCountedContainer<CompletionItem>(completionItem));
 					var isExtensionMethod = wellKnownTags.Contains(WellKnownTags.ExtensionMethod);
 					var icon = GetIconForCompletion(symbolKind, typeKind, accessibilityModifier, isKeyword, isExtensionMethod);
+					AddCodeCompletionOption(godotCompletionType, completionItem.DisplayText, completionItem.DisplayText, icon: icon, value: new RefCountedContainer<IdeCompletionItem>(new IdeCompletionItem(completionItem, completionsResult.Document)));
 				}
 				// partially working - displays menu only when caret is what CodeEdit determines as valid
 				UpdateCodeCompletionOptions(true);
 				//RequestCodeCompletion(true);
-				GD.Print($"Found {completions.ItemsList.Count} completions, displaying menu");
+				GD.Print($"Found {completionsResult.CompletionList.ItemsList.Count} completions, displaying menu");
 			});
 		});
 	}

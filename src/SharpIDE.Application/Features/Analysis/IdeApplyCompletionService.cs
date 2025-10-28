@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Completion;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
 using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.SolutionDiscovery;
 
@@ -9,9 +10,9 @@ public class IdeApplyCompletionService(RoslynAnalysis roslynAnalysis, FileChange
 	private readonly RoslynAnalysis _roslynAnalysis = roslynAnalysis;
 	private readonly FileChangedService _fileChangedService = fileChangedService;
 
-	public async Task ApplyCompletion(SharpIdeFile file, CompletionItem completionItem)
+	public async Task ApplyCompletion(SharpIdeFile file, CompletionItem completionItem, Document document)
 	{
-		var (updatedDocumentText, newLinePosition) = await _roslynAnalysis.GetCompletionApplyChanges(file, completionItem);
+		var (updatedDocumentText, newLinePosition) = await _roslynAnalysis.GetCompletionApplyChanges(file, completionItem, document);
 		await _fileChangedService.SharpIdeFileChanged(file, updatedDocumentText, FileChangeType.CompletionChange, newLinePosition);
 	}
 }

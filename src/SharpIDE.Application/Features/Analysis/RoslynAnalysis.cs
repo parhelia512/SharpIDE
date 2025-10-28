@@ -499,14 +499,18 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 		return result;
 	}
 
-	public async Task<CompletionList> GetCodeCompletionsForDocumentAtPosition(SharpIdeFile fileModel, LinePosition linePosition)
+	// We store the document here, so that we have the correct version of the document when we compute completions
+	// This may not be the best way to do this, but it seems to work okay. It may only be a problem because I continue to update the doc in the workspace as the user continues typing, filtering the completion
+	// I could possibly pause updating the document while the completion list is open, but that seems more complex - handling accepted vs cancelled completions etc
+	public record IdeCompletionListResult(Document Document, CompletionList CompletionList);
+	public async Task<IdeCompletionListResult> GetCodeCompletionsForDocumentAtPosition(SharpIdeFile fileModel, LinePosition linePosition)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(GetCodeCompletionsForDocumentAtPosition)}");
 		await _solutionLoadedTcs.Task;
 		var document = await GetDocumentForSharpIdeFile(fileModel);
 		Guard.Against.Null(document, nameof(document));
 		var completions = await GetCompletionsAsync(document, linePosition).ConfigureAwait(false);
-		return completions;
+		return new IdeCompletionListResult(document, completions);
 	}
 
 	public async Task<ImmutableArray<CodeAction>> GetCodeFixesForDocumentAtPosition(SharpIdeFile fileModel, LinePosition linePosition, CancellationToken cancellationToken = default)
@@ -602,12 +606,11 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 		return shouldTrigger;
 	}
 
-	public async Task<(string updatedText, SharpIdeFileLinePosition sharpIdeFileLinePosition)> GetCompletionApplyChanges(SharpIdeFile file, CompletionItem completionItem, CancellationToken cancellationToken = default)
+	public async Task<(string updatedText, SharpIdeFileLinePosition sharpIdeFileLinePosition)> GetCompletionApplyChanges(SharpIdeFile file, CompletionItem completionItem, Document document, CancellationToken cancellationToken = default)
 	{
-		var documentId = _workspace!.CurrentSolution.GetDocumentIdsWithFilePath(file.Path).Single();
-		var document = SolutionExtensions.GetRequiredDocument(_workspace.CurrentSolution, documentId);
+		//var documentId = _workspace!.CurrentSolution.GetDocumentIdsWithFilePath(file.Path).Single();
+		//var document = SolutionExtensions.GetRequiredDocument(_workspace.CurrentSolution, documentId);
 		var completionService = CompletionService.GetService(document) ?? throw new InvalidOperationException("Completion service is not available for the document.");
-
 		var completionChange = await completionService.GetChangeAsync(document, completionItem, commitCharacter: '.', cancellationToken: cancellationToken);
 		var sourceText = await document.GetTextAsync(cancellationToken);
 		var newText = sourceText.WithChanges(completionChange.TextChange);
