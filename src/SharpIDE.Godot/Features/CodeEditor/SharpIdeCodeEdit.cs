@@ -80,6 +80,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		SymbolLookup += OnSymbolLookup;
 		LinesEditedFrom += OnLinesEditedFrom;
 		GlobalEvents.Instance.SolutionAltered.Subscribe(OnSolutionAltered);
+		SetCodeRegionTags("#region", "#endregion");
 	}
 
 	private CancellationTokenSource _solutionAlteredCts = new();
