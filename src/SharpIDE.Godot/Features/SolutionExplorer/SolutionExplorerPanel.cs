@@ -326,18 +326,9 @@ public partial class SolutionExplorerPanel : MarginContainer
 			newStartingIndex += folderCount;
 		}
 		
-		var treeParent = treeItem.GetParent()!;
 		await this.InvokeAsync(() =>
 		{
-			// The API for moving TreeItems is painful - we can only move an Item before or after another item
-			treeParent.RemoveChild(treeItem);
-			var newItem = tree.CreateItem(treeParent, newStartingIndex);
-			newItem.SetText(0, treeItem.GetText(0));
-			newItem.SetIcon(0, treeItem.GetIcon(0));
-			newItem.SetMetadata(0, treeItem.GetMetadata(0));
-			if (isFile) newItem.SetCustomColor(0, treeItem.GetCustomColor(0));
-			treeItemContainer.Value = newItem;
-			treeItem.Free();
+			treeItem.MoveToIndexInParent(oldStartingIndex, newStartingIndex);
 		});
 	}
 

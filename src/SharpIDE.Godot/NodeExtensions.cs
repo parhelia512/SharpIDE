@@ -52,6 +52,17 @@ public static class NodeExtensions
             }
             return null;
         }
+        public void MoveToIndexInParent(int currentIndex, int newIndex)
+        {
+            var parent = treeItem.GetParent()!;
+            if (newIndex == currentIndex) throw new ArgumentException("New index is the same as current index", nameof(newIndex));
+
+            var target = parent.GetChild(newIndex);
+            if (newIndex < currentIndex)
+                treeItem.MoveBefore(target);
+            else
+                treeItem.MoveAfter(target);
+        }
     }
     extension(Node node)
     {
