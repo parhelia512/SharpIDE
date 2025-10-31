@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://duyxg107nfh2f"]
+[gd_scene load_steps=3 format=3 uid="uid://duyxg107nfh2f"]
 
 [ext_resource type="Script" uid="uid://du4v3dyf0y3d8" path="res://Features/Nuget/NugetPanel.cs" id="1_t4nyu"]
+[ext_resource type="PackedScene" uid="uid://cqc2xlt81ju8s" path="res://Features/Nuget/PackageEntry.tscn" id="2_arg4f"]
 
 [node name="NugetPanel" type="Control"]
 layout_mode = 3
@@ -66,37 +67,34 @@ size_flags_vertical = 3
 layout_mode = 2
 text = "Installed Packages in Application: 4"
 
-[node name="InstalledPackagesItemList" type="ItemList" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+[node name="InstalledPackagesVBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-auto_height = true
-item_count = 4
-item_0/text = "OpenTelemetry.Exporter.OpenTelemetryProtocol"
-item_1/text = "OpenTelemetry.Extensions.Hosting"
-item_2/text = "OpenTelemetry.Instrumentation.Http"
-item_3/text = "OpenTelemetry.Instrumentation.Runtime"
+
+[node name="PackageEntry" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer/InstalledPackagesVBoxContainer" instance=ExtResource("2_arg4f")]
+layout_mode = 2
 
 [node name="Label2" type="Label" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 text = "Implicitly Installed Packages in Application: 10"
 
-[node name="ImplicitlyInstalledPackagesItemList" type="ItemList" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+[node name="ImplicitlyInstalledPackagesVBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-auto_height = true
-item_count = 3
-item_0/text = "Microsoft.Extensions.Configuration"
-item_1/text = "Microsoft.Extensions.Configuration.Abstractions"
-item_2/text = "Microsoft.Extensions.Configuration.Binder"
+
+[node name="PackageEntry" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer/ImplicitlyInstalledPackagesVBoxContainer" instance=ExtResource("2_arg4f")]
+layout_mode = 2
 
 [node name="Label3" type="Label" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 text = "Available Packages: Top 100"
 
-[node name="AvailablePackagesItemList" type="ItemList" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+[node name="AvailablePackagesVBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-auto_height = true
-item_count = 2
-item_0/text = "Azure.Core"
-item_1/text = "coverlet.collector"
+
+[node name="PackageEntry" parent="VBoxContainer/MarginContainer2/HSplitContainer/VBoxContainer/ScrollContainer/VBoxContainer/AvailablePackagesVBoxContainer" instance=ExtResource("2_arg4f")]
+layout_mode = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/MarginContainer2/HSplitContainer"]
 layout_mode = 2
