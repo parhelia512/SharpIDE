@@ -17,8 +17,8 @@ public interface IExpandableSharpIdeNode
 
 public interface IFolderOrProject : IExpandableSharpIdeNode, IChildSharpIdeNode
 {
-	public ObservableSortedSet<SharpIdeFolder> Folders { get; init; }
-	public ObservableSortedSet<SharpIdeFile> Files { get; init; }
+	public ObservableList<SharpIdeFolder> Folders { get; init; }
+	public ObservableList<SharpIdeFile> Files { get; init; }
 	public string Name { get; set; }
 	public string ChildNodeBasePath { get; }
 }
@@ -50,9 +50,9 @@ public class SharpIdeSolutionModel : ISharpIdeNode, IExpandableSharpIdeNode
 	public required string DirectoryPath { get; set; }
 	public required ObservableHashSet<SharpIdeProjectModel> Projects { get; set; }
 	public required ObservableHashSet<SharpIdeSolutionFolder> SlnFolders { get; set; }
-	public required HashSet<SharpIdeProjectModel> AllProjects { get; set; }
-	public required HashSet<SharpIdeFile> AllFiles { get; set; }
-	public required HashSet<SharpIdeFolder> AllFolders { get; set; }
+	public required HashSet<SharpIdeProjectModel> AllProjects { get; set; } // TODO: this isn't thread safe
+	public required HashSet<SharpIdeFile> AllFiles { get; set; } // TODO: this isn't thread safe
+	public required HashSet<SharpIdeFolder> AllFolders { get; set; } // TODO: this isn't thread safe
 	public bool Expanded { get; set; }
 
 	[SetsRequiredMembers]
@@ -96,8 +96,8 @@ public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChi
 	public required string Name { get; set; }
 	public required string FilePath { get; set; }
 	public string ChildNodeBasePath => Path.GetDirectoryName(FilePath)!;
-	public required ObservableSortedSet<SharpIdeFolder> Folders { get; init; }
-	public required ObservableSortedSet<SharpIdeFile> Files { get; init; }
+	public required ObservableList<SharpIdeFolder> Folders { get; init; }
+	public required ObservableList<SharpIdeFile> Files { get; init; }
 	public bool Expanded { get; set; }
 	public required IExpandableSharpIdeNode Parent { get; set; }
 	public bool Running { get; set; }
@@ -110,8 +110,8 @@ public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChi
 		Parent = parent;
 		Name = projectModel.Model.ActualDisplayName;
 		FilePath = projectModel.FullFilePath;
-		Files = new ObservableSortedSet<SharpIdeFile>(TreeMapperV2.GetFiles(projectModel.FullFilePath, this, allFiles), SharpIdeFileComparer.Instance);
-		Folders = new ObservableSortedSet<SharpIdeFolder>(TreeMapperV2.GetSubFolders(projectModel.FullFilePath, this, allFiles, allFolders), SharpIdeFolderComparer.Instance);
+		Files = new ObservableList<SharpIdeFile>(TreeMapperV2.GetFiles(projectModel.FullFilePath, this, allFiles));
+		Folders = new ObservableList<SharpIdeFolder>(TreeMapperV2.GetSubFolders(projectModel.FullFilePath, this, allFiles, allFolders));
 		MsBuildEvaluationProjectTask = ProjectEvaluation.GetProject(projectModel.FullFilePath);
 		allProjects.Add(this);
 	}

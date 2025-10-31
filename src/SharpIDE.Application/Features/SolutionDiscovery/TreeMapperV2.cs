@@ -52,7 +52,9 @@ public static class TreeMapperV2
 			allFolders.Add(subFolder);
 		});
 
-		return subFolders.ToList();
+		var sharpIdeFolders = subFolders.ToList();
+		sharpIdeFolders.Sort(SharpIdeFolderComparer.Instance);
+		return sharpIdeFolders;
 	}
 
 	public static List<SharpIdeFile> GetFiles(string csprojectPath, SharpIdeProjectModel sharpIdeProjectModel, ConcurrentBag<SharpIdeFile> allFiles)
@@ -73,11 +75,13 @@ public static class TreeMapperV2
 			return [];
 		}
 
-		return fileInfos.Select(f => new SharpIdeFile(f.FullName, f.Name, parent, allFiles)
+		var sharpIdeFiles = fileInfos.Select(f => new SharpIdeFile(f.FullName, f.Name, parent, allFiles)
 		{
 			Path = f.FullName,
 			Name = f.Name,
 			Parent = parent
 		}).ToList();
+		sharpIdeFiles.Sort(SharpIdeFileComparer.Instance);
+		return sharpIdeFiles;
 	}
 }

@@ -108,7 +108,17 @@ public class IdeFileExternalChangeHandler
 		}
 
 		sharpIdeFile = new SharpIdeFile(filePath, Path.GetFileName(filePath), containingFolderOrProject, []);
-		containingFolderOrProject.Files.Add(sharpIdeFile);
+
+		var correctInsertionPosition = containingFolderOrProject.Files.list.BinarySearch(sharpIdeFile, SharpIdeFileComparer.Instance);
+		if (correctInsertionPosition < 0)
+		{
+			correctInsertionPosition = ~correctInsertionPosition;
+		}
+		else
+		{
+			throw new InvalidOperationException("File already exists in the containing folder or project");
+		}
+		containingFolderOrProject.Files.Insert(correctInsertionPosition, sharpIdeFile);
 		SolutionModel.AllFiles.Add(sharpIdeFile);
 
 		await _fileChangedService.SharpIdeFileAdded(sharpIdeFile, await File.ReadAllTextAsync(filePath));

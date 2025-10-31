@@ -203,7 +203,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 	        filesView.ObserveChanged()
 	            .SubscribeAwait(async (innerEvent, ct) => await (innerEvent.Action switch
 	            {
-	                NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value)),
+	                NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value, innerEvent.NewStartingIndex)),
 	                NotifyCollectionChangedAction.Remove => FreeTreeItem(innerEvent.OldItem.View.Value),
 	                _ => Task.CompletedTask
 	            })).AddTo(this);
@@ -236,7 +236,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 		filesView.ObserveChanged()
 			.SubscribeAwait(async (innerEvent, ct) => await (innerEvent.Action switch
 			{
-				NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, projectItem, innerEvent.NewItem.Value)),
+				NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, projectItem, innerEvent.NewItem.Value, innerEvent.NewStartingIndex)),
 				NotifyCollectionChangedAction.Remove => FreeTreeItem(innerEvent.OldItem.View.Value),
 				_ => Task.CompletedTask
 			})).AddTo(this);
@@ -275,7 +275,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 		filesView.ObserveChanged()
 			.SubscribeAwait(async (innerEvent, ct) => await (innerEvent.Action switch
 			{
-				NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value)),
+				NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value, innerEvent.NewStartingIndex)),
 				NotifyCollectionChangedAction.Remove => FreeTreeItem(innerEvent.OldItem.View.Value),
 				_ => Task.CompletedTask
 			})).AddTo(this);
@@ -283,9 +283,18 @@ public partial class SolutionExplorerPanel : MarginContainer
 	}
 
 	[RequiresGodotUiThread]
-	private TreeItem CreateFileTreeItem(Tree tree, TreeItem parent, SharpIdeFile sharpIdeFile)
+	private TreeItem CreateFileTreeItem(Tree tree, TreeItem parent, SharpIdeFile sharpIdeFile, int newStartingIndex = -1)
 	{
-		var fileItem = tree.CreateItem(parent);
+		// We need to offset the starting index by the number of non-file items (folders/projects) in the parent
+		// because the newStartingIndex is calculated based on all children, but we are only inserting files here
+		if (newStartingIndex >= 0)
+		{
+			var sharpIdeParent = sharpIdeFile.Parent as IFolderOrProject;
+			Guard.Against.Null(sharpIdeParent, nameof(sharpIdeParent));
+			var folderCount = sharpIdeParent.Folders.Count;
+			newStartingIndex += folderCount;
+		}
+		var fileItem = tree.CreateItem(parent, newStartingIndex);
 		fileItem.SetText(0, sharpIdeFile.Name);
 		fileItem.SetIcon(0, CsharpFileIcon); 
 		fileItem.SetCustomColor(0, GetColorForGitStatus(sharpIdeFile.GitStatus));
