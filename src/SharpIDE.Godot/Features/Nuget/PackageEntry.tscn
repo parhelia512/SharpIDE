@@ -39,14 +39,14 @@ layout_mode = 2
 [node name="PackageNameLabel" type="Label" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9490196, 0.9490196, 0.9490196, 1)
+theme_override_colors/font_color = Color(0.83137256, 0.83137256, 0.83137256, 1)
 theme_override_font_sizes/font_size = 16
 text = "OpenTelemetry.Exporter.OpenTelemetryProtocol"
 
 [node name="CurrentVersionLabel" type="Label" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.7411765)
+theme_override_colors/font_color = Color(0.6706895, 0.6706895, 0.6706895, 1)
 text = "1.12.0"
 
 [node name="SourceNameLabel" type="Label" parent="MarginContainer/HBoxContainer"]
