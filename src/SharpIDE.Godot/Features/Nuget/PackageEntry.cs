@@ -9,6 +9,7 @@ public partial class PackageEntry : MarginContainer
     private Label _currentVersionLabel = null!;
     private Label _latestVersionLabel = null!;
     private HBoxContainer _sourceNamesContainer = null!;
+    private TextureRect _packageIconTextureRect = null!;
     
     private static readonly Color Source_NugetOrg_Color = new Color("629655");
     private static readonly Color Source_2_Color = new Color("008989");
@@ -23,6 +24,7 @@ public partial class PackageEntry : MarginContainer
         _currentVersionLabel = GetNode<Label>("%CurrentVersionLabel");
         _latestVersionLabel = GetNode<Label>("%LatestVersionLabel");
         _sourceNamesContainer = GetNode<HBoxContainer>("%SourceNamesHBoxContainer");
+        _packageIconTextureRect = GetNode<TextureRect>("%PackageIconTextureRect");
         ApplyValues();
     }
     
@@ -33,11 +35,33 @@ public partial class PackageEntry : MarginContainer
         _currentVersionLabel.Text = string.Empty;
         //_latestVersionLabel.Text = $"Latest: {PackageResult.PackageSearchMetadata.vers.LatestVersion}";
         _sourceNamesContainer.QueueFreeChildren();
+        
+        var iconUrl = PackageResult.PackageSearchMetadata.IconUrl;
+        if (iconUrl != null)
+        {
+            var httpRequest = new HttpRequest(); // Godot's abstraction
+            AddChild(httpRequest);
+            httpRequest.RequestCompleted += (result, responseCode, headers, body) =>
+            {
+                if (responseCode is 200)
+                {
+                    var image = new Image();
+                    image.LoadPngFromBuffer(body);
+                    image.Resize(32, 32, Image.Interpolation.Lanczos);
+                    var loadedImageTexture = ImageTexture.CreateFromImage(image);
+                    _packageIconTextureRect.Texture = loadedImageTexture;
+                }
+                httpRequest.QueueFree();
+            };
+            httpRequest.Request(iconUrl.ToString());
+        }
+        
         foreach (var source in PackageResult.PackageSources)
         {
             var label = new Label { Text = source.Name };
             label.AddThemeColorOverride("font_color", source.Name switch
             {
+                // TODO: Make dynamic
                 "nuget.org" => Source_NugetOrg_Color,
                 "Microsoft Visual Studio Offline Packages" => Source_2_Color,
                 _ => Source_3_Color

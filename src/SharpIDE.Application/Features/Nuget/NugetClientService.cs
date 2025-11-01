@@ -49,6 +49,17 @@ public class NugetClientService
 			.Take(100)
 			.ToList();
 
+		// foreach (var package in topPackages)
+		// {
+		// 	var repository = Repository.Factory.GetCoreV3(package.PackageSources.Single());
+		// 	var packageMetadataResource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+		// 	var metadata = await packageMetadataResource.GetMetadataAsync(
+		// 		package.PackageSearchMetadata.Identity.Id, includePrerelease: _includePrerelease, includeUnlisted: false,
+		// 		cache, logger, cancellationToken).ConfigureAwait(false);
+		// 	;
+		// 	var packageByIdResource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
+		// }
+
 		// we need to find out if other package sources have the package too
 		foreach (var package in topPackages)
 		{
