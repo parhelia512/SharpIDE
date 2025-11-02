@@ -53,6 +53,21 @@ public partial class PackageEntry : MarginContainer
         if (PackageResult is null) return;
         _packageNameLabel.Text = PackageResult.PackageId;
         var installedPackagedInfo = PackageResult.InstalledNugetPackageInfo;
+        if (installedPackagedInfo?.DependentPackages is not null)
+        {
+            var transitiveOriginsGroupedByVersion = installedPackagedInfo.DependentPackages
+                .GroupBy(t => t.RequestedVersion)
+                .Select(g => new
+                {
+                    RequestedVersion = g.Key,
+                    PackageNames = g.Select(t => t.PackageName).ToList()
+                })
+                .ToList();
+            _button.TooltipText = $"""
+                                  Implicitly Referenced Versions
+                                  {string.Join("\n", transitiveOriginsGroupedByVersion.Select(t => $"{t.RequestedVersion} by {string.Join(", ", t.PackageNames)}"))}
+                                  """;
+        }
         _installedVersionLabel.Text = installedPackagedInfo?.IsTransitive is true ? $"({installedPackagedInfo?.Version.ToNormalizedString()})" : installedPackagedInfo?.Version.ToNormalizedString();
         var highestVersionPackageFromSource = PackageResult.PackageFromSources
             .MaxBy(p => p.PackageSearchMetadata.Identity.Version);

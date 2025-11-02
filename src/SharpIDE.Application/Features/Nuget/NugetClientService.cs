@@ -9,7 +9,7 @@ using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.Nuget;
 
-public record InstalledNugetPackageInfo(bool IsTransitive, NuGetVersion Version);
+public record InstalledNugetPackageInfo(bool IsTransitive, NuGetVersion Version, List<ProjectEvaluation.DependentPackage>? DependentPackages);
 public record IdePackageResult(string PackageId, List<IdePackageFromSourceResult> PackageFromSources, InstalledNugetPackageInfo? InstalledNugetPackageInfo);
 public record struct IdePackageFromSourceResult(IPackageSearchMetadata PackageSearchMetadata, PackageSource Source);
 public class NugetClientService
@@ -122,7 +122,7 @@ public class NugetClientService
 			var nugetVersionString = installedPackage.ResolvedVersion ?? installedPackage.RequestedVersion;
 			var nugetVersion = NuGetVersion.Parse(nugetVersionString);
 
-			var installedNugetPackageInfo = new InstalledNugetPackageInfo(isTransitive, nugetVersion);
+			var installedNugetPackageInfo = new InstalledNugetPackageInfo(isTransitive, nugetVersion, installedPackage.DependentPackages);
 			var idePackageResult = new IdePackageResult(installedPackage.Name, [], installedNugetPackageInfo);
 
 			foreach (var source in packageSources)

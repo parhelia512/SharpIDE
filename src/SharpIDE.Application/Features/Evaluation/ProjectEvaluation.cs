@@ -1,6 +1,7 @@
 ﻿using Ardalis.GuardClauses;
 using Microsoft.Build.Evaluation;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.Evaluation;
@@ -64,6 +65,12 @@ public static class ProjectEvaluation
 		public required string TargetFramework { get; set; }
 		public required bool IsTopLevel { get; set; }
 		public required bool IsAutoReferenced { get; set; }
+		public List<DependentPackage>? DependentPackages { get; set; }
+	}
+	public class DependentPackage
+	{
+		public required string PackageName { get; set; }
+		public required VersionRange RequestedVersion { get; set; }
 	}
 	public static async Task<List<InstalledPackage>> GetPackageReferencesForProject(SharpIdeProjectModel projectModel, bool includeTransitive = true)
 	{
@@ -88,6 +95,7 @@ public static class ProjectEvaluation
 	private static List<InstalledPackage> GetPackagesFromAssetsFile(LockFile assetsFile, bool includeTransitive)
 	{
 		var packages = new List<InstalledPackage>();
+		var dependencyMap = NugetDependencyGraph.GetPackageDependencyMap(assetsFile);
 
 		foreach (var target in assetsFile.Targets.Where(t => t.RuntimeIdentifier == null))
 		{
@@ -102,22 +110,30 @@ public static class ProjectEvaluation
 				.Select(s => s.Name)
 				.ToHashSet();
 
-			foreach (var library in target.Libraries.Where(l => l.Type == "package"))
+			foreach (var lockFileTargetLibrary in target.Libraries.Where(l => l.Type == "package"))
 			{
-				var isTopLevel = topLevelDependencies.Contains(library.Name);
+				var isTopLevel = topLevelDependencies.Contains(lockFileTargetLibrary.Name);
 				if (!includeTransitive && !isTopLevel) continue;
 
 				var dependency = tfmInfo.Dependencies
-					.FirstOrDefault(d => d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+					.FirstOrDefault(d => d.Name.Equals(lockFileTargetLibrary.Name, StringComparison.OrdinalIgnoreCase));
+
+				var dependents = dependencyMap.GetValueOrDefault(lockFileTargetLibrary.Name, []);
+				var mappedDependents = dependents.Select(d => new DependentPackage
+				{
+					PackageName = d.PackageName,
+					RequestedVersion = d.PackageDependency.VersionRange
+				}).ToList();
 
 				packages.Add(new InstalledPackage
 				{
-					Name = library.Name,
+					Name = lockFileTargetLibrary.Name,
 					RequestedVersion = dependency?.LibraryRange.VersionRange?.ToString() ?? "",
-					ResolvedVersion = library.Version?.ToString(),
+					ResolvedVersion = lockFileTargetLibrary.Version?.ToString(),
 					TargetFramework = tfm,
 					IsTopLevel = isTopLevel,
-					IsAutoReferenced = dependency?.AutoReferenced ?? false
+					IsAutoReferenced = dependency?.AutoReferenced ?? false,
+					DependentPackages = mappedDependents
 				});
 			}
 		}
