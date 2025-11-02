@@ -44,6 +44,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.Shared.VSCodeDebugProtocol" Version="18.0.10427.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageVersion Include="MudBlazor" Version="8.12.0" />
+    <PackageVersion Include="NuGet.ProjectModel" Version="7.1.0-preview.1.42" />
     <PackageVersion Include="NuGet.Protocol" Version="7.1.0-preview.1.42" />
     <PackageVersion Include="ObservableCollections" Version="3.3.4" />
     <PackageVersion Include="ObservableCollections.R3" Version="3.3.4" />

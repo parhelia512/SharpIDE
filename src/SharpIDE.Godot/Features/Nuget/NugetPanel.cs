@@ -1,4 +1,5 @@
 using Godot;
+using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.Nuget;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
@@ -32,7 +33,29 @@ public partial class NugetPanel : Control
         {
             await Task.Delay(300);
             var result = await _nugetClientService.GetTop100Results(Solution!.DirectoryPath);
-            ;
+            
+            _ = Task.GodotRun(async () =>
+            {
+                var project = Solution.AllProjects.First(s => s.Name == "ProjectB");
+                await project.MsBuildEvaluationProjectTask;
+                var installedPackages = await ProjectEvaluation.GetPackageReferencesForProject(project);
+                await this.InvokeAsync(() => _installedPackagesVboxContainer.QueueFreeChildren());
+                var idePackageResult = await _nugetClientService.GetPackagesForInstalledPackages(project.ChildNodeBasePath, installedPackages);
+                var scenes = idePackageResult.Select(s =>
+                {
+                    var scene = _packageEntryScene.Instantiate<PackageEntry>();
+                    scene.PackageResult = s;
+                    scene.PackageSelected += OnPackageSelected;
+                    return scene;
+                }).ToList();
+                await this.InvokeAsync(() =>
+                {
+                    foreach (var scene in scenes)
+                    {
+                        _installedPackagesVboxContainer.AddChild(scene);
+                    }
+                });
+            });
             await this.InvokeAsync(() => _availablePackagesItemList.QueueFreeChildren());
             var scenes = result.Select(s =>
             {

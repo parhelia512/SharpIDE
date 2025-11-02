@@ -3,6 +3,8 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.Nuget;
@@ -105,5 +107,43 @@ public class NugetClientService
 			var metadataList = metadata.ToList();
 			metadataList.Reverse();
 			return metadataList;
+	}
+
+	public async Task<List<IdePackageResult>> GetPackagesForInstalledPackages(string directoryPath, List<ProjectEvaluation.InstalledPackage> installedPackages, CancellationToken cancellationToken = default)
+	{
+		var settings = Settings.LoadDefaultSettings(root: directoryPath);
+		var packageSourceProvider = new PackageSourceProvider(settings);
+		var packageSources = packageSourceProvider.LoadPackageSources().Where(p => p.IsEnabled).ToList();
+
+		var packagesResult = new List<IdePackageResult>();
+		foreach (var installedPackage in installedPackages)
+		{
+			var idePackageResult = new IdePackageResult(installedPackage.Name, []);
+			var nugetVersionString = installedPackage.ResolvedVersion ?? installedPackage.RequestedVersion;
+			var nugetVersion = NuGetVersion.Parse(nugetVersionString);
+			var packageIdentity = new PackageIdentity(installedPackage.Name, nugetVersion);
+
+
+			foreach (var source in packageSources)
+			{
+				var repository = Repository.Factory.GetCoreV3(source.Source);
+				var metadataResource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+
+				if (metadataResource == null)
+					continue;
+
+				var foundPackage = await metadataResource.GetMetadataAsync(packageIdentity, _sourceCacheContext, _nugetLogger, cancellationToken).ConfigureAwait(false);
+				if (foundPackage != null)
+				{
+					idePackageResult.PackageFromSources.Add(new IdePackageFromSourceResult(foundPackage, source));
+				}
+			}
+
+			if (idePackageResult.PackageFromSources.Count > 0)
+			{
+				packagesResult.Add(idePackageResult);
+			}
+		}
+		return packagesResult;
 	}
 }

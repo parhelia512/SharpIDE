@@ -1,5 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using Microsoft.Build.Evaluation;
+using NuGet.ProjectModel;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.Evaluation;
@@ -53,6 +54,75 @@ public static class ProjectEvaluation
 			return newGuid;
 		}
 		return Guid.Parse(userSecretsId);
+	}
+
+	public class InstalledPackage
+	{
+		public required string Name { get; set; }
+		public required string RequestedVersion { get; set; }
+		public required string? ResolvedVersion { get; set; }
+		public required string TargetFramework { get; set; }
+		public required bool IsTopLevel { get; set; }
+		public required bool IsAutoReferenced { get; set; }
+	}
+	public static async Task<List<InstalledPackage>> GetPackageReferencesForProject(SharpIdeProjectModel projectModel, bool includeTransitive = true)
+	{
+		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(ProjectEvaluation)}.{nameof(GetPackageReferencesForProject)}");
+		Guard.Against.Null(projectModel, nameof(projectModel));
+
+		var project = _projectCollection.GetLoadedProjects(projectModel.FilePath).Single();
+
+		var assetsPath = project.GetPropertyValue("ProjectAssetsFile");
+
+		if (File.Exists(assetsPath) is false)
+		{
+			throw new FileNotFoundException("Could not find project.assets.json file", assetsPath);
+		}
+		var lockFileFormat = new LockFileFormat();
+		var lockFile = lockFileFormat.Read(assetsPath);
+		var packages = GetPackagesFromAssetsFile(lockFile, includeTransitive);
+		return packages;
+	}
+
+	// ChatGPT Special
+	private static List<InstalledPackage> GetPackagesFromAssetsFile(LockFile assetsFile, bool includeTransitive)
+	{
+		var packages = new List<InstalledPackage>();
+
+		foreach (var target in assetsFile.Targets.Where(t => t.RuntimeIdentifier == null))
+		{
+			var tfm = target.TargetFramework.GetShortFolderName();
+			var tfmInfo = assetsFile.PackageSpec.TargetFrameworks
+				.FirstOrDefault(t => t.FrameworkName.Equals(target.TargetFramework));
+
+			if (tfmInfo == null) continue;
+
+			var topLevelDependencies = tfmInfo.Dependencies
+				.DistinctBy(s => s.Name)
+				.Select(s => s.Name)
+				.ToHashSet();
+
+			foreach (var library in target.Libraries.Where(l => l.Type == "package"))
+			{
+				var isTopLevel = topLevelDependencies.Contains(library.Name);
+				if (!includeTransitive && !isTopLevel) continue;
+
+				var dependency = tfmInfo.Dependencies
+					.FirstOrDefault(d => d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+
+				packages.Add(new InstalledPackage
+				{
+					Name = library.Name,
+					RequestedVersion = dependency?.LibraryRange.VersionRange?.ToString() ?? "",
+					ResolvedVersion = library.Version?.ToString(),
+					TargetFramework = tfm,
+					IsTopLevel = isTopLevel,
+					IsAutoReferenced = dependency?.AutoReferenced ?? false
+				});
+			}
+		}
+
+		return packages;
 	}
 
 }
