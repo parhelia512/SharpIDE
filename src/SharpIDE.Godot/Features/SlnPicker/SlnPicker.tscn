@@ -68,7 +68,7 @@ text = "SharpIDE"
 [node name="Label2" type="Label" parent="VSplitContainer/Panel2/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5689727, 0.56897277, 0.5689727, 1)
-text = "v1.0.0"
+text = "v0.1.0"
 
 [node name="Panel" type="Panel" parent="VSplitContainer"]
 layout_mode = 2
