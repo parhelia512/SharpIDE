@@ -31,6 +31,7 @@ public static class AppStateLoader
 
     public static void SaveAppStateToConfigFile(AppState appState)
     {
+        Guard.Against.Null(appState, nameof(appState));
         var configFilePath = GetConfigFilePath();
         using var stream = File.Create(configFilePath);
         JsonSerializer.Serialize(stream, appState);
