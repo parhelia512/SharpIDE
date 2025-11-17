@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6xurjdabssao"]
+
+[ext_resource type="Texture2D" uid="uid://ctwb5vyjuy5m1" path="res://Resources/settings.svg" id="1_0ups8"]
+
+[node name="SettingsButton" type="Button"]
+size_flags_vertical = 4
+icon = ExtResource("1_0ups8")
+icon_alignment = 1
