@@ -46,7 +46,6 @@ public partial class TestExplorerPanel : Control
             await _buildService.MsBuildAsync(solution.FilePath);
         }
         var testNodes = await _testRunnerService.DiscoverTests(solution);
-        testNodes.ForEach(s => GD.Print(s.DisplayName));
         var scenes = testNodes.Select(s =>
         {
             var entry = _testNodeEntryScene.Instantiate<TestNodeEntry>();

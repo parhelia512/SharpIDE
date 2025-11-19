@@ -1,4 +1,5 @@
-﻿using SharpIDE.Application.Features.Analysis;
+﻿using Microsoft.Extensions.Logging;
+using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Application.Features.Testing.Client;
@@ -6,9 +7,10 @@ using SharpIDE.Application.Features.Testing.Client.Dtos;
 
 namespace SharpIDE.Application.Features.Testing;
 
-public class TestRunnerService(RoslynAnalysis roslynAnalysis)
+public class TestRunnerService(RoslynAnalysis roslynAnalysis, ILogger<TestRunnerService> logger)
 {
 	private readonly RoslynAnalysis _roslynAnalysis = roslynAnalysis;
+	private readonly ILogger<TestRunnerService> _logger = logger;
 
 	public async Task<List<TestNode>> DiscoverTests(SharpIdeSolutionModel solutionModel)
 	{
@@ -29,7 +31,7 @@ public class TestRunnerService(RoslynAnalysis roslynAnalysis)
 			await client.ExitAsync();
 			allDiscoveredTestNodes.AddRange(testNodeUpdates.Select(tn => tn.Node));
 		}
-
+		_logger.LogInformation("Discovered {DiscoveredTestCount} tests", allDiscoveredTestNodes.Count);
 		return allDiscoveredTestNodes;
 	}
 
