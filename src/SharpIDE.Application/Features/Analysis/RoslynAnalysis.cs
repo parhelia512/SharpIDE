@@ -1019,6 +1019,7 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 
 	private static Project GetProjectForSharpIdeProjectModel(SharpIdeProjectModel projectModel)
 	{
+		Guard.Against.Null(projectModel);
 		var projectsForProjectPath = _workspace!.CurrentSolution.Projects.Where(s => s.FilePath == projectModel.FilePath).ToList();
 		if (projectsForProjectPath.Count is 0) throw new InvalidOperationException($"No project found in workspace for project path '{projectModel.FilePath}'");
 		if (projectsForProjectPath.Count is 1)
