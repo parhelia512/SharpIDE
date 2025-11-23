@@ -927,39 +927,29 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 		Guard.Against.Null(fileModel, nameof(fileModel));
 		Guard.Against.NullOrEmpty(newContent, nameof(newContent));
 
-		var project = GetProjectForSharpIdeFile(fileModel);
-
-		var sourceText = SourceText.From(newContent, Encoding.UTF8);
-		var document = fileModel switch
+		var documentId = _workspace!.CurrentSolution.GetDocumentIdsWithFilePath(fileModel.Path).SingleOrDefault();
+		if (documentId is null)
 		{
-			{ IsRazorFile: true } => project.AdditionalDocuments.Single(s => s.FilePath == fileModel.Path),
-			{ IsCsharpFile: true } => project.Documents.Single(s => s.FilePath == fileModel.Path),
-			_ => throw new InvalidOperationException("UpdateDocument failed: File is not in workspace")
-		};
+			_logger.LogWarning("UpdateDocument failed: Document '{DocumentPath}' not found in workspace", fileModel.Path);
+			return;
+		}
 
-		var oldText = await document.GetTextAsync();
-
-		// Compute minimal text changes
-		var changes = sourceText.GetChangeRanges(oldText);
-		if (changes.Count == 0)
-			return; // No changes, nothing to apply
-
-		var newText = oldText.WithChanges(sourceText.GetTextChanges(oldText));
+		var newText = SourceText.From(newContent, Encoding.UTF8);
 
 		// We don't blow up if the document is not in the workspace - this would happen e.g. for files that are excluded.
 		// Roslyn implementations seem to handle this with a Misc Files workspace. TODO: Investigate
 		var currentSolution = _workspace!.CurrentSolution;
-		if (currentSolution.ContainsDocument(document.Id))
+		if (currentSolution.ContainsDocument(documentId))
 		{
-			_workspace.OnDocumentTextChanged(document.Id, newText, PreservationMode.PreserveIdentity, requireDocumentPresent: false);
+			_workspace.OnDocumentTextChanged(documentId, newText, PreservationMode.PreserveIdentity, requireDocumentPresent: false);
 		}
-		else if (currentSolution.ContainsAdditionalDocument(document.Id))
+		else if (currentSolution.ContainsAdditionalDocument(documentId))
 		{
-			_workspace.OnAdditionalDocumentTextChanged(document.Id, newText, PreservationMode.PreserveIdentity);
+			_workspace.OnAdditionalDocumentTextChanged(documentId, newText, PreservationMode.PreserveIdentity);
 		}
-		else if (currentSolution.ContainsAnalyzerConfigDocument(document.Id))
+		else if (currentSolution.ContainsAnalyzerConfigDocument(documentId))
 		{
-			_workspace.OnAnalyzerConfigDocumentTextChanged(document.Id, newText, PreservationMode.PreserveIdentity);
+			_workspace.OnAnalyzerConfigDocumentTextChanged(documentId, newText, PreservationMode.PreserveIdentity);
 		}
 	}
 
@@ -1032,13 +1022,14 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 		await _solutionLoadedTcs.Task;
 		Guard.Against.Null(fileModel, nameof(fileModel));
 
-		var documentId = _workspace!.CurrentSolution.GetDocumentIdsWithFilePath(fileModel.Path).Single();
-		var documentKind = _workspace.CurrentSolution.GetDocumentKind(documentId);
-		if (documentKind is null)
+		var documentId = _workspace!.CurrentSolution.GetDocumentIdsWithFilePath(fileModel.Path).SingleOrDefault();
+		if (documentId is null)
 		{
-			_logger.LogError("Attempted to remove document not in workspace: '{DocumentPath}'", fileModel.Path);
+			_logger.LogWarning("RemoveDocument failed: Document '{DocumentPath}' not found in workspace", fileModel.Path);
 			return;
 		}
+		var documentKind = _workspace.CurrentSolution.GetDocumentKind(documentId);
+		Guard.Against.Null(documentKind);
 
 		switch (documentKind)
 		{
