@@ -99,26 +99,32 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private readonly CancellationSeries _solutionAlteredCancellationTokenSeries = new();
 	private async Task OnSolutionAltered()
 	{
-		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(SharpIdeCodeEdit)}.{nameof(OnSolutionAltered)}");
-		if (_currentFile is null) return;
-		if (_fileDeleted) return;
-		GD.Print($"[{_currentFile.Name}] Solution altered, updating project diagnostics for file");
-		var newCt = _solutionAlteredCancellationTokenSeries.CreateNext();
-		var hasFocus = this.InvokeAsync(HasFocus);
-		var documentSyntaxHighlighting = _roslynAnalysis.GetDocumentSyntaxHighlighting(_currentFile, newCt);
-		var razorSyntaxHighlighting = _roslynAnalysis.GetRazorDocumentSyntaxHighlighting(_currentFile, newCt);
-		await Task.WhenAll(documentSyntaxHighlighting, razorSyntaxHighlighting).WaitAsync(newCt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-		if (newCt.IsCancellationRequested) return;
-		var documentDiagnosticsTask = _roslynAnalysis.GetDocumentDiagnostics(_currentFile, newCt);
-		await this.InvokeAsync(async () => SetSyntaxHighlightingModel(await documentSyntaxHighlighting, await razorSyntaxHighlighting));
-		await documentDiagnosticsTask.AsTask().ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-		if (newCt.IsCancellationRequested) return;
-		var documentDiagnostics = await documentDiagnosticsTask;
-		await this.InvokeAsync(() => SetDiagnostics(documentDiagnostics));
-		if (await hasFocus)
+		try
 		{
-			await _roslynAnalysis.UpdateProjectDiagnosticsForFile(_currentFile, newCt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+			using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(SharpIdeCodeEdit)}.{nameof(OnSolutionAltered)}");
+			if (_currentFile is null) return;
+			if (_fileDeleted) return;
+			GD.Print($"[{_currentFile.Name}] Solution altered, updating project diagnostics for file");
+			var newCt = _solutionAlteredCancellationTokenSeries.CreateNext();
+			var hasFocus = this.InvokeAsync(HasFocus);
+			var documentSyntaxHighlighting = _roslynAnalysis.GetDocumentSyntaxHighlighting(_currentFile, newCt);
+			var razorSyntaxHighlighting = _roslynAnalysis.GetRazorDocumentSyntaxHighlighting(_currentFile, newCt);
+			await Task.WhenAll(documentSyntaxHighlighting, razorSyntaxHighlighting).WaitAsync(newCt);
 			if (newCt.IsCancellationRequested) return;
+			var documentDiagnosticsTask = _roslynAnalysis.GetDocumentDiagnostics(_currentFile, newCt);
+			await this.InvokeAsync(async () => SetSyntaxHighlightingModel(await documentSyntaxHighlighting, await razorSyntaxHighlighting));
+			var documentDiagnostics = await documentDiagnosticsTask;
+			if (newCt.IsCancellationRequested) return;
+			await this.InvokeAsync(() => SetDiagnostics(documentDiagnostics));
+			if (await hasFocus)
+			{
+				await _roslynAnalysis.UpdateProjectDiagnosticsForFile(_currentFile, newCt);
+				if (newCt.IsCancellationRequested) return;
+			}
+		}
+		catch (Exception e) when (e is OperationCanceledException)
+		{
+			// Ignore
 		}
 	}
 
