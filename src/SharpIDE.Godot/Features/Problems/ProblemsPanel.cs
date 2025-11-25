@@ -36,7 +36,6 @@ public partial class ProblemsPanel : Control
             .Where(s => s is not null)
             .Subscribe(s =>
             {
-                GD.Print($"ProblemsPanel: Solution changed to {s?.Name ?? "null"}");
                 _projects.RemoveRange(_projects);
                 _projects.AddRange(s!.AllProjects);
             }).AddTo(this);
