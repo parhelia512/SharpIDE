@@ -30,7 +30,7 @@ public partial class RunningTasksDisplay : HBoxContainer
     public override void _ExitTree()
     {
         _activityMonitor.ActivityStarted.Unsubscribe(OnActivityStarted);
-        _activityMonitor.ActivityStarted.Unsubscribe(OnActivityStopped);
+        _activityMonitor.ActivityStopped.Unsubscribe(OnActivityStopped);
         
     }
 
