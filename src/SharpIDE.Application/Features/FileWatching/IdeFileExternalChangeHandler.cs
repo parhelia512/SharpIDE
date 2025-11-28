@@ -1,4 +1,5 @@
-﻿using Ardalis.GuardClauses;
+﻿using System.Collections.Immutable;
+using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
 using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.SolutionDiscovery;
@@ -24,6 +25,7 @@ public class IdeFileExternalChangeHandler
 		GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryCreated.Subscribe(OnFolderCreated);
 		GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryDeleted.Subscribe(OnFolderDeleted);
 		GlobalEvents.Instance.FileSystemWatcherInternal.DirectoryRenamed.Subscribe(OnFolderRenamed);
+		GlobalEvents.Instance.AnalyzerDllsChanged.Subscribe(OnAnalyzerDllsChanged);
 	}
 
 	private async Task OnFileRenamed(string oldFilePath, string newFilePath)
@@ -128,5 +130,10 @@ public class IdeFileExternalChangeHandler
 		{
 			await _fileChangedService.SharpIdeFileChanged(file, await File.ReadAllTextAsync(file.Path), FileChangeType.ExternalChange);
 		}
+	}
+
+	private async Task OnAnalyzerDllsChanged(ImmutableArray<string> analyzerDllPaths)
+	{
+		await _fileChangedService.AnalyzerDllFilesChanged(analyzerDllPaths);
 	}
 }

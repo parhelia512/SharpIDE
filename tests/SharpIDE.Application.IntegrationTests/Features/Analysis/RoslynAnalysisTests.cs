@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Build;
+using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 [assembly: CaptureConsole]
@@ -29,8 +30,9 @@ public class RoslynAnalysisTests
 	    var services = serviceCollection.BuildServiceProvider();
 	    var logger = services.GetRequiredService<ILogger<RoslynAnalysis>>();
 	    var buildService = services.GetRequiredService<BuildService>();
+	    var analyzerFileWatcher = services.GetRequiredService<AnalyzerFileWatcher>();
 
-	    var roslynAnalysis = new RoslynAnalysis(logger, buildService);
+	    var roslynAnalysis = new RoslynAnalysis(logger, buildService, analyzerFileWatcher);
 
 	    var solutionModel = await VsPersistenceMapper.GetSolutionModel(@"C:\Users\Matthew\Documents\Git\SharpIDE\SharpIDE.sln", TestContext.Current.CancellationToken);
 	    var sharpIdeApplicationProject = solutionModel.AllProjects.Single(p => p.Name == "SharpIDE.Application");

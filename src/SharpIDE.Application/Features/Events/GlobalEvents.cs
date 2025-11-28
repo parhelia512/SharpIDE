@@ -1,4 +1,5 @@
-﻿using SharpIDE.Application.Features.Debugging;
+﻿using System.Collections.Immutable;
+using SharpIDE.Application.Features.Debugging;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
@@ -18,6 +19,7 @@ public class GlobalEvents
 	public EventWrapper<Task> SolutionAltered { get; } = new(() => Task.CompletedTask);
 
 	public FileSystemWatcherInternal FileSystemWatcherInternal { get; } = new();
+	public EventWrapper<ImmutableArray<string>, Task> AnalyzerDllsChanged { get; } = new(_ => Task.CompletedTask);
 }
 
 /// <summary>

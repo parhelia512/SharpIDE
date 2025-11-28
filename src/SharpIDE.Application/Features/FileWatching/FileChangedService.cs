@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Shared.TestHooks;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Threading;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using SharpIDE.Application.Features.Analysis;
@@ -69,6 +70,14 @@ public class FileChangedService
 		{
 			await HandleWorkspaceFileRemoved(file);
 		}
+	}
+
+	public async Task AnalyzerDllFilesChanged(ImmutableArray<string> changedDllPaths)
+	{
+		var success = await _roslynAnalysis.ReloadProjectsWithAnyOfAnalyzerFileReferences(changedDllPaths);
+		if (success is false) return;
+		GlobalEvents.Instance.SolutionAltered.InvokeParallelFireAndForget();
+		_updateSolutionDiagnosticsQueue.AddWork();
 	}
 
 	// All file changes should go via this service

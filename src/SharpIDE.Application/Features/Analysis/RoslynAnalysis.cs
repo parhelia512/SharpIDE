@@ -30,6 +30,7 @@ using SharpIDE.Application.Features.Analysis.FixLoaders;
 using SharpIDE.Application.Features.Analysis.ProjectLoader;
 using SharpIDE.Application.Features.Analysis.Razor;
 using SharpIDE.Application.Features.Build;
+using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using CodeAction = Microsoft.CodeAnalysis.CodeActions.CodeAction;
@@ -40,10 +41,11 @@ using DiagnosticSeverity = Microsoft.CodeAnalysis.DiagnosticSeverity;
 
 namespace SharpIDE.Application.Features.Analysis;
 
-public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildService)
+public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildService, AnalyzerFileWatcher analyzerFileWatcher)
 {
 	private readonly ILogger<RoslynAnalysis> _logger = logger;
 	private readonly BuildService _buildService = buildService;
+	private readonly AnalyzerFileWatcher _analyzerFileWatcher = analyzerFileWatcher;
 
 	public static AdhocWorkspace? _workspace;
 	private static CustomMsBuildProjectLoader? _msBuildProjectLoader;
@@ -119,6 +121,13 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 			//_msBuildProjectLoader!.LoadMetadataForReferencedProjects = true;
 			var (solutionInfo, projectFileInfos) = await _msBuildProjectLoader!.LoadSolutionInfoAsync(_sharpIdeSolutionModel.FilePath, cancellationToken: cancellationToken);
 			_projectFileInfoMap = projectFileInfos;
+			var analyzerReferencePaths = solutionInfo.Projects
+				.SelectMany(p => p.AnalyzerReferences.OfType<IsolatedAnalyzerFileReference>().Select(a => a.FullPath))
+				.OfType<string>()
+				.Distinct()
+				.ToImmutableArray();
+
+			await _analyzerFileWatcher.StartWatchingFiles(analyzerReferencePaths);
 			_workspace.ClearSolution();
 			var solution = _workspace.AddSolution(solutionInfo);
 		}
@@ -268,6 +277,29 @@ public class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService buildSe
 				var mappedDocumentId = oldSolution.GetDocumentIdsWithFilePath(docInfo.FilePath).Single(id => id.ProjectId == mappedProjectId);
 				return docInfo.WithId(mappedDocumentId);
 			}).ToImmutableArray();
+	}
+
+	public async Task<bool> ReloadProjectsWithAnyOfAnalyzerFileReferences(ImmutableArray<string> analyzerFilePaths, CancellationToken cancellationToken = default)
+	{
+		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(ReloadProjectsWithAnyOfAnalyzerFileReferences)}");
+		await _solutionLoadedTcs.Task;
+		var projectsToReload = _workspace!.CurrentSolution.Projects
+			.Where(p => p.AnalyzerReferences
+				.OfType<IsolatedAnalyzerFileReference>()
+				.Where(s => s.FullPath is not null)
+				.Any(a => analyzerFilePaths.Contains(a.FullPath!)))
+			.ToList();
+
+		if (projectsToReload.Count is 0) return false;
+
+		_logger.LogInformation("RoslynAnalysis: Reloading {ProjectCount} projects that reference an analyzer that changed", projectsToReload.Count);
+		foreach (var project in projectsToReload)
+		{
+			var sharpIdeProjectModel = _sharpIdeSolutionModel!.AllProjects.Single(p => p.FilePath == project.FilePath);
+			await ReloadProject(sharpIdeProjectModel, cancellationToken);
+		}
+
+		return true;
 	}
 
 	public async Task UpdateSolutionDiagnostics(CancellationToken cancellationToken = default)
