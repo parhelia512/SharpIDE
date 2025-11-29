@@ -18,6 +18,7 @@ public partial class SolutionExplorerPanel
     
     private readonly Texture2D _propsFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://fa7tdmldi206");
     private readonly Texture2D _configFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://brsdisqgeah5n");
+    private readonly Texture2D _targetsFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://xy5ad1lc24lv");
 
     private (Texture2D Icon, Texture2D? OverlayIcon) GetIconForFileExtension(string fileExtension)
     {
@@ -30,7 +31,7 @@ public partial class SolutionExplorerPanel
             ".html" or ".htm" => _htmlIcon,
             ".css" => _cssIcon,
             ".txt" => _txtIcon,
-            ".props" or ".config" => _genericFileIcon,
+            ".props" or ".config" or ".targets" => _genericFileIcon,
             ".md" => _mdFileIcon,
             ".editorconfig" => _editorConfigFileIcon,
             ".gitignore" => _gitignoreFileIcon,
@@ -40,6 +41,7 @@ public partial class SolutionExplorerPanel
         {
             ".props" => _propsFileOverlayIcon,
             ".config" => _configFileOverlayIcon,
+            ".targets" => _targetsFileOverlayIcon,
             _ => null
         };
         
