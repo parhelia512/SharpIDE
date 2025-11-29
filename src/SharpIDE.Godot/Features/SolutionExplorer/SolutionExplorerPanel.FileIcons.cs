@@ -13,6 +13,7 @@ public partial class SolutionExplorerPanel
     private readonly Texture2D _cssIcon = ResourceLoader.Load<Texture2D>("uid://b6m4rm5u8hd1c");
     private readonly Texture2D _txtIcon = ResourceLoader.Load<Texture2D>("uid://b6bpjhs2o1j2l");
     private readonly Texture2D _genericFileIcon = ResourceLoader.Load<Texture2D>("uid://bile1h6sq0l08");
+    private readonly Texture2D _mdFileIcon = ResourceLoader.Load<Texture2D>("uid://8i2y6xjdjno3");
     
     private readonly Texture2D _propsFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://fa7tdmldi206");
 
@@ -28,6 +29,7 @@ public partial class SolutionExplorerPanel
             ".css" => _cssIcon,
             ".txt" => _txtIcon,
             ".props" => _genericFileIcon,
+            ".md" => _mdFileIcon,
             _ => _csIcon
         };
         var overlayTexture = fileExtension switch
