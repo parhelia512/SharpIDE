@@ -1,5 +1,4 @@
-﻿
-using Godot;
+﻿using Godot;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
 
@@ -17,6 +16,7 @@ public partial class SolutionExplorerPanel
     private readonly Texture2D _editorConfigFileIcon = ResourceLoader.Load<Texture2D>("uid://5t83l7c7f3g6");
     
     private readonly Texture2D _propsFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://fa7tdmldi206");
+    private readonly Texture2D _configFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://brsdisqgeah5n");
 
     private (Texture2D Icon, Texture2D? OverlayIcon) GetIconForFileExtension(string fileExtension)
     {
@@ -29,7 +29,7 @@ public partial class SolutionExplorerPanel
             ".html" or ".htm" => _htmlIcon,
             ".css" => _cssIcon,
             ".txt" => _txtIcon,
-            ".props" => _genericFileIcon,
+            ".props" or ".config" => _genericFileIcon,
             ".md" => _mdFileIcon,
             ".editorconfig" => _editorConfigFileIcon,
             _ => _csIcon
@@ -37,6 +37,7 @@ public partial class SolutionExplorerPanel
         var overlayTexture = fileExtension switch
         {
             ".props" => _propsFileOverlayIcon,
+            ".config" => _configFileOverlayIcon,
             _ => null
         };
         
