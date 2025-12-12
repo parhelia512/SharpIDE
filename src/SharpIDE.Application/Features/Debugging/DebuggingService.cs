@@ -162,6 +162,24 @@ public class DebuggingService
 		var nextRequest = new NextRequest(threadId);
 		_debugProtocolHost.SendRequestSync(nextRequest);
 	}
+	public async Task StepInto(int threadId, CancellationToken cancellationToken)
+	{
+		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		var stepInRequest = new StepInRequest(threadId);
+		_debugProtocolHost.SendRequestSync(stepInRequest);
+	}
+	public async Task StepOut(int threadId, CancellationToken cancellationToken)
+	{
+		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		var stepOutRequest = new StepOutRequest(threadId);
+		_debugProtocolHost.SendRequestSync(stepOutRequest);
+	}
+	public async Task Continue(int threadId, CancellationToken cancellationToken)
+	{
+		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		var continueRequest = new ContinueRequest(threadId);
+		_debugProtocolHost.SendRequestSync(continueRequest);
+	}
 
 	public async Task<List<ThreadModel>> GetThreadsAtStopPoint()
 	{

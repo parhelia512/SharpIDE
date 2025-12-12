@@ -150,10 +150,10 @@ public class RunService(ILogger<RunService> logger, RoslynAnalysis roslynAnalysi
 		await project.RunningCancellationTokenSource.CancelAsync().ConfigureAwait(false);
 	}
 
-	public async Task SendDebuggerStepOver(int threadId)
-	{
-		await _debugger!.StepOver(threadId);
-	}
+	public async Task SendDebuggerStepOver(int threadId) => await _debugger!.StepOver(threadId);
+	public async Task SendDebuggerStepInto(int threadId) => await _debugger!.StepInto(threadId);
+	public async Task SendDebuggerStepOut(int threadId) => await _debugger!.StepOut(threadId);
+	public async Task SendDebuggerContinue(int threadId) => await _debugger!.Continue(threadId);
 
 	public async Task<List<ThreadModel>> GetThreadsAtStopPoint()
 	{

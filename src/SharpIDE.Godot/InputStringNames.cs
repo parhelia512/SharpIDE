@@ -7,6 +7,9 @@ public static class InputStringNames
     public static readonly StringName RenameSymbol = nameof(RenameSymbol);
     public static readonly StringName CodeFixes = nameof(CodeFixes);
     public static readonly StringName StepOver = nameof(StepOver);
+    public static readonly StringName DebuggerStepIn = nameof(DebuggerStepIn);
+    public static readonly StringName DebuggerStepOut = nameof(DebuggerStepOut);
+    public static readonly StringName DebuggerContinue = nameof(DebuggerContinue);
     public static readonly StringName FindInFiles = nameof(FindInFiles);
     public static readonly StringName FindFiles = nameof(FindFiles);
     public static readonly StringName SaveFile = nameof(SaveFile);

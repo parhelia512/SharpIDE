@@ -52,7 +52,19 @@ public partial class CodeEditorPanel : MarginContainer
     {
         if (@event.IsActionPressed(InputStringNames.StepOver))
         {
-            SendDebuggerStepOver();
+            SendDebuggerStepCommand(DebuggerStepAction.StepOver);
+        }
+        else if (@event.IsActionPressed(InputStringNames.DebuggerStepOut))
+        {
+            SendDebuggerStepCommand(DebuggerStepAction.StepOut);
+        }
+        else if (@event.IsActionPressed(InputStringNames.DebuggerStepIn))
+        {
+            SendDebuggerStepCommand(DebuggerStepAction.StepIn);
+        }
+        else if (@event.IsActionPressed(InputStringNames.DebuggerContinue))
+        {
+            SendDebuggerStepCommand(DebuggerStepAction.Continue);
         }
     }
 
@@ -142,7 +154,8 @@ public partial class CodeEditorPanel : MarginContainer
         });
     }
     
-    private void SendDebuggerStepOver()
+    private enum DebuggerStepAction { StepOver, StepIn, StepOut, Continue }
+    private void SendDebuggerStepCommand(DebuggerStepAction debuggerStepAction)
     {
         if (_debuggerExecutionStopInfo is null) return; // ie not currently stopped
         var godotLine = _debuggerExecutionStopInfo.Line - 1;
@@ -153,7 +166,15 @@ public partial class CodeEditorPanel : MarginContainer
         _debuggerExecutionStopInfo = null;
         _ = Task.GodotRun(async () =>
         {
-            await _runService.SendDebuggerStepOver(threadId);
+            var task = debuggerStepAction switch
+            {
+                DebuggerStepAction.StepOver => _runService.SendDebuggerStepOver(threadId),
+                DebuggerStepAction.StepIn => _runService.SendDebuggerStepInto(threadId),
+                DebuggerStepAction.StepOut => _runService.SendDebuggerStepOut(threadId),
+                DebuggerStepAction.Continue => _runService.SendDebuggerContinue(threadId),
+                _ => throw new ArgumentOutOfRangeException(nameof(debuggerStepAction), debuggerStepAction, null)
+            };
+            await task;
         });
     }
 }
