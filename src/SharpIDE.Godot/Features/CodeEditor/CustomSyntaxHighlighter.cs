@@ -233,6 +233,7 @@ public partial class CustomHighlighter : SyntaxHighlighter
 
             // Literals & comments
             "string" => CachedColors.LightOrangeBrown,
+            "string - escape character" => CachedColors.Orange,
             "comment" => CachedColors.CommentGreen,
             "number" => CachedColors.NumberGreen,
 
@@ -278,9 +279,9 @@ public partial class CustomHighlighter : SyntaxHighlighter
             // Misc
             "excluded code" => CachedColors.Gray,
 
-            _ => CachedColors.Orange // orange, warning color for unhandled classifications
+            _ => CachedColors.Pink // pink, warning color for unhandled classifications
         };
-        if (colour == CachedColors.Orange)
+        if (colour == CachedColors.Pink)
         {
             GD.PrintErr($"Unhandled classification type: '{classificationType}'");
         }
@@ -301,6 +302,7 @@ public static class CachedColors
     public static readonly Color ClassGreen = new("4ec9b0");
     public static readonly Color VariableBlue = new("9cdcfe");
     public static readonly Color Gray = new("a9a9a9");
+    public static readonly Color Pink = new("c586c0");
     
     public static readonly Color RazorComponentGreen = new("0b7f7f");
     public static readonly Color RazorMetaCodePurple = new("a699e6");
