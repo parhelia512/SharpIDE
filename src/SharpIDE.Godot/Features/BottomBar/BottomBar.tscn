@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dr41a4isv0dd5"]
+[gd_scene load_steps=4 format=3 uid="uid://dr41a4isv0dd5"]
 
 [ext_resource type="Script" uid="uid://dkeruijr43xlk" path="res://Features/BottomBar/BottomBar.cs" id="1_6bm5o"]
 [ext_resource type="PackedScene" uid="uid://cnla64hcar6dr" path="res://Features/BottomBar/RunningTasksDisplay.tscn" id="2_5swca"]
+[ext_resource type="PackedScene" uid="uid://df55cl01wdfuv" path="res://Features/BottomBar/EditorLineCharDisplay.tscn" id="3_igj0x"]
 
 [node name="BottomBar" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 28)
@@ -28,4 +29,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="RunningTasksDisplay" parent="MarginContainer/HBoxContainer" instance=ExtResource("2_5swca")]
+layout_mode = 2
+
+[node name="EditorLineCharDisplay" parent="MarginContainer/HBoxContainer" instance=ExtResource("3_igj0x")]
 layout_mode = 2
