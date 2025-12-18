@@ -26,7 +26,7 @@ public partial class ThreadsVariablesSubTab : Control
     [Inject] private readonly RunService _runService = null!;
     
     private Callable? _debuggerVariableCustomDrawCallable;
-    private Dictionary<TreeItem, Variable> _variableReferenceLookup = []; // primarily used for DebuggerVariableCustomDraw
+    private readonly Dictionary<TreeItem, Variable> _variableReferenceLookup = []; // primarily used for DebuggerVariableCustomDraw
 
 	public override void _Ready()
 	{
@@ -41,32 +41,6 @@ public partial class ThreadsVariablesSubTab : Control
 		_variablesTree.ItemCollapsed += OnVariablesItemExpandedOrCollapsed;
 		Project.ProjectStoppedRunning.Subscribe(ClearAllTrees);
 	}
-
-	private static readonly Color VariableNameColor = new Color("f0ac81");
-	private static readonly Color VariableWhiteColor = new Color("d4d4d4");
-	private static readonly Color VariableTypeColor = new Color("70737a");
-	private void DebuggerVariableCustomDraw(TreeItem treeItem, Rect2 rect)
-    {
-	    var variable = _variableReferenceLookup.GetValueOrDefault(treeItem);
-	    if (variable is null) return;
-	    
-	    var font = _variablesTree.GetThemeFont(ThemeStringNames.Font);
-	    var fontSize = _variablesTree.GetThemeFontSize(ThemeStringNames.FontSize);
-	    const float padding = 4.0f;
-	    
-	    var currentX = rect.Position.X + padding;
-	    var textYPos = rect.Position.Y + (rect.Size.Y + fontSize) / 2 - 2;
-	    
-	    _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Name, HorizontalAlignment.Left, -1, fontSize, VariableNameColor);
-	    var variableNameDrawnSize = font.GetStringSize(variable.Name, HorizontalAlignment.Left, -1, fontSize).X;
-	    currentX += variableNameDrawnSize;
-	    _variablesTree.DrawString(font, new Vector2(currentX, textYPos), " = ", HorizontalAlignment.Left, -1, fontSize, VariableWhiteColor);
-        currentX += font.GetStringSize(" = ", HorizontalAlignment.Left, -1, fontSize).X;
-        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), $"{{{variable.Type}}} ", HorizontalAlignment.Left, -1, fontSize, VariableTypeColor);
-		var variableTypeDrawnSize = font.GetStringSize($"{{{variable.Type}}} ", HorizontalAlignment.Left, -1, fontSize).X;
-		currentX += variableTypeDrawnSize;
-		_variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Value, HorizontalAlignment.Left, -1, fontSize, VariableWhiteColor);
-    }
 
 	private void OnVariablesItemExpandedOrCollapsed(TreeItem item)
 	{
@@ -110,6 +84,7 @@ public partial class ThreadsVariablesSubTab : Control
 			_threadsTree.Clear();
 			_stackFramesTree.Clear();
 			_variablesTree.Clear();
+			_variableReferenceLookup.Clear();
 		});
 	}
 
