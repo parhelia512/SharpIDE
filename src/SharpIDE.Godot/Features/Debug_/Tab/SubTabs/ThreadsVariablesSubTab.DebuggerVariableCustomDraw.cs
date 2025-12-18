@@ -40,19 +40,17 @@ public partial class ThreadsVariablesSubTab
         _variablesTree.DrawTextureRect(icon, iconRect, false);
         currentX += iconSize + padding;
 
-        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Name, HorizontalAlignment.Left, -1,
-            fontSize, VariableNameColor);
-        var variableNameDrawnSize = font.GetStringSize(variable.Name, HorizontalAlignment.Left, -1, fontSize).X;
-        currentX += variableNameDrawnSize;
-        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), " = ", HorizontalAlignment.Left, -1, fontSize,
-            VariableWhiteColor);
-        currentX += font.GetStringSize(" = ", HorizontalAlignment.Left, -1, fontSize).X;
-        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), $"{{{variable.Type}}} ",
-            HorizontalAlignment.Left, -1, fontSize, VariableTypeColor);
-        var variableTypeDrawnSize =
-            font.GetStringSize($"{{{variable.Type}}} ", HorizontalAlignment.Left, -1, fontSize).X;
-        currentX += variableTypeDrawnSize;
-        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Value, HorizontalAlignment.Left, -1,
-            fontSize, VariableWhiteColor);
+        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Name, HorizontalAlignment.Left, -1, fontSize, VariableNameColor);
+        var variableNameDrawnWidth = font.GetStringSize(variable.Name, HorizontalAlignment.Left, -1, fontSize).X;
+        currentX += variableNameDrawnWidth + padding;
+        const string equalsString = "=";
+        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), equalsString, HorizontalAlignment.Left, -1, fontSize, VariableWhiteColor);
+        var equalsWidth = font.GetStringSize(equalsString, HorizontalAlignment.Left, -1, fontSize).X;
+        currentX += equalsWidth + padding;
+        var variableTypeDisplayString = $$"""{{{variable.Type}}}""";
+        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variableTypeDisplayString, HorizontalAlignment.Left, -1, fontSize, VariableTypeColor);
+        var variableTypeDrawnSize = font.GetStringSize(variableTypeDisplayString, HorizontalAlignment.Left, -1, fontSize).X;
+        currentX += variableTypeDrawnSize + padding;
+        _variablesTree.DrawString(font, new Vector2(currentX, textYPos), variable.Value, HorizontalAlignment.Left, -1, fontSize, VariableWhiteColor);
     }
 }
