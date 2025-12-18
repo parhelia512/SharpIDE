@@ -35,6 +35,7 @@ public partial class ThreadsVariablesSubTab
             { Value: "true" or "false" } => CachedColors.KeywordBlue,
             { Type: "string" or "char" } => CachedColors.LightOrangeBrown,
             { Type: "byte" or "sbyte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong" or "nint" or "nuint" or "float" or "double" or "decimal" } => CachedColors.NumberGreen,
+            { Type: "byte?" or "sbyte?" or "short?" or "ushort?" or "int?" or "uint?" or "long?" or "ulong?" or "nint?" or "nuint?" or "float?" or "double?" or "decimal?" } => CachedColors.NumberGreen, // value here will never actually be null, as we handled "null" value above
             _ => VariableWhiteColor
         };
 
