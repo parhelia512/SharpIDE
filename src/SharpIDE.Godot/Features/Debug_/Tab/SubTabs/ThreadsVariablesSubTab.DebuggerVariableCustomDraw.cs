@@ -20,7 +20,7 @@ public partial class ThreadsVariablesSubTab
         const int iconSize = 18;
         var icon = variable.PresentationHint?.Kind switch
         {
-            VariablePresentationHint.KindValue.Data => _fieldIcon,
+            VariablePresentationHint.KindValue.Data => _arrayElementIcon,
             VariablePresentationHint.KindValue.Property => _propertyIcon,
             VariablePresentationHint.KindValue.Class => _staticMembersIcon,
             _ => null
