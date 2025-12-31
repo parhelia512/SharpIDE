@@ -144,11 +144,11 @@ public partial class ThreadsVariablesSubTab : Control
 		_variableReferenceLookup[variableItem] = variable;
 		
 		variableItem.SetMetadata(0, new Vector2I(0, variable.VariablesReference));
-		if (variable.Name == "Static members")
+		if (variable.Name is "Static members" or "Raw View")
 		{
 			variableItem.SetTooltipText(0, null);
 			variableItem.SetIcon(0, _staticMembersIcon);
-			variableItem.SetText(0, "Static members");
+			variableItem.SetText(0, variable.Name);
 		}
 		else
 		{
