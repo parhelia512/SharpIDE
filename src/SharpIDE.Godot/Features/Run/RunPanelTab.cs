@@ -1,12 +1,12 @@
-using GDExtensionBindgen;
 using Godot;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+using SharpIDE.Godot.Features.TerminalBase;
 
 namespace SharpIDE.Godot.Features.Run;
 
 public partial class RunPanelTab : Control
 {
-	private Terminal _terminal = null!;
+	private SharpIdeTerminal _terminal = null!;
 	private Task _writeTask = Task.CompletedTask;
     
     public SharpIdeProjectModel Project { get; set; } = null!;
@@ -14,8 +14,7 @@ public partial class RunPanelTab : Control
 
     public override void _Ready()
     {
-	    var terminalControl = GetNode<Control>("Terminal");
-		_terminal = new Terminal(terminalControl);
+	    _terminal = GetNode<SharpIdeTerminal>("SharpIdeTerminal");
     }
     
     public void StartWritingFromProjectOutput()
@@ -29,15 +28,13 @@ public partial class RunPanelTab : Control
 		{
 			await foreach (var array in Project.RunningOutputChannel!.Reader.ReadAllAsync().ConfigureAwait(false))
 			{
-				await this.InvokeAsync(() => _terminal.Write(array));
+				await _terminal.WriteAsync(array);
 			}
 		});
 	}
     
 	public void ClearTerminal()
 	{
-		// .Clear removes all text except for the bottom row, so lets make sure we have a blank line, and cursor at start
-		_terminal.Write("\r\n");
-		_terminal.Clear();
+		_terminal.ClearTerminal();
 	}
 }

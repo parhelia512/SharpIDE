@@ -2,18 +2,19 @@ using System.Threading.Channels;
 using GDExtensionBindgen;
 using Godot;
 using SharpIDE.Application.Features.Build;
+using SharpIDE.Godot.Features.TerminalBase;
 
 namespace SharpIDE.Godot.Features.Build;
 
 public partial class BuildPanel : Control
 {
-    private Terminal _terminal = null!;
+    private SharpIdeTerminal _terminal = null!;
     private ChannelReader<string>? _buildOutputChannelReader;
     
 	[Inject] private readonly BuildService _buildService = null!;
     public override void _Ready()
     {
-        _terminal = new Terminal(GetNode<Control>("%Terminal"));
+        _terminal = GetNode<SharpIdeTerminal>("%SharpIdeTerminal");
         _buildService.BuildStarted.Subscribe(OnBuildStarted);
     }
 
@@ -29,7 +30,7 @@ public partial class BuildPanel : Control
 
     private async Task OnBuildStarted(BuildStartedFlags _)
     {
-        await this.InvokeAsync(() => _terminal.Clear());
+        await this.InvokeAsync(() => _terminal.ClearTerminal());
         _buildOutputChannelReader ??= _buildService.BuildTextWriter.ConsoleChannel.Reader;
     }
 }

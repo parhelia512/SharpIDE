@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b6gq81odfn8ok" path="res://Features/Debug_/Tab/DebugPanelTab.cs" id="1_ppo25"]
 [ext_resource type="PackedScene" uid="uid://bdu08nd7si641" path="res://Features/Debug_/Tab/SubTabs/ThreadsVariablesSubTab.tscn" id="2_e6ax5"]
-[ext_resource type="Theme" uid="uid://bswaamju2blyt" path="res://Features/TerminalBase/TerminalTheme.tres" id="3_e6ax5"]
+[ext_resource type="PackedScene" uid="uid://beo6fg8r0ogxc" path="res://Features/TerminalBase/SharpIdeTerminal.tscn" id="4_utxf4"]
 
 [node name="DebugPanelTab" type="Control"]
 layout_mode = 3
@@ -35,13 +35,6 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Terminal" type="Terminal" parent="TabContainer/Console"]
-copy_on_selection = true
+[node name="SharpIdeTerminal" parent="TabContainer/Console" instance=ExtResource("4_utxf4")]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_e6ax5")
