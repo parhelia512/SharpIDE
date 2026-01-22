@@ -428,6 +428,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 						TextChanged -= OnAction;
 						Callable.From(() => RequestCodeCompletion(true)).CallDeferred();
 					}
+					// TODO: This is flawed - we currently retrieve completions after TextChanged fires, but OnTextChange returns before the workspace is actually updated, so we may ask for completions for stale text.
 					TextChanged += OnAction; // We need to wait for the text to actually change before requesting completions
 				}
 			}
