@@ -368,12 +368,12 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		{
 			endPos.X += 10;
 		}
-		
-		RenderingServer.Singleton.CanvasItemClear(_aboveCanvasItemRid!.Value);
+
 		RenderingServer.Singleton.DrawDashedLine(_aboveCanvasItemRid!.Value, startPos, endPos, color, thickness);
 	}
 	public override void _Draw()
 	{
+		RenderingServer.Singleton.CanvasItemClear(_aboveCanvasItemRid!.Value);
 		//UnderlineRange(_currentLine, _selectionStartCol, _selectionEndCol, new Color(1, 0, 0));
 		foreach (var sharpIdeDiagnostic in _fileDiagnostics.Concat(_fileAnalyzerDiagnostics).ConcatFast(_projectDiagnosticsForFile))
 		{
