@@ -319,7 +319,8 @@ public partial class SolutionExplorerPanel : MarginContainer
 		var fileItem = tree.CreateItem(parent, newStartingIndex);
 		fileItem.SetText(0, sharpIdeFile.Name);
 		fileItem.SetIconsForFileExtension(sharpIdeFile);
-		fileItem.SetCustomColor(0, GitColours.GetColorForGitFileStatus(sharpIdeFile.GitStatus));
+		if (GitColours.GetColorForGitFileStatus(sharpIdeFile.GitStatus) is { } notnullColor) fileItem.SetCustomColor(0, notnullColor);
+		else fileItem.ClearCustomColor(0);
 		fileItem.SetMetadata(0, new RefCountedContainer<SharpIdeFile>(sharpIdeFile));
 		
 		Observable.EveryValueChanged(sharpIdeFile, file => file.Name)
