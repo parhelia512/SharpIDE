@@ -48,6 +48,12 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6nunt"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1icbt"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -160,6 +166,9 @@ Button/styles/disabled = SubResource("StyleBoxFlat_f60rw")
 Button/styles/hover = SubResource("StyleBoxFlat_s0gn1")
 Button/styles/normal = SubResource("StyleBoxFlat_xtark")
 Button/styles/pressed = SubResource("StyleBoxFlat_6nunt")
+CheckButton/colors/button_checked_color = Color(0.3372549, 0.61960787, 1, 1)
+CheckButton/styles/normal = SubResource("StyleBoxEmpty_6nunt")
+CheckButton/styles/pressed = SubResource("StyleBoxEmpty_6nunt")
 CodeEdit/colors/current_line_color = Color(0.9, 0.9, 0.9, 1)
 CodeEdit/styles/normal = SubResource("StyleBoxFlat_1icbt")
 CodeEditorTabContainer/base_type = &"TabContainer"
