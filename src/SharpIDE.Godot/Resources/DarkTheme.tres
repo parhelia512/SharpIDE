@@ -1,5 +1,18 @@
 [gd_resource type="Theme" format=3 uid="uid://epmt8kq6efrs"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_82udi"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.117647, 0.117647, 0.117647, 1)
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_21uq4"]
 content_margin_left = 10.0
 content_margin_top = 4.0
@@ -48,6 +61,7 @@ shadow_size = 4
 
 [resource]
 CodeEdit/colors/current_line_color = Color(0.05882353, 0.05882353, 0.05882353, 1)
+CodeEdit/styles/normal = SubResource("StyleBoxFlat_82udi")
 CodeEditorTabContainer/base_type = &"TabContainer"
 CodeEditorTabContainer/styles/tab_selected = SubResource("StyleBoxFlat_21uq4")
 CodeEditorTabContainer/styles/tabbar_background = SubResource("StyleBoxFlat_5oigc")
