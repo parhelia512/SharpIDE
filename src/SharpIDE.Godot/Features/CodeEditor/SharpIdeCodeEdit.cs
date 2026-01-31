@@ -216,22 +216,24 @@ public partial class SharpIdeCodeEdit : CodeEdit
 
 	private void OnTextChanged()
 	{
+		var text = Text;
+		var pendingCompletionTrigger = _pendingCompletionTrigger;
+		_pendingCompletionTrigger = null;
+		var cursorPosition = GetCaretPosition();
 		_ = Task.GodotRun(async () =>
 		{
 			var __ = SharpIdeOtel.Source.StartActivity($"{nameof(SharpIdeCodeEdit)}.{nameof(OnTextChanged)}");
 			_currentFile.IsDirty.Value = true;
-			await _fileChangedService.SharpIdeFileChanged(_currentFile, Text, FileChangeType.IdeUnsavedChange);
+			await _fileChangedService.SharpIdeFileChanged(_currentFile, text, FileChangeType.IdeUnsavedChange);
 			if (pendingCompletionTrigger is not null)
 			{
-				var cursorPosition = GetCaretPosition();
-				var linePosition = new LinePosition(cursorPosition.line, cursorPosition.col);
 				completionTrigger = pendingCompletionTrigger;
-				pendingCompletionTrigger = null;
-				var shouldTriggerCompletion = await _roslynAnalysis.ShouldTriggerCompletionAsync(_currentFile, Text, linePosition, completionTrigger!.Value);
+				var linePosition = new LinePosition(cursorPosition.line, cursorPosition.col);
+				var shouldTriggerCompletion = await _roslynAnalysis.ShouldTriggerCompletionAsync(_currentFile, text, linePosition, completionTrigger!.Value);
 				GD.Print($"Code completion trigger typed: '{completionTrigger.Value.Character}' at {linePosition.Line}:{linePosition.Character} should trigger: {shouldTriggerCompletion}");
 				if (shouldTriggerCompletion)
 				{
-					await OnCodeCompletionRequested(completionTrigger.Value);
+					await OnCodeCompletionRequested(completionTrigger.Value, text, cursorPosition);
 				}
 			}
 			else if (pendingCompletionFilterReason is not null)

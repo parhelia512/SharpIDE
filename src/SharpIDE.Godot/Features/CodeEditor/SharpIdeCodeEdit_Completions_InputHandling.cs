@@ -15,7 +15,7 @@ public partial class SharpIdeCodeEdit
             if (@event.IsActionPressed(InputStringNames.CodeEditorRequestCompletions))
             {
                 completionTrigger = new CompletionTrigger(CompletionTriggerKind.InvokeAndCommitIfUnique);
-                CustomCodeCompletionRequested.InvokeParallelFireAndForget(completionTrigger!.Value);
+                CustomCodeCompletionRequested.InvokeParallelFireAndForget(completionTrigger!.Value, Text, GetCaretPosition());
                 return true;
             }
         }
@@ -110,7 +110,7 @@ public partial class SharpIdeCodeEdit
 
             if (isCodeCompletionPopupOpen is false && _codeCompletionTriggers.Contains(unicodeString, StringComparer.OrdinalIgnoreCase))
             {
-                pendingCompletionTrigger = CompletionTrigger.CreateInsertionTrigger(unicodeString[0]);
+                _pendingCompletionTrigger = CompletionTrigger.CreateInsertionTrigger(unicodeString[0]);
                 return false;
             }
         }

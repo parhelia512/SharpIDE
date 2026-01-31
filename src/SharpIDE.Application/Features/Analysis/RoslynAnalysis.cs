@@ -603,12 +603,14 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 	// This may not be the best way to do this, but it seems to work okay. It may only be a problem because I continue to update the doc in the workspace as the user continues typing, filtering the completion
 	// I could possibly pause updating the document while the completion list is open, but that seems more complex - handling accepted vs cancelled completions etc
 	public record IdeCompletionListResult(Document Document, CompletionList CompletionList, LinePosition LinePosition);
-	public async Task<IdeCompletionListResult> GetCodeCompletionsForDocumentAtPosition(SharpIdeFile fileModel, LinePosition linePosition, CompletionTrigger completionTrigger)
+	public async Task<IdeCompletionListResult> GetCodeCompletionsForDocumentAtPosition(SharpIdeFile fileModel, string documentText, LinePosition linePosition, CompletionTrigger completionTrigger)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(GetCodeCompletionsForDocumentAtPosition)}");
 		await _solutionLoadedTcs.Task;
 		var document = await GetDocumentForSharpIdeFile(fileModel);
 		Guard.Against.Null(document, nameof(document));
+		// The document in the workspace may have been further updated since the completion request was made, so we need to fork a document with the text at the time of the completion request
+		document = document.WithText(SourceText.From(documentText, Encoding.UTF8));
 		var (completions, triggerLinePosition) = await GetCompletionsAsync(document, linePosition, completionTrigger).ConfigureAwait(false);
 		return new IdeCompletionListResult(document, completions, triggerLinePosition);
 	}
@@ -738,7 +740,6 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return (completions, triggerLinePosition);
 	}
 
-	// Currently unused
 	public async Task<bool> ShouldTriggerCompletionAsync(SharpIdeFile file, string documentText, LinePosition linePosition, CompletionTrigger completionTrigger, CancellationToken cancellationToken = default)
 	{
 		await _solutionLoadedTcs.Task;
@@ -746,7 +747,6 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		var completionService = CompletionService.GetService(document);
 		if (completionService is null) throw new InvalidOperationException("Completion service is not available for the document.");
 
-		//var sourceText = await document.GetTextAsync(cancellationToken);
 		var sourceText = SourceText.From(documentText, Encoding.UTF8);
 		var position = sourceText.Lines.GetPosition(linePosition);
 		var shouldTrigger = completionService.ShouldTriggerCompletion(document.Project, document.Project.Services, sourceText, position, completionTrigger, CompletionOptions.Default, document.Project.Solution.Options ?? OptionSet.Empty);

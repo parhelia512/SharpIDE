@@ -67,11 +67,11 @@ public partial class SharpIdeCodeEdit
         return texture;
     }
     
-	private EventWrapper<CompletionTrigger, Task> CustomCodeCompletionRequested { get; } = new(_ => Task.CompletedTask);
+	private EventWrapper<CompletionTrigger, string, (int,int), Task> CustomCodeCompletionRequested { get; } = new((_, _, _) => Task.CompletedTask);
 	private CompletionList? completionList;
 	private Document? completionResultDocument;
 	private CompletionTrigger? completionTrigger;
-	private CompletionTrigger? pendingCompletionTrigger;
+	private CompletionTrigger? _pendingCompletionTrigger;
 	private CompletionFilterReason? pendingCompletionFilterReason;
 	
 	private readonly List<string> _codeCompletionTriggers =
@@ -94,39 +94,36 @@ public partial class SharpIdeCodeEdit
     private async Task CustomFilterCodeCompletionCandidates(CompletionFilterReason filterReason)
     {
         if (completionList is null || completionList.ItemsList.Count is 0) return;
-        var cursorPosition = GetCaretPosition();
+        var cursorPosition = await this.InvokeAsync(() => GetCaretPosition());
         var linePosition = new LinePosition(cursorPosition.line, cursorPosition.col);
         var filteredCompletions = RoslynAnalysis.FilterCompletions(_currentFile, Text, linePosition, completionList, completionTrigger!.Value, filterReason);
         _codeCompletionOptions = filteredCompletions;
         await this.InvokeAsync(QueueRedraw);
     }
     
-	private async Task OnCodeCompletionRequested(CompletionTrigger completionTrigger)
+	private async Task OnCodeCompletionRequested(CompletionTrigger completionTrigger, string documentTextAtTimeOfCompletionRequest, (int, int) completionCaretPosition)
 	{
-		var (caretLine, caretColumn) = GetCaretPosition();
+		var (caretLine, caretColumn) = completionCaretPosition;
 		
 		GD.Print($"Code completion requested at line {caretLine}, column {caretColumn}");
-		_ = Task.GodotRun(async () =>
-		{
-			var linePos = new LinePosition(caretLine, caretColumn);
+		var linePos = new LinePosition(caretLine, caretColumn);
 				
-			var completionsResult = await _roslynAnalysis.GetCodeCompletionsForDocumentAtPosition(_currentFile, linePos, completionTrigger);
+		var completionsResult = await _roslynAnalysis.GetCodeCompletionsForDocumentAtPosition(_currentFile, documentTextAtTimeOfCompletionRequest, linePos, completionTrigger);
 			
-			// We can't draw until we get this position
-			_completionTriggerPosition = await this.InvokeAsync(() => GetPosAtLineColumn(completionsResult.LinePosition.Line, completionsResult.LinePosition.Character));
+		// We can't draw until we get this position
+		_completionTriggerPosition = await this.InvokeAsync(() => GetPosAtLineColumn(completionsResult.LinePosition.Line, completionsResult.LinePosition.Character));
 			
-			completionList = completionsResult.CompletionList;
-			completionResultDocument = completionsResult.Document;
-			var filterReason = completionTrigger.Kind switch
-			{
-				CompletionTriggerKind.Insertion => CompletionFilterReason.Insertion,
-				CompletionTriggerKind.Deletion => CompletionFilterReason.Deletion,
-				CompletionTriggerKind.InvokeAndCommitIfUnique => CompletionFilterReason.Other,
-				_ => throw new ArgumentOutOfRangeException(nameof(completionTrigger.Kind), completionTrigger.Kind, null),
-			};
-			await CustomFilterCodeCompletionCandidates(filterReason);
-			GD.Print($"Found {completionsResult.CompletionList.ItemsList.Count} completions, displaying menu");
-		});
+		completionList = completionsResult.CompletionList;
+		completionResultDocument = completionsResult.Document;
+		var filterReason = completionTrigger.Kind switch
+		{
+			CompletionTriggerKind.Insertion => CompletionFilterReason.Insertion,
+			CompletionTriggerKind.Deletion => CompletionFilterReason.Deletion,
+			CompletionTriggerKind.InvokeAndCommitIfUnique => CompletionFilterReason.Other,
+			_ => throw new ArgumentOutOfRangeException(nameof(completionTrigger.Kind), completionTrigger.Kind, null),
+		};
+		await CustomFilterCodeCompletionCandidates(filterReason);
+		GD.Print($"Found {completionsResult.CompletionList.ItemsList.Count} completions, displaying menu");
 	}
 
 	public void ApplySelectedCodeCompletion()
