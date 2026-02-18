@@ -213,12 +213,8 @@ public partial class SharpIdeCodeEdit
             var sharpIdeCompletionItem = _codeCompletionOptions[l];
             var displayText = sharpIdeCompletionItem.CompletionItem.DisplayText;
             TextLine tl = new TextLine();
-            tl.AddString(
-                displayText,
-                font,
-                fontSize,
-                lang
-            );
+            tl.AddString(displayText, font, fontSize, lang);
+            tl.AddString(sharpIdeCompletionItem.CompletionItem.DisplayTextSuffix, font, fontSize, lang);
 
             float yofs = (rowHeight - tl.GetSize().Y) / 2;
             Vector2 titlePos = new Vector2(
