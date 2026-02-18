@@ -615,6 +615,15 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return new IdeCompletionListResult(document, completions, triggerLinePosition);
 	}
 
+	public async Task<CompletionDescription> GetCompletionDescription(SharpIdeFile file, CompletionItem completionItem, CancellationToken cancellationToken = default)
+	{
+		await _solutionLoadedTcs.Task;
+		var document = await GetDocumentForSharpIdeFile(file, cancellationToken);
+		var completionService = CompletionService.GetService(document);
+		var description = await completionService!.GetDescriptionAsync(document, completionItem, cancellationToken);
+		return description!;
+	}
+
 	// TODO: Pass in LinePositionSpan for refactorings that span multiple characters, e.g. extract method
 	public async Task<ImmutableArray<CodeAction>> GetCodeActionsForDocumentAtPosition(SharpIdeFile fileModel, LinePosition linePosition, CancellationToken cancellationToken = default)
 	{

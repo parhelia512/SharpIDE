@@ -307,5 +307,11 @@ public partial class SharpIdeCodeEdit
                 scrollColor
             );
         }
+        
+        var descriptionPos = new Vector2I(
+            _codeCompletionRect.Position.X + _codeCompletionRect.Size.X + scrollWidth + 5,
+            _codeCompletionRect.Position.Y
+        );
+        _completionDescriptionWindow.Position = descriptionPos + (Vector2I)GlobalPosition;
     }
 }

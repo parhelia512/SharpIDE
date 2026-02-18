@@ -7,9 +7,26 @@ namespace SharpIDE.Godot.Features.CodeEditor;
 
 public partial class SharpIdeCodeEdit
 {
+    private CompletionDescription? _selectedCompletionDescription;
+    
     private void SetSelectedCompletion(int index)
     {
         _codeCompletionCurrentSelected = index;
+        _ = Task.GodotRun(async () =>
+        {
+            var description = await _roslynAnalysis.GetCompletionDescription(_currentFile, _codeCompletionOptions[_codeCompletionCurrentSelected].CompletionItem);
+            _selectedCompletionDescription = description;
+            await this.InvokeAsync(() =>
+            {
+                _completionDescriptionLabel.Clear();
+                _completionDescriptionWindow.Size = new Vector2I(10, 10); // Used to shrink the window, as ChildControlsChanged() doesn't seem to handle shrinking in this case?
+                CompletionDescriptionTooltip.WriteToCompletionDescriptionLabel(_completionDescriptionLabel, _selectedCompletionDescription);
+                if (_completionDescriptionWindow.Visible is false)
+                {
+                    _completionDescriptionWindow.Show();
+                }
+            });
+        });
     }
     
     private bool CompletionsPopupTryConsumeGuiInput(InputEvent @event)

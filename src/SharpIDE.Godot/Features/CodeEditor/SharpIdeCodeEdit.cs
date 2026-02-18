@@ -37,6 +37,8 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private PopupMenu _popupMenu = null!;
 	private CanvasItem _aboveCanvasItem = null!;
 	private Rid? _aboveCanvasItemRid = null!;
+	private Window _completionDescriptionWindow = null!;
+	private RichTextLabel _completionDescriptionLabel = null!;
 
 	private ImmutableArray<SharpIdeDiagnostic> _fileDiagnostics = [];
 	private ImmutableArray<SharpIdeDiagnostic> _fileAnalyzerDiagnostics = [];
@@ -68,6 +70,8 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		_popupMenu = GetNode<PopupMenu>("CodeFixesMenu");
 		_aboveCanvasItem = GetNode<CanvasItem>("%AboveCanvasItem");
 		_aboveCanvasItemRid = _aboveCanvasItem.GetCanvasItem();
+		_completionDescriptionWindow = GetNode<Window>("%CompletionDescriptionWindow");
+		_completionDescriptionLabel = _completionDescriptionWindow.GetNode<RichTextLabel>("PanelContainer/RichTextLabel");
 		RenderingServer.Singleton.CanvasItemSetParent(_aboveCanvasItemRid.Value, GetCanvasItem());
 		_popupMenu.IdPressed += OnCodeFixSelected;
 		CustomCodeCompletionRequested.Subscribe(OnCodeCompletionRequested);

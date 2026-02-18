@@ -89,6 +89,9 @@ public partial class SharpIdeCodeEdit
         _completionTriggerPosition = null;
         _codeCompletionCurrentSelected = 0;
         _codeCompletionForceItemCenter = -1;
+        _completionDescriptionWindow.Hide();
+        _selectedCompletionDescription = null;
+        _completionDescriptionLabel.Clear();
     }
 
     private async Task CustomFilterCodeCompletionCandidates(CompletionFilterReason filterReason)
@@ -98,6 +101,7 @@ public partial class SharpIdeCodeEdit
         var linePosition = new LinePosition(cursorPosition.line, cursorPosition.col);
         var filteredCompletions = RoslynAnalysis.FilterCompletions(_currentFile, Text, linePosition, _completionList, _completionTrigger!.Value, filterReason);
         _codeCompletionOptions = filteredCompletions;
+        SetSelectedCompletion(_codeCompletionCurrentSelected);
         await this.InvokeAsync(QueueRedraw);
     }
     
