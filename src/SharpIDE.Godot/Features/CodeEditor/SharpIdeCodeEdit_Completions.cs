@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Godot;
 using Microsoft.CodeAnalysis;
@@ -100,8 +101,19 @@ public partial class SharpIdeCodeEdit
         var cursorPosition = await this.InvokeAsync(() => GetCaretPosition());
         var linePosition = new LinePosition(cursorPosition.line, cursorPosition.col);
         var filteredCompletions = RoslynAnalysis.FilterCompletions(_currentFile, Text, linePosition, _completionList, _completionTrigger!.Value, filterReason);
+        var newSelectedIndex = 0;
+        if (_codeCompletionOptions.IsDefaultOrEmpty is false)
+        {
+	        var currentSelectedCompletion = _codeCompletionOptions[_codeCompletionCurrentSelected];
+	        var selectedCompletionInFilteredCompletions = filteredCompletions.Cast<SharpIdeCompletionItem?>().SingleOrDefault(s => s.Value.CompletionItem == currentSelectedCompletion.CompletionItem);
+	        if (selectedCompletionInFilteredCompletions is not null)
+	        {
+		        newSelectedIndex = filteredCompletions.IndexOf(selectedCompletionInFilteredCompletions.Value);
+		        if (newSelectedIndex is -1) throw new UnreachableException();
+	        }
+        }
         _codeCompletionOptions = filteredCompletions;
-        SetSelectedCompletion(_codeCompletionCurrentSelected);
+        SetSelectedCompletion(newSelectedIndex);
         await this.InvokeAsync(QueueRedraw);
     }
     
