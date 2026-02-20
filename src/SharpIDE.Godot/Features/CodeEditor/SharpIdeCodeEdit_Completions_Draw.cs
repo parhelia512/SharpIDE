@@ -33,6 +33,7 @@ public partial class SharpIdeCodeEdit
     }
 
     private TextLine _completionTextLine = new TextLine();
+    private TextLine _completionInlineDescriptionTextLine = new TextLine();
     private void DrawCompletionsPopup()
     {
         var drawCodeCompletion = _codeCompletionOptions.Length > 0;
@@ -230,6 +231,9 @@ public partial class SharpIdeCodeEdit
             textLine.Clear();
             textLine.AddString(displayText, font, fontSize, lang);
             textLine.AddString(sharpIdeCompletionItem.CompletionItem.DisplayTextSuffix, font, fontSize, lang);
+            _completionInlineDescriptionTextLine.Clear();
+            _completionInlineDescriptionTextLine.AddString(" ", font, fontSize, lang);
+            _completionInlineDescriptionTextLine.AddString(sharpIdeCompletionItem.CompletionItem.InlineDescription, font, fontSize, lang);
 
             float yofs = (rowHeight - textLine.GetSize().Y) / 2;
             Vector2 titlePos = new Vector2(
@@ -292,8 +296,10 @@ public partial class SharpIdeCodeEdit
                 );
             }
 
-            var fontColour = Colors.White;
+            var fontColour = EditorThemeColours.Dark.White;
             textLine.Draw(ci, titlePos, fontColour);
+            var inlineDescriptionPos = new Vector2(titlePos.X + textLine.GetSize().X, titlePos.Y);
+            _completionInlineDescriptionTextLine.Draw(ci, inlineDescriptionPos, EditorThemeColours.Dark.Gray);
         }
 
         /* Draw a small scroll rectangle to show a position in the options. */
