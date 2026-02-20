@@ -89,6 +89,7 @@ public partial class SharpIdeCodeEdit
         _completionTrigger = null;
         _completionTriggerPosition = null;
         _codeCompletionCurrentSelected = 0;
+        _codeCompletionMinLineWidth = 0;
         _codeCompletionForceItemCenter = -1;
         _completionDescriptionWindow.Hide();
         _selectedCompletionDescription = null;

@@ -15,6 +15,7 @@ public partial class SharpIdeCodeEdit
     private int _codeCompletionLineOfs = 0;
     private int _codeCompletionForceItemCenter = -1;
     private int _codeCompletionCurrentSelected = 0;
+    private int _codeCompletionMinLineWidth = 0;
     private bool _isCodeCompletionScrollHovered = false;
     private bool _isCodeCompletionScrollPressed = false;
     private const int MaxLines = 7;
@@ -64,6 +65,11 @@ public partial class SharpIdeCodeEdit
             .MaxBy(s => s.CompletionItem.DisplayText.Length)!;
         
         var codeCompletionLongestLine = (int)font.GetStringSize(longestCompletionItem.CompletionItem.DisplayText, HorizontalAlignment.Left, -1, fontSize).X + 10; // add some padding to prevent clipping
+        if (codeCompletionLongestLine < _codeCompletionMinLineWidth)
+        {
+            codeCompletionLongestLine = _codeCompletionMinLineWidth;
+        }
+        _codeCompletionMinLineWidth = codeCompletionLongestLine;
 
         _codeCompletionRect.Size = new Vector2I(
             codeCompletionLongestLine + codeCompletionIconSeparation + iconAreaSize.X + 2,
