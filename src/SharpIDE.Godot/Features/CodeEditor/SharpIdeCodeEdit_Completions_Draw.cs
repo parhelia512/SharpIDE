@@ -168,17 +168,17 @@ public partial class SharpIdeCodeEdit
 		// Clamp the X position so it never overflows to the right
 		int finalX = Math.Min(desiredX, maxX);
 
-		_codeCompletionRect.Position = new Vector2I(finalX, _codeCompletionRect.Position.Y);
+        const int styleBoxOffset = 5;
+		_codeCompletionRect.Position = new Vector2I(finalX, _codeCompletionRect.Position.Y + styleBoxOffset);
 
-		// var completionStyle = GetThemeStylebox(ThemeStringNames.Completion);
-		// // I don't know what this is used for, but it puts a weird block box around the completions
-		// completionStyle.Draw(
-		// 	ci,
-		// 	new Rect2(
-		// 		_codeCompletionRect.Position - completionStyle.GetOffset(),
-		// 		_codeCompletionRect.Size + codeCompletionMinimumSize + new Vector2I(scrollWidth, 0)
-		// 	)
-		// );
+		var completionStyle = GetThemeStylebox(ThemeStringNames.Completion);
+		completionStyle.Draw(
+			ci,
+			new Rect2(
+				_codeCompletionRect.Position + new Vector2(-5, -5),
+				_codeCompletionRect.Size + new Vector2(scrollWidth, 0) + new Vector2(10, 10)
+			)
+		);
 
         var codeCompletionBackgroundColor = GetThemeColor(ThemeStringNames.CompletionBackgroundColor);
         if (codeCompletionBackgroundColor.A > 0.01f)
@@ -327,7 +327,7 @@ public partial class SharpIdeCodeEdit
         
         var descriptionPos = new Vector2I(
             _codeCompletionRect.Position.X + _codeCompletionRect.Size.X + scrollWidth + 5,
-            _codeCompletionRect.Position.Y
+            _codeCompletionRect.Position.Y - styleBoxOffset
         );
         _completionDescriptionWindow.Position = descriptionPos + (Vector2I)GlobalPosition;
     }
