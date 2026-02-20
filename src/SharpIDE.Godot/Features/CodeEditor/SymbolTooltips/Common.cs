@@ -216,6 +216,12 @@ public static partial class SymbolInfoComponents
                         label.Pop();
                     label.Pop(); // meta
                 }
+                else if (reader.GetAttribute(DocumentationCommentXmlNames.LangwordAttributeName) is {} langword)
+                {
+                    label.PushColor(TextEditorDotnetColoursDark.KeywordBlue);
+                        label.AddText(langword);
+                    label.Pop();
+                }
             }
             else if (reader is { NodeType: System.Xml.XmlNodeType.Element, Name: DocumentationCommentXmlNames.TypeParameterReferenceElementName })
             {
