@@ -86,7 +86,8 @@ public partial class SharpIdeCodeEdit
             completionsToDisplay * rowHeight
         );
 
-        var caretPos = (Vector2I)GetCaretDrawPos();
+        var caretLinePos = GetCaretPosition();
+        var caretPos = GetPosAtLineColumn(caretLinePos.line, caretLinePos.col);
         var totalHeight = codeCompletionMinimumSize.Y + _codeCompletionRect.Size.Y;
         float minY = caretPos.Y - rowHeight;
         float maxY = caretPos.Y + rowHeight + totalHeight;
