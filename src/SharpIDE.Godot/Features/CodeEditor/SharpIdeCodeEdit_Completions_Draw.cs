@@ -12,7 +12,7 @@ public partial class SharpIdeCodeEdit
     private Rect2I _codeCompletionScrollRect = new Rect2I();
     private Vector2I _codeHintMinsize = new Vector2I();
     private Vector2I? _completionTriggerPosition;
-    private int _codeCompletionLineOfs = 0;
+    private int _codeCompletionLineOffset = 0;
     private int _codeCompletionForceItemCenter = -1;
     private int _codeCompletionCurrentSelected = 0;
     private int _codeCompletionMinLineWidth = 0;
@@ -34,7 +34,7 @@ public partial class SharpIdeCodeEdit
 
         int rowHeight = GetLineHeight();
         int relativeY = point.Y - _codeCompletionRect.Position.Y;
-        int lineIndex = relativeY / rowHeight + _codeCompletionLineOfs;
+        int lineIndex = relativeY / rowHeight + _codeCompletionLineOffset;
         if (lineIndex < 0 || lineIndex >= _codeCompletionOptions.Length) return null;
 
         return lineIndex;
@@ -201,7 +201,7 @@ public partial class SharpIdeCodeEdit
         _codeCompletionScrollRect.Position = _codeCompletionRect.Position + new Vector2I(_codeCompletionRect.Size.X, 0);
         _codeCompletionScrollRect.Size = new Vector2I(scrollWidth, _codeCompletionRect.Size.Y);
 
-        _codeCompletionLineOfs = Mathf.Clamp(
+        _codeCompletionLineOffset = Mathf.Clamp(
             (_codeCompletionForceItemCenter < 0 ? _codeCompletionCurrentSelected : _codeCompletionForceItemCenter) -
             completionsToDisplay / 2,
             0,
@@ -215,7 +215,7 @@ public partial class SharpIdeCodeEdit
             new Rect2(
                 new Vector2(
                     _codeCompletionRect.Position.X,
-                    _codeCompletionRect.Position.Y + (_codeCompletionCurrentSelected - _codeCompletionLineOfs) * rowHeight
+                    _codeCompletionRect.Position.Y + (_codeCompletionCurrentSelected - _codeCompletionLineOffset) * rowHeight
                 ),
                 new Vector2(_codeCompletionRect.Size.X, rowHeight)
             )
@@ -225,7 +225,7 @@ public partial class SharpIdeCodeEdit
         string lang = OS.GetLocale();
         for (int i = 0; i < completionsToDisplay; i++)
         {
-            int l = _codeCompletionLineOfs + i;
+            int l = _codeCompletionLineOffset + i;
             if (l < 0 || l >= availableCompletions)
             {
                 GD.PushError($"Invalid line index: {l}");
@@ -243,10 +243,10 @@ public partial class SharpIdeCodeEdit
             _completionInlineDescriptionTextLine.AddString(" ", font, fontSize, lang);
             _completionInlineDescriptionTextLine.AddString(sharpIdeCompletionItem.CompletionItem.InlineDescription, font, fontSize, lang);
 
-            float yofs = (rowHeight - textLine.GetSize().Y) / 2;
+            float yOffset = (rowHeight - textLine.GetSize().Y) / 2;
             Vector2 titlePos = new Vector2(
                 _codeCompletionRect.Position.X,
-                _codeCompletionRect.Position.Y + i * rowHeight + yofs
+                _codeCompletionRect.Position.Y + i * rowHeight + yOffset
             );
 
             /* Draw completion icon if it is valid. */
@@ -318,7 +318,7 @@ public partial class SharpIdeCodeEdit
                 : GetThemeColor(ThemeStringNames.CompletionScrollColor);
 
             float r = (float)MaxLines / availableCompletions;
-            float o = (float)_codeCompletionLineOfs / availableCompletions;
+            float o = (float)_codeCompletionLineOffset / availableCompletions;
 
             RenderingServer.Singleton.CanvasItemAddRect(
                 ci,
