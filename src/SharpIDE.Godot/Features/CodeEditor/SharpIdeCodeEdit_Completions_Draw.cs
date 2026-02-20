@@ -19,6 +19,14 @@ public partial class SharpIdeCodeEdit
     private bool _isCodeCompletionScrollHovered = false;
     private bool _isCodeCompletionScrollPressed = false;
     private const int MaxLines = 7;
+    
+    private static readonly StyleBoxFlat SelectedCompletionStyle = new StyleBoxFlat
+    {
+        CornerRadiusTopLeft = 4,
+        CornerRadiusTopRight = 4,
+        CornerRadiusBottomLeft = 4,
+        CornerRadiusBottomRight = 4
+    };
 
     private int? GetCompletionOptionAtPoint(Vector2I point)
     {
@@ -201,7 +209,8 @@ public partial class SharpIdeCodeEdit
         );
 
         var codeCompletionSelectedColor = GetThemeColor(ThemeStringNames.CompletionSelectedColor);
-        RenderingServer.Singleton.CanvasItemAddRect(
+        SelectedCompletionStyle.BgColor = codeCompletionSelectedColor;
+        SelectedCompletionStyle.Draw(
             ci,
             new Rect2(
                 new Vector2(
@@ -209,8 +218,7 @@ public partial class SharpIdeCodeEdit
                     _codeCompletionRect.Position.Y + (_codeCompletionCurrentSelected - _codeCompletionLineOfs) * rowHeight
                 ),
                 new Vector2(_codeCompletionRect.Size.X, rowHeight)
-            ),
-            codeCompletionSelectedColor
+            )
         );
 
         // TODO: Cache
