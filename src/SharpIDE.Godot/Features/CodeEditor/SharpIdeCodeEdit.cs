@@ -424,6 +424,16 @@ public partial class SharpIdeCodeEdit : CodeEdit
 			DeleteLines();
 			return;
 		}
+		if (@event.IsActionPressed(InputStringNames.CodeEditorMoveLineUp))
+		{
+			MoveLinesUp();
+			return;
+		}
+		if (@event.IsActionPressed(InputStringNames.CodeEditorMoveLineDown))
+		{
+			MoveLinesDown();
+			return;
+		}
 		if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right } mouseEvent)
 		{
 			var (col, line) = GetLineColumnAtPos((Vector2I)mouseEvent.Position);
