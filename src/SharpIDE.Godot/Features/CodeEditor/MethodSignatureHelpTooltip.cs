@@ -10,12 +10,19 @@ public static class MethodSignatureHelpTooltip
 {
 	private static readonly FontVariation MonospaceFont = ResourceLoader.Load<FontVariation>("uid://cctwlwcoycek7");
 	private static readonly Color HrColour = new Color("4d4d4d");
+	private static readonly Color SelectedBackgroundColour = new Color("2e436e");
 	
 	public static void WriteToMethodSignatureHelpLabel(RichTextLabel richTextLabel, SignatureHelpItems signatureHelpItems, EditorThemeColorSet editorThemeColorSet)
 	{
+		richTextLabel.PushTable(1);
+		richTextLabel.SetTableColumnExpand(0, true, 1);
 		for (var i = 0; i < signatureHelpItems.Items.Count; i++)
 		{
 			var item = signatureHelpItems.Items[i];
+			richTextLabel.PushCell();
+			var isSelectedItem = i == signatureHelpItems.SelectedItemIndex;
+			if (isSelectedItem) richTextLabel.SetCellRowBackgroundColor(SelectedBackgroundColour, SelectedBackgroundColour);
+			
 			var prefixQuickInfoElements = item.PrefixDisplayParts.ToInteractiveTextElements(null);
 			foreach (var quickInfoElement in prefixQuickInfoElements)
 			{
@@ -51,12 +58,16 @@ public static class MethodSignatureHelpTooltip
 			{
 				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
 			}
+			richTextLabel.Pop(); // cell
 			if (i < signatureHelpItems.Items.Count - 1)
 			{
-				richTextLabel.Newline();
-				richTextLabel.AddHr(100, 1, HrColour, HorizontalAlignment.Center, true);
-				richTextLabel.Newline();
+				// Simulate a HR between the cells
+				richTextLabel.PushCell();
+				richTextLabel.SetCellRowBackgroundColor(HrColour, HrColour);
+				richTextLabel.SetCellSizeOverride(new Vector2(1, 1), new Vector2(1, 1));
+				richTextLabel.Pop();
 			}
 		}
+		richTextLabel.Pop(); // table
 	}
 }
