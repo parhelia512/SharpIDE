@@ -37,7 +37,7 @@ public partial class InvertedVSplitContainer : VSplitContainer
     
     public override void _Notification(int what)
     {
-        if (what == NotificationResized)
+        if (what == NotificationResized && _invertedCollapsed is false)
         {
             SplitOffset = (int)Size.Y - _invertedOffset;
         }
