@@ -27,6 +27,9 @@ public partial class SharpIdeCodeEdit
                 {
                     await this.InvokeAsync(() =>
                     {
+                        var richTextLabel = _methodSignatureHelpWindow.GetNode<RichTextLabel>("PanelContainer/RichTextLabel");
+                        richTextLabel.Clear();
+                        MethodSignatureHelpTooltip.WriteToMethodSignatureHelpLabel(richTextLabel, signatureHelpItems, _syntaxHighlighter.ColourSetForTheme);
                         _methodSignatureHelpWindow.Position = (Vector2I)GetGlobalPosition() + caretPos;
                         _methodSignatureHelpWindow.Show();
                         _isMethodSignatureHelpPopupOpen = true;

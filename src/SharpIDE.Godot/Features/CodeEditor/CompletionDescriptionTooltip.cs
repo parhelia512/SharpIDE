@@ -19,7 +19,7 @@ public static class CompletionDescriptionTooltip
 		return label;
 	}
 
-	private static void WriteQuickInfoElement(RichTextLabel label, QuickInfoElement quickInfoElement, EditorThemeColorSet editorThemeColorSet)
+	public static void WriteQuickInfoElement(RichTextLabel label, QuickInfoElement quickInfoElement, EditorThemeColorSet editorThemeColorSet)
 	{
 		switch (quickInfoElement)
 		{
