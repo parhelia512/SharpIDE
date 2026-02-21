@@ -7,6 +7,12 @@ public partial class SharpIdeCodeEdit
 {
     private bool _isMethodSignatureHelpPopupOpen;
     private LinePositionSpan _signatureHelpApplicableSpan;
+
+    private void CloseMethodSignatureHelpWindow()
+    {
+        _isMethodSignatureHelpPopupOpen = false;
+        _methodSignatureHelpWindow.Hide();
+    }
     
     private bool MethodSignatureHelpPopupTryConsumeGuiInput(InputEvent @event)
     {
@@ -16,16 +22,14 @@ public partial class SharpIdeCodeEdit
             var caretPositionLinePosition = new LinePosition(caretPos.line, caretPos.col);
             if (caretPositionLinePosition < _signatureHelpApplicableSpan.Start || caretPositionLinePosition > _signatureHelpApplicableSpan.End)
             {
-                _isMethodSignatureHelpPopupOpen = false;
-                _methodSignatureHelpWindow.Hide();
+                CloseMethodSignatureHelpWindow();
                 return false;
             }
         }
         if (@event is InputEventMouseButton) return false;
         if (@event.IsActionPressed(InputStringNames.Cancel) && _isMethodSignatureHelpPopupOpen)
         {
-            _isMethodSignatureHelpPopupOpen = false;
-            _methodSignatureHelpWindow.Hide();
+            CloseMethodSignatureHelpWindow();
             return true;
         }
         else if (@event.IsActionPressed(InputStringNames.CodeEditorRequestSignatureInfo))
