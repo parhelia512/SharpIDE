@@ -8,6 +8,7 @@ public partial class SharpIdeCodeEdit
     private bool _isMethodSignatureHelpPopupOpen;
     private LinePositionSpan _signatureHelpApplicableSpan;
     private LinePosition? _previousCaretPositionForMethodSignatureHelp;
+    private double? _previousVScrollForMethodSignatureHelp;
     
     private void CloseMethodSignatureHelpWindow()
     {
@@ -30,6 +31,18 @@ public partial class SharpIdeCodeEdit
             if (_previousCaretPositionForMethodSignatureHelp != caretPositionLinePosition)
             {
                 UpdateSignatureHelpTooltip(caretLine, caretCol, false);
+                return false;
+            }
+            var vScroll = GetVScroll();
+            if (_previousVScrollForMethodSignatureHelp != vScroll)
+            {
+                // Let the CodeEdit actually apply the scroll first
+                Callable.From(() =>
+                {
+                    var caretPos = GetPosAtLineColumn(caretLine, caretCol);
+                    SetSignatureHelpTooltipPosition(caretPos);
+                    _previousVScrollForMethodSignatureHelp = vScroll;
+                }).CallDeferred();
                 return false;
             }
         }
@@ -64,7 +77,7 @@ public partial class SharpIdeCodeEdit
                 richTextLabel.Clear();
                 _methodSignatureHelpWindow.Size = new Vector2I(10, 10); // Used to shrink the window, as ChildControlsChanged() doesn't seem to handle shrinking in this case?
                 MethodSignatureHelpTooltip.WriteToMethodSignatureHelpLabel(richTextLabel, signatureHelpItems, _syntaxHighlighter.ColourSetForTheme);
-                _methodSignatureHelpWindow.Position = (Vector2I)GetGlobalPosition() + caretPos;
+                SetSignatureHelpTooltipPosition(caretPos);
                 _previousCaretPositionForMethodSignatureHelp = linePos;
                 if (showIfHidden)
                 {
@@ -73,5 +86,10 @@ public partial class SharpIdeCodeEdit
                 }
             });
         });
+    }
+    
+    private void SetSignatureHelpTooltipPosition(Vector2I caretPos)
+    {
+        _methodSignatureHelpWindow.Position = (Vector2I)GetGlobalPosition() + caretPos;
     }
 }
