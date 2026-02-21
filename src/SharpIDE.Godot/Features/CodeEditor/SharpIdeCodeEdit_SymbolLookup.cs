@@ -74,22 +74,23 @@ public partial class SharpIdeCodeEdit
             }
             else if (semanticInfo.Value.ReferencedSymbols.Length is not 0)
             {
-                var referencedSymbol =
-                    semanticInfo.Value.ReferencedSymbols.Single(); // Handle more than one when I run into it
+                var referencedSymbol = semanticInfo.Value.ReferencedSymbols.Single(); // Handle more than one when I run into it
                 var locations = referencedSymbol.Locations;
                 if (locations.Length is 1)
                 {
                     // Lets jump to the definition
                     var definitionLocation = locations[0];
-                    var definitionLineSpan = definitionLocation.GetMappedLineSpan();
-                    var sharpIdeFile = Solution!.AllFiles.GetValueOrDefault(definitionLineSpan.Path);
-                    if (sharpIdeFile is null)
+                    if (definitionLocation.IsInSource)
                     {
-                        GD.Print($"Definition file not found in solution: {definitionLineSpan.Path}");
-                        return;
+                        var definitionLineSpan = definitionLocation.GetMappedLineSpan();
+                        var sharpIdeFile = Solution!.AllFiles.GetValueOrDefault(definitionLineSpan.Path);
+                        if (sharpIdeFile is null) throw new InvalidOperationException($"Definition file not found in solution, despite IsInSource: {definitionLineSpan.Path}");
+                        await GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelAsync(sharpIdeFile, new SharpIdeFileLinePosition(definitionLineSpan.Span.Start.Line, definitionLineSpan.Span.Start.Character));
                     }
-
-                    await GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelAsync(sharpIdeFile, new SharpIdeFileLinePosition(definitionLineSpan.Span.Start.Line, definitionLineSpan.Span.Start.Character));
+                    else
+                    {
+                        GD.PrintErr($"Definition is not in source code, cannot navigate to it: {referencedSymbol.Name}");
+                    }
                 }
                 else
                 {
