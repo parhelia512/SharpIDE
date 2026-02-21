@@ -60,14 +60,14 @@ public static class MethodSignatureHelpTooltip
 			}
 
 			var selectedParameterIndex = signatureHelpItems.SemanticParameterIndex;
-			var selectedParameter = parameters[selectedParameterIndex];
-			var parameterDocumentation = selectedParameter.DocumentationFactory(CancellationToken.None).ToImmutableArray().ToInteractiveTextElements(null);
+			var selectedParameter = signatureHelpItems.SyntacticArgumentCount > 0 ? parameters[selectedParameterIndex] : null;
+			var parameterDocumentation = selectedParameter?.DocumentationFactory(CancellationToken.None).ToImmutableArray().ToInteractiveTextElements(null) ?? [];
 			if (parameterDocumentation.IsDefaultOrEmpty is false)
 			{
 				richTextLabel.Newline();
 				richTextLabel.PushFont(MonospaceFont);
 				richTextLabel.PushColor(editorThemeColorSet.VariableBlue);
-				richTextLabel.AppendText(selectedParameter.Name);
+				richTextLabel.AppendText(selectedParameter!.Name);
 				richTextLabel.Pop(); // color
 				richTextLabel.AppendText(": ");
 				richTextLabel.Pop(); // font
