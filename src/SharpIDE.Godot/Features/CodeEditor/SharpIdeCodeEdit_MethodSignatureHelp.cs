@@ -9,6 +9,7 @@ public partial class SharpIdeCodeEdit
     private LinePositionSpan _signatureHelpApplicableSpan;
     private LinePosition? _previousCaretPositionForMethodSignatureHelp;
     private double? _previousVScrollForMethodSignatureHelp;
+    private double? _previousHScrollForMethodSignatureHelp;
     
     private void CloseMethodSignatureHelpWindow()
     {
@@ -34,7 +35,8 @@ public partial class SharpIdeCodeEdit
                 return false;
             }
             var vScroll = GetVScroll();
-            if (_previousVScrollForMethodSignatureHelp != vScroll)
+            var hScroll = GetHScroll();
+            if (_previousVScrollForMethodSignatureHelp != vScroll || _previousHScrollForMethodSignatureHelp != hScroll)
             {
                 // Let the CodeEdit actually apply the scroll first
                 Callable.From(() =>
@@ -42,6 +44,7 @@ public partial class SharpIdeCodeEdit
                     var caretPos = GetPosAtLineColumn(caretLine, caretCol);
                     SetSignatureHelpTooltipPosition(caretPos);
                     _previousVScrollForMethodSignatureHelp = vScroll;
+                    _previousHScrollForMethodSignatureHelp = hScroll;
                 }).CallDeferred();
                 return false;
             }
