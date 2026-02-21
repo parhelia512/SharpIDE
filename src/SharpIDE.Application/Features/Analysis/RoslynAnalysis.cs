@@ -628,7 +628,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return description!;
 	}
 
-	public async Task<SignatureHelpItems?> GetMethodSignatureInfo(SharpIdeFile file, LinePosition linePosition, CancellationToken cancellationToken = default)
+	public async Task<SharpIdeSignatureHelpItems?> GetMethodSignatureInfo(SharpIdeFile file, LinePosition linePosition, CancellationToken cancellationToken = default)
 	{
 		await _solutionLoadedTcs.Task;
 		var document = await GetDocumentForSharpIdeFile(file, cancellationToken);
@@ -647,8 +647,19 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 
 		var triggerInfo = new SignatureHelpTriggerInfo(SignatureHelpTriggerReason.InvokeSignatureHelpCommand);
 		var (_, signatureHelpItems) = await _signatureHelpService.GetSignatureHelpAsync(document, position, triggerInfo, cancellationToken);
+		if (signatureHelpItems is null) return null;
 
-		return signatureHelpItems;
+		var applicableSpan = signatureHelpItems.ApplicableSpan;
+		var mappedLineSpan = (await document.GetRequiredSyntaxTreeAsync(cancellationToken)).GetMappedLineSpan(applicableSpan, cancellationToken);
+		var mappedLinePositionSpan = mappedLineSpan.Span;
+
+		var sharpIdeSignatureHelpItems = new SharpIdeSignatureHelpItems
+		{
+			Items =  signatureHelpItems,
+			ApplicableSpan = mappedLinePositionSpan
+		};
+
+		return sharpIdeSignatureHelpItems;
 
 		// var symbols = semanticModel.LookupSymbols(position, methodSymbol.ReceiverType, methodSymbol.Name, true)
 		// 	.OfType<IMethodSymbol>()
