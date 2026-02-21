@@ -30,7 +30,8 @@ public static class MethodSignatureHelpTooltip
 				var parameterQuickInfoElements = parameter.DisplayParts.ToImmutableArray().ToInteractiveTextElements(null);
 				foreach (var quickInfoElement in parameterQuickInfoElements)
 				{
-					CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
+					var bold = j == signatureHelpItems.SemanticParameterIndex;
+					CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet, bold);
 				}
 				if (j < parameters.Length - 1)
 				{

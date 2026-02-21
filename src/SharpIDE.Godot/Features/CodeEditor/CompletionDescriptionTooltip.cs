@@ -7,6 +7,8 @@ namespace SharpIDE.Godot.Features.CodeEditor;
 public static class CompletionDescriptionTooltip
 {
 	private static readonly FontVariation MonospaceFont = ResourceLoader.Load<FontVariation>("uid://cctwlwcoycek7");
+	private static readonly FontVariation MonospaceBoldFont = ResourceLoader.Load<FontVariation>("uid://bix80oipv61ew");
+	
 	public static RichTextLabel WriteToCompletionDescriptionLabel(RichTextLabel label, CompletionDescription completionDescription, EditorThemeColorSet editorThemeColorSet)
 	{
 		var quickInfoElements = completionDescription.TaggedParts.ToInteractiveTextElements(null);
@@ -19,7 +21,7 @@ public static class CompletionDescriptionTooltip
 		return label;
 	}
 
-	public static void WriteQuickInfoElement(RichTextLabel label, QuickInfoElement quickInfoElement, EditorThemeColorSet editorThemeColorSet)
+	public static void WriteQuickInfoElement(RichTextLabel label, QuickInfoElement quickInfoElement, EditorThemeColorSet editorThemeColorSet, bool bold = false)
 	{
 		switch (quickInfoElement)
 		{
@@ -29,7 +31,7 @@ public static class CompletionDescriptionTooltip
 					var colour = ClassificationToColorMapper.GetColorForClassification(editorThemeColorSet, quickInfoClassifiedTextRun.ClassificationTypeName);
 					label.PushColor(colour);
 					var isMonospace = quickInfoClassifiedTextRun.ClassificationTypeName is not ("text" or "whitespace");
-					if (isMonospace) label.PushFont(MonospaceFont);
+					if (isMonospace) label.PushFont(bold ? MonospaceBoldFont : MonospaceFont);
 					label.AddText(quickInfoClassifiedTextRun.Text);
 					label.Pop();
 					if (isMonospace) label.Pop();
