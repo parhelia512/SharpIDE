@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Godot;
-using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.QuickInfo.Presentation;
 using Microsoft.CodeAnalysis.SignatureHelp;
 
@@ -16,13 +16,14 @@ public static class MethodSignatureHelpTooltip
 		{
 			var item = signatureHelpItems.Items[i];
 			var isCurrentItem = i == signatureHelpItems.SelectedItemIndex;
-			if (isCurrentItem) richTextLabel.PushBold();
+			//if (isCurrentItem) richTextLabel.PushBold();
 			var prefixQuickInfoElements = item.PrefixDisplayParts.ToInteractiveTextElements(null);
 			foreach (var quickInfoElement in prefixQuickInfoElements)
 			{
 				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
 			}
 			var parameters = item.Parameters;
+			var paramSeparatorString = item.SeparatorDisplayParts.GetFullText();
 			for (var j = 0; j < parameters.Length; j++)
 			{
 				var parameter = parameters[j];
@@ -34,7 +35,7 @@ public static class MethodSignatureHelpTooltip
 				if (j < parameters.Length - 1)
 				{
 					richTextLabel.PushFont(MonospaceFont);
-					richTextLabel.AppendText(", ");
+					richTextLabel.AppendText(paramSeparatorString);
 					richTextLabel.Pop();
 				}
 			}
@@ -44,7 +45,7 @@ public static class MethodSignatureHelpTooltip
 			{
 				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
 			}
-			if (isCurrentItem) richTextLabel.Pop();
+			//if (isCurrentItem) richTextLabel.Pop();
 			richTextLabel.AppendText("\n");
 		}
 	}
