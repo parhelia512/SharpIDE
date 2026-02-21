@@ -45,7 +45,7 @@ public static class MethodSignatureHelpTooltip
 			{
 				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
 			}
-			richTextLabel.AppendText("\n");
+			richTextLabel.Newline();
 			var documentationQuickInfoElements = item.DocumentationFactory(CancellationToken.None).ToImmutableArray().ToInteractiveTextElements(null);
 			foreach (var quickInfoElement in documentationQuickInfoElements)
 			{
@@ -53,9 +53,9 @@ public static class MethodSignatureHelpTooltip
 			}
 			if (i < signatureHelpItems.Items.Count - 1)
 			{
-				richTextLabel.AppendText("\n");
+				richTextLabel.Newline();
 				richTextLabel.AddHr(100, 1, HrColour, HorizontalAlignment.Center, true);
-				richTextLabel.AppendText("\n");
+				richTextLabel.Newline();
 			}
 		}
 	}
