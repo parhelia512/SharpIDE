@@ -90,6 +90,10 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		GodotGlobalEvents.Instance.TextEditorThemeChanged.Subscribe(UpdateEditorThemeAsync);
 		SetCodeRegionTags("#region", "#endregion");
 		//AddGitGutter();
+		var hScrollBar = GetHScrollBar();
+		var vScrollBar = GetVScrollBar();
+		hScrollBar.ValueChanged += OnCodeEditScrolled;
+		vScrollBar.ValueChanged += OnCodeEditScrolled;
 	}
 
 	private readonly CancellationSeries _solutionAlteredCancellationTokenSeries = new();

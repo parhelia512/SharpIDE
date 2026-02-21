@@ -8,9 +8,7 @@ public partial class SharpIdeCodeEdit
     private bool _isMethodSignatureHelpPopupOpen;
     private LinePositionSpan _signatureHelpApplicableSpan;
     private LinePosition? _previousCaretPositionForMethodSignatureHelp;
-    private double? _previousVScrollForMethodSignatureHelp;
-    private double? _previousHScrollForMethodSignatureHelp;
-    
+
     private void CloseMethodSignatureHelpWindow()
     {
         _isMethodSignatureHelpPopupOpen = false;
@@ -32,20 +30,6 @@ public partial class SharpIdeCodeEdit
             if (_previousCaretPositionForMethodSignatureHelp != caretPositionLinePosition)
             {
                 UpdateSignatureHelpTooltip(caretLine, caretCol, false);
-                return false;
-            }
-            var vScroll = GetVScroll();
-            var hScroll = GetHScroll();
-            if (_previousVScrollForMethodSignatureHelp != vScroll || _previousHScrollForMethodSignatureHelp != hScroll)
-            {
-                // Let the CodeEdit actually apply the scroll first
-                Callable.From(() =>
-                {
-                    var caretPos = GetPosAtLineColumn(caretLine, caretCol);
-                    SetSignatureHelpTooltipPosition(caretPos);
-                    _previousVScrollForMethodSignatureHelp = vScroll;
-                    _previousHScrollForMethodSignatureHelp = hScroll;
-                }).CallDeferred();
                 return false;
             }
         }
@@ -94,5 +78,19 @@ public partial class SharpIdeCodeEdit
     private void SetSignatureHelpTooltipPosition(Vector2I caretPos)
     {
         _methodSignatureHelpWindow.Position = (Vector2I)GetGlobalPosition() + caretPos;
+    }
+
+    private void OnCodeEditScrolled(double delta)
+    {
+        if (_isMethodSignatureHelpPopupOpen)
+        {
+            var (caretLine, caretCol) = GetCaretPosition();
+            // Let the CodeEdit actually apply the scroll first
+            Callable.From(() =>
+            {
+                var caretPos = GetPosAtLineColumn(caretLine, caretCol);
+                SetSignatureHelpTooltipPosition(caretPos);
+            }).CallDeferred();
+        }
     }
 }
