@@ -29,7 +29,7 @@ public partial class SharpIdeCodeEdit
 
             if (_previousCaretPositionForMethodSignatureHelp != caretPositionLinePosition)
             {
-                UpdateSignatureHelpTooltip(caretLine, caretCol);
+                UpdateSignatureHelpTooltip(caretLine, caretCol, false);
                 return false;
             }
         }
@@ -42,15 +42,13 @@ public partial class SharpIdeCodeEdit
         else if (@event.IsActionPressed(InputStringNames.CodeEditorRequestSignatureInfo))
         {
             var (caretLine, caretColumn) = GetCaretPosition();
-            UpdateSignatureHelpTooltip(caretLine, caretColumn); 
-            _methodSignatureHelpWindow.Show(); 
-            _isMethodSignatureHelpPopupOpen = true;
+            UpdateSignatureHelpTooltip(caretLine, caretColumn, true); 
             return true;
         }
         return false;
     }
 
-    private void UpdateSignatureHelpTooltip(int caretLine, int caretColumn)
+    private void UpdateSignatureHelpTooltip(int caretLine, int caretColumn, bool showIfHidden)
     {
         var caretPos = GetPosAtLineColumn(caretLine, caretColumn);
         _ = Task.GodotRun(async () =>
@@ -68,6 +66,11 @@ public partial class SharpIdeCodeEdit
                 MethodSignatureHelpTooltip.WriteToMethodSignatureHelpLabel(richTextLabel, signatureHelpItems, _syntaxHighlighter.ColourSetForTheme);
                 _methodSignatureHelpWindow.Position = (Vector2I)GetGlobalPosition() + caretPos;
                 _previousCaretPositionForMethodSignatureHelp = linePos;
+                if (showIfHidden)
+                {
+                    _methodSignatureHelpWindow.Show(); 
+                    _isMethodSignatureHelpPopupOpen = true;
+                }
             });
         });
     }
