@@ -9,6 +9,7 @@ namespace SharpIDE.Godot.Features.CodeEditor;
 public static class MethodSignatureHelpTooltip
 {
 	private static readonly FontVariation MonospaceFont = ResourceLoader.Load<FontVariation>("uid://cctwlwcoycek7");
+	private static readonly Color HrColour = new Color("4d4d4d");
 	
 	public static void WriteToMethodSignatureHelpLabel(RichTextLabel richTextLabel, SignatureHelpItems signatureHelpItems, EditorThemeColorSet editorThemeColorSet)
 	{
@@ -45,6 +46,17 @@ public static class MethodSignatureHelpTooltip
 				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
 			}
 			richTextLabel.AppendText("\n");
+			var documentationQuickInfoElements = item.DocumentationFactory(CancellationToken.None).ToImmutableArray().ToInteractiveTextElements(null);
+			foreach (var quickInfoElement in documentationQuickInfoElements)
+			{
+				CompletionDescriptionTooltip.WriteQuickInfoElement(richTextLabel, quickInfoElement, editorThemeColorSet);
+			}
+			richTextLabel.AppendText("\n");
+			if (i < signatureHelpItems.Items.Count - 1)
+			{
+				richTextLabel.AddHr(100, 1, HrColour, HorizontalAlignment.Center, true);
+				richTextLabel.AppendText("\n");
+			}
 		}
 	}
 }
