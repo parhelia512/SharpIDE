@@ -536,7 +536,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		// 		return span;
 		// 	}).ToList();
 		//var test = _semanticTokensLegendService.TokenTypes.All;
-		var sourceMappings = razorCSharpDocument.SourceMappings.Select(s => s.ToSharpIdeSourceMapping()).ToImmutableArray();
+		var sourceMappings = razorCSharpDocument.SourceMappingsSortedByOriginal.Select(s => s.ToSharpIdeSourceMapping()).ToImmutableArray();
 		List<SharpIdeRazorClassifiedSpan> sharpIdeRazorSpans = [];
 
 		var classifiedSpans = await Classifier.GetClassifiedSpansAsync(generatedDocument, generatedDocSyntaxRoot!.FullSpan, cancellationToken);

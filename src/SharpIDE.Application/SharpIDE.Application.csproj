@@ -14,6 +14,7 @@
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Razor.Compiler" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.VisualStudioCode.RazorExtension" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.LanguageServer.Protocol" />
+    <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.ExternalAccess.Razor.Features" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Razor.SemanticTokens" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Workspaces" />

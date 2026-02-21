@@ -14,7 +14,7 @@ internal sealed class CustomSemanticTokensVisitor : SyntaxWalker
     private readonly ISemanticTokensLegendService _semanticTokensLegend;
     private readonly bool _colorCodeBackground;
 
-    private bool _addRazorCodeModifier = false;
+    private bool _addRazorCodeModifier;
 
     private CustomSemanticTokensVisitor(List<SemanticRange> semanticRanges, RazorCodeDocument razorCodeDocument, TextSpan range, ISemanticTokensLegendService semanticTokensLegend, bool colorCodeBackground)
     {
@@ -429,7 +429,7 @@ internal sealed class CustomSemanticTokensVisitor : SyntaxWalker
 
     public override void VisitCSharpTransition(CSharpTransitionSyntax node)
     {
-        if (node.Parent is not RazorDirectiveSyntax)
+        if (node.Parent is not BaseRazorDirectiveSyntax)
         {
 	        AddSemanticRange(node, _semanticTokensLegend.TokenTypes.RazorTransition);
         }
@@ -466,7 +466,7 @@ internal sealed class CustomSemanticTokensVisitor : SyntaxWalker
     {
         if (node is MarkupTagHelperElementSyntax { TagHelperInfo.BindingResult: var binding })
         {
-            var componentDescriptor = binding.Descriptors.FirstOrDefault(static d => d.Kind == TagHelperKind.Component);
+            var componentDescriptor = binding.TagHelpers.FirstOrDefault(static d => d.Kind == TagHelperKind.Component);
             return componentDescriptor is not null;
         }
         else if (node is MarkupTagHelperStartTagSyntax startTag)
