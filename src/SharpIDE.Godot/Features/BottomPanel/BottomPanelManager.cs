@@ -54,7 +54,7 @@ public partial class BottomPanelManager : Panel
 
     public override void _ExitTree()
     {
-        GodotGlobalEvents.Instance.BottomPanelTabSelected.Subscribe(OnBottomPanelTabSelected);
+        GodotGlobalEvents.Instance.BottomPanelTabSelected.Unsubscribe(OnBottomPanelTabSelected);
     }
 
     private async Task OnBottomPanelTabSelected(BottomPanelType? type)
