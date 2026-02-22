@@ -58,6 +58,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
     [Inject] private readonly IdeApplyCompletionService _ideApplyCompletionService = null!;
     [Inject] private readonly IdeNavigationHistoryService _navigationHistoryService = null!;
     [Inject] private readonly EditorCaretPositionService _editorCaretPositionService = null!;
+    [Inject] private readonly SharpIdeMetadataAsSourceService _sharpIdeMetadataAsSourceService = null!;
 
 	public SharpIdeCodeEdit()
 	{
@@ -333,6 +334,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 			_fileChangingSuppressBreakpointToggleEvent = false;
 			ClearUndoHistory();
 			if (fileLinePosition is not null) SetFileLinePosition(fileLinePosition.Value);
+			if (file.IsMetadataAsSourceFile) Editable = false;
 		});
 		_ = Task.GodotRun(async () =>
 		{

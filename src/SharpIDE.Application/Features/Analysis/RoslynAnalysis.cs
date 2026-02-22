@@ -10,10 +10,12 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeRefactorings;
 using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.CSharp.DecompiledSource;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.MetadataAsSource;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -60,6 +62,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 	private static ICodeFixService? _codeFixService;
 	private static ICodeRefactoringService? _codeRefactoringService;
 	private static IDocumentMappingService? _documentMappingService;
+	private static IMetadataAsSourceFileService _metadataAsSourceFileService = null!;
 	private static SignatureHelpService _signatureHelpService = null!;
 	private static HashSet<CodeRefactoringProvider> _codeRefactoringProviders = [];
 	private static HashSet<CodeFixProvider> _codeFixProviders = [];
@@ -97,6 +100,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			var configuration = new ContainerConfiguration()
 				.WithAssemblies(MefHostServices.DefaultAssemblies)
 				.WithAssembly(typeof(RemoteSnapshotManager).Assembly)
+				.WithPart<CSharpDecompilationService2>()
 				.WithPart<PythiaStub>();
 
 			// TODO: dispose container at some point?
@@ -112,7 +116,8 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			_codeFixService = container.GetExports<ICodeFixService>().FirstOrDefault();
 			_codeRefactoringService = container.GetExports<ICodeRefactoringService>().FirstOrDefault();
 			_signatureHelpService = container.GetExports<SignatureHelpService>().FirstOrDefault()!;
-
+			// TODO: Write an implementation of ISourceLinkService, as MS's implementation does not appear to be open source
+			_metadataAsSourceFileService = container.GetExports<IMetadataAsSourceFileService>().FirstOrDefault()!;
 			_semanticTokensLegendService = (RemoteSemanticTokensLegendService)container.GetExports<ISemanticTokensLegendService>().FirstOrDefault()!;
 			_semanticTokensLegendService!.OnLspInitialized(new RemoteClientLSPInitializationOptions
 			{
@@ -400,6 +405,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 	public async Task<ImmutableArray<SharpIdeDiagnostic>> GetDocumentDiagnostics(SharpIdeFile fileModel, CancellationToken cancellationToken = default)
 	{
 		if (fileModel.IsRoslynWorkspaceFile is false) return [];
+		if (fileModel.IsMetadataAsSourceFile) return []; // Due to the current nature of IMetadataAsSourceFileService, which only decompiles a single document (not the whole project), if this was enabled, we would get error diagnostics for missing references to other "files" in the same dll
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(GetDocumentDiagnostics)}");
 		await _solutionLoadedTcs.Task;
 
@@ -424,6 +430,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 	public async Task<ImmutableArray<SharpIdeDiagnostic>> GetDocumentAnalyzerDiagnostics(SharpIdeFile fileModel, CancellationToken cancellationToken = default)
 	{
 		if (fileModel.IsRoslynWorkspaceFile is false) return [];
+		if (fileModel.IsMetadataAsSourceFile) return []; // Decompiled/SourceLink files should not/will not have analyzers
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(GetDocumentAnalyzerDiagnostics)}");
 		await _solutionLoadedTcs.Task;
 
@@ -599,6 +606,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		var root = await syntaxTree!.GetRootAsync(cancellationToken);
 
 		var classifiedSpans = await Classifier.GetClassifiedSpansAsync(document, root.FullSpan, cancellationToken);
+		//var classifiedSpans = await ClassifierHelper.GetClassifiedSpansAsync(document, root.FullSpan, ClassificationOptions.Default, true, cancellationToken);
 		var result = classifiedSpans.Select(s => new SharpIdeClassifiedSpan(syntaxTree.GetMappedLineSpan(s.TextSpan).Span, s)).ToImmutableArray();
 		return result;
 	}
@@ -978,6 +986,23 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return changedFilesWithText;
 	}
 
+	public async Task<string?> GetMetadataAsSource(SharpIdeFile currentFile, ISymbol symbol, CancellationToken cancellationToken = default)
+	{
+		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(FindAllSymbolReferences)}");
+		await _solutionLoadedTcs.Task;
+		if (_metadataAsSourceFileService.IsNavigableMetadataSymbol(symbol) is false) return null;
+
+		var documentContainingMetadataReference = await GetDocumentForSharpIdeFile(currentFile, cancellationToken);
+
+		var options = MetadataAsSourceOptions.Default;// with { NavigateToSourceLinkAndEmbeddedSources = false };
+		var metadataAsSourceFile = await _metadataAsSourceFileService.GetGeneratedFileAsync(_workspace!, documentContainingMetadataReference.Project, symbol, false, options, cancellationToken);
+		Console.WriteLine(metadataAsSourceFile.FilePath);
+		var metadataAsSourceWorkspace = _metadataAsSourceFileService.TryGetWorkspace();
+		var documentId = metadataAsSourceWorkspace!.CurrentSolution.GetDocumentIdsWithFilePath(metadataAsSourceFile.FilePath).SingleOrDefault();
+		var document = metadataAsSourceWorkspace.CurrentSolution.GetDocument(documentId);
+		return document?.FilePath;
+	}
+
 	public async Task<ImmutableArray<ReferencedSymbol>> FindAllSymbolReferences(ISymbol symbol, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(FindAllSymbolReferences)}");
@@ -1321,6 +1346,14 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 
 	private static Project GetProjectForSharpIdeFile(SharpIdeFile sharpIdeFile)
 	{
+		if (sharpIdeFile.IsMetadataAsSourceFile)
+		{
+			var metadataAsSourceWorkspace = _metadataAsSourceFileService.TryGetWorkspace() ?? throw new InvalidOperationException("Metadata as source workspace is not available");
+			var documentId = metadataAsSourceWorkspace.CurrentSolution.GetDocumentIdsWithFilePath(sharpIdeFile.Path).SingleOrDefault() ?? throw new InvalidOperationException($"Document with path '{sharpIdeFile.Path}' not found in metadata as source workspace");
+			var document = metadataAsSourceWorkspace.CurrentSolution.GetDocument(documentId) ?? throw new InvalidOperationException($"Document with id '{documentId}' not found in metadata as source workspace");
+			var metadataAsSourceProject = document.Project;
+			return metadataAsSourceProject;
+		}
 		var sharpIdeProjectModel = GetSharpIdeProjectForSharpIdeFile(sharpIdeFile);
 		var project = GetProjectForSharpIdeProjectModel(sharpIdeProjectModel);
 		return project;

@@ -89,7 +89,16 @@ public partial class SharpIdeCodeEdit
                     }
                     else
                     {
-                        GD.PrintErr($"Definition is not in source code, cannot navigate to it: {referencedSymbol.Name}");
+                        GD.Print($"Definition is not in source code, attempting to navigate to metadata as source: {referencedSymbol.Name}");
+                        var metadataAsSourceSharpIdeFile = await _sharpIdeMetadataAsSourceService.CreateSharpIdeFileForMetadataAsSourceAsync(_currentFile, referencedSymbol);
+                        if (metadataAsSourceSharpIdeFile is not null)
+                        {
+                            await GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelAsync(metadataAsSourceSharpIdeFile, new SharpIdeFileLinePosition(0, 0));
+                        }
+                        else
+                        {
+                            GD.PrintErr($"Failed to create metadata as source file for symbol: {referencedSymbol.Name}");
+                        }
                     }
                 }
                 else

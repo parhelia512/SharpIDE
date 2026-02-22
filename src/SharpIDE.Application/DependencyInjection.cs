@@ -39,6 +39,7 @@ public static class DependencyInjection
 		services.AddScoped<SharpIdeSolutionModificationService>();
 		services.AddScoped<AnalyzerFileWatcher>();
 		services.AddScoped<EditorCaretPositionService>();
+		services.AddScoped<SharpIdeMetadataAsSourceService>();
 		services.AddLogging();
 		return services;
 	}
