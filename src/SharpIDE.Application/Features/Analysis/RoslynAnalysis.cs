@@ -18,6 +18,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MetadataAsSource;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.PdbSourceDocument;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Razor.DocumentMapping;
 using Microsoft.CodeAnalysis.Razor.Remote;
@@ -34,6 +35,7 @@ using NuGet.Frameworks;
 using SharpIDE.Application.Features.Analysis.FixLoaders;
 using SharpIDE.Application.Features.Analysis.ProjectLoader;
 using SharpIDE.Application.Features.Analysis.Razor;
+using SharpIDE.Application.Features.Analysis.WorkspaceServices;
 using SharpIDE.Application.Features.Build;
 using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.SolutionDiscovery;
@@ -63,6 +65,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 	private static ICodeRefactoringService? _codeRefactoringService;
 	private static IDocumentMappingService? _documentMappingService;
 	private static IMetadataAsSourceFileService _metadataAsSourceFileService = null!;
+	private static IImplementationAssemblyLookupService _implementationAssemblyLookupService = null!;
 	private static SignatureHelpService _signatureHelpService = null!;
 	private static HashSet<CodeRefactoringProvider> _codeRefactoringProviders = [];
 	private static HashSet<CodeFixProvider> _codeFixProviders = [];
@@ -101,6 +104,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 				.WithAssemblies(MefHostServices.DefaultAssemblies)
 				.WithAssembly(typeof(RemoteSnapshotManager).Assembly)
 				.WithPart<CSharpDecompilationService2>()
+				.WithPart<DecompileWholeAssemblyToProjectMetadataAsSourceFileProvider>()
 				.WithPart<PythiaStub>();
 
 			// TODO: dispose container at some point?
@@ -118,6 +122,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			_signatureHelpService = container.GetExports<SignatureHelpService>().FirstOrDefault()!;
 			// TODO: Write an implementation of ISourceLinkService, as MS's implementation does not appear to be open source
 			_metadataAsSourceFileService = container.GetExports<IMetadataAsSourceFileService>().FirstOrDefault()!;
+			_implementationAssemblyLookupService = container.GetExports<IImplementationAssemblyLookupService>().FirstOrDefault()!;
 			_semanticTokensLegendService = (RemoteSemanticTokensLegendService)container.GetExports<ISemanticTokensLegendService>().FirstOrDefault()!;
 			_semanticTokensLegendService!.OnLspInitialized(new RemoteClientLSPInitializationOptions
 			{
@@ -986,6 +991,17 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return changedFilesWithText;
 	}
 
+	public async Task<string?> WriteSourceFromMetadataAsSourceWorkspaceToDisk(string filePath, CancellationToken cancellationToken = default)
+	{
+		await _solutionLoadedTcs.Task;
+		var metadataAsSourceWorkspace = _metadataAsSourceFileService.TryGetWorkspace();
+		var documentId = metadataAsSourceWorkspace!.CurrentSolution.GetDocumentIdsWithFilePath(filePath).SingleOrDefault();
+		var document = metadataAsSourceWorkspace.CurrentSolution.GetDocument(documentId);
+		if (document is null) return null;
+		await DecompileWholeAssemblyToProjectMetadataAsSourceFileProvider.WriteFileToDiskAsync(document, cancellationToken);
+		return document.FilePath;
+	}
+
 	public async Task<string?> GetMetadataAsSource(SharpIdeFile currentFile, ISymbol symbol, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(FindAllSymbolReferences)}");
@@ -1394,5 +1410,18 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			.First();
 
 		return selectedProject;
+	}
+}
+
+internal static class AssemblyMetadataExtensions
+{
+	public static Guid GetMvid(this AssemblyMetadata assemblyMetadata)
+	{
+		var module = assemblyMetadata.GetModules()[0];
+		var reader = module.GetMetadataReader();
+
+		var moduleDef = reader.GetModuleDefinition();
+		var mvid = reader.GetGuid(moduleDef.Mvid);
+		return mvid;
 	}
 }

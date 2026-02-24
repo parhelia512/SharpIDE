@@ -18,4 +18,16 @@ public class SharpIdeMetadataAsSourceService(RoslynAnalysis roslynAnalysis)
 		_metadataAsSourceFileCache[filePath] = metadataAsSourceSharpIdeFile;
 		return metadataAsSourceSharpIdeFile;
 	}
+
+	public async Task<SharpIdeFile?> GetOrCreateSharpIdeFileForAlreadyDecompiledMetadataAsSourceAsync(string filePath)
+	{
+		var filePathOnDisk = await _roslynAnalysis.WriteSourceFromMetadataAsSourceWorkspaceToDisk(filePath);
+		if (filePathOnDisk is null) return null;
+		var sharpIdeFileFromCache = _metadataAsSourceFileCache.GetValueOrDefault(filePathOnDisk);
+		if (sharpIdeFileFromCache is not null) return sharpIdeFileFromCache;
+		var metadataAsSourceSharpIdeFile = new SharpIdeFile(filePathOnDisk, Path.GetFileName(filePathOnDisk), Path.GetExtension(filePathOnDisk), null!, [], true);
+		_metadataAsSourceFileCache[filePathOnDisk] = metadataAsSourceSharpIdeFile;
+		return metadataAsSourceSharpIdeFile;
+	}
+
 }

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Publicize IncludeCompilerGeneratedMembers="false" Include="ObservableCollections" />
+    <Publicize IncludeCompilerGeneratedMembers="false" Include="ICSharpCode.Decompiler" MemberPattern="^ICSharpCode\.Decompiler\.CSharp\.Transforms\.(RemoveEmbeddedAttributes)\..*" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Remote.Razor" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Razor.Workspaces" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.Razor.Compiler" />
@@ -24,12 +25,16 @@
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <Publicize IncludeCompilerGeneratedMembers="false" Include="Microsoft.Build" MemberPattern="^Microsoft\.Build\.Logging\.(TerminalLogger|Terminal)\..*" />
     <DoNotPublicize Include="Microsoft.CodeAnalysis.Workspaces:System.Linq.RoslynEnumerableExtensions" />
+    <DoNotPublicize Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts:Microsoft.CodeAnalysis.ErrorReporting.FatalError" />
+    <DoNotPublicize Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts:Microsoft.CodeAnalysis.ErrorReporting.ErrorSeverity" />
+    <DoNotPublicize Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts:Microsoft.CodeAnalysis.Contract" />
     <DoNotPublicize Include="Microsoft.Build:Microsoft.CodeAnalysis.ICollectionExtensions" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CliWrap" />
     <PackageReference Include="FileWatcherEx" />
+    <PackageReference Include="ICSharpCode.Decompiler" />
     <PackageReference Include="LibGit2Sharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
       <PrivateAssets>all</PrivateAssets>

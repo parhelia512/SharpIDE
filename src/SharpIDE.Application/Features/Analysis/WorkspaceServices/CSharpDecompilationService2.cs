@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Composition;
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
@@ -14,7 +13,6 @@ using ICSharpCode.Decompiler.CSharp.Transforms;
 using ICSharpCode.Decompiler.Metadata;
 using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.CodeAnalysis.DecompiledSource;
-using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 
@@ -59,7 +57,8 @@ internal sealed class CSharpDecompilationService2 : IDecompilationService
         using (file)
         {
             // Initialize a decompiler with default settings.
-            var decompiler = new CSharpDecompiler(file, resolver, new DecompilerSettings());
+            var decompilerSettings = new DecompilerSettings();
+            var decompiler = new CSharpDecompiler(file, resolver, decompilerSettings);
             // Escape invalid identifiers to prevent Roslyn from failing to parse the generated code.
             // (This happens for example, when there is compiler-generated code that is not yet recognized/transformed by the decompiler.)
             decompiler.AstTransforms.Add(new EscapeInvalidIdentifiers());
@@ -75,10 +74,6 @@ internal sealed class CSharpDecompilationService2 : IDecompilationService
 
             // Try to decompile; if an exception is thrown the caller will handle it
             var text = decompiler.DecompileTypeAsString(fullTypeName);
-
-            text += "#if false // " + FeaturesResources.Decompilation_log + Environment.NewLine;
-            text += logger.ToString();
-            text += "#endif" + Environment.NewLine;
 
             return document.WithText(SourceText.From(text, encoding: null, checksumAlgorithm: SourceHashAlgorithms.Default));
         }

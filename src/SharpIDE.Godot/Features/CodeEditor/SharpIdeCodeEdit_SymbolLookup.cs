@@ -84,7 +84,16 @@ public partial class SharpIdeCodeEdit
                     {
                         var definitionLineSpan = definitionLocation.GetMappedLineSpan();
                         var sharpIdeFile = Solution!.AllFiles.GetValueOrDefault(definitionLineSpan.Path);
-                        if (sharpIdeFile is null) throw new InvalidOperationException($"Definition file not found in solution, despite IsInSource: {definitionLineSpan.Path}");
+                        if (sharpIdeFile is null)
+                        {
+                            // This file may have been decompiled, but IsInSource=true as it is in the MetadataAsSource workspace. Lets try to find a metadata as source file
+                            sharpIdeFile = await _sharpIdeMetadataAsSourceService.GetOrCreateSharpIdeFileForAlreadyDecompiledMetadataAsSourceAsync(definitionLineSpan.Path);
+                            if (sharpIdeFile is null)
+                            {
+                                GD.PrintErr($"Definition file not found in solution or as metadata as source for symbol: {referencedSymbol.Name}, definition location: {definitionLineSpan.Path}");
+                                return;
+                            }
+                        }
                         await GodotGlobalEvents.Instance.FileExternallySelected.InvokeParallelAsync(sharpIdeFile, new SharpIdeFileLinePosition(definitionLineSpan.Span.Start.Line, definitionLineSpan.Span.Start.Character));
                     }
                     else
