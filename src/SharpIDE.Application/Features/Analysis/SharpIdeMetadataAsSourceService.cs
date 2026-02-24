@@ -8,15 +8,16 @@ public class SharpIdeMetadataAsSourceService(RoslynAnalysis roslynAnalysis)
 	private readonly RoslynAnalysis _roslynAnalysis = roslynAnalysis;
 	private readonly Dictionary<string, SharpIdeFile> _metadataAsSourceFileCache = [];
 
-	public async Task<SharpIdeFile?> CreateSharpIdeFileForMetadataAsSourceAsync(SharpIdeFile currentFile, ISymbol referencedSymbol)
+	public async Task<(SharpIdeFile, Location)?> CreateSharpIdeFileForMetadataAsSourceAsync(SharpIdeFile currentFile, ISymbol referencedSymbol)
 	{
-		var filePath = await _roslynAnalysis.GetMetadataAsSource(currentFile, referencedSymbol);
-		if (filePath is null) return null;
+		var result = await _roslynAnalysis.GetMetadataAsSourceForSymbol(currentFile, referencedSymbol);
+		if (result is null) return null;
+		var (filePath, requestedSymbolLocation) = result.Value;
 		var fileFromCache = _metadataAsSourceFileCache.GetValueOrDefault(filePath);
-		if (fileFromCache is not null) return fileFromCache;
+		if (fileFromCache is not null) return (fileFromCache, requestedSymbolLocation);
 		var metadataAsSourceSharpIdeFile = new SharpIdeFile(filePath, Path.GetFileName(filePath), Path.GetExtension(filePath), null!, [], true);
 		_metadataAsSourceFileCache[filePath] = metadataAsSourceSharpIdeFile;
-		return metadataAsSourceSharpIdeFile;
+		return (metadataAsSourceSharpIdeFile, requestedSymbolLocation);
 	}
 
 	public async Task<SharpIdeFile?> GetOrCreateSharpIdeFileForAlreadyDecompiledMetadataAsSourceAsync(string filePath)
