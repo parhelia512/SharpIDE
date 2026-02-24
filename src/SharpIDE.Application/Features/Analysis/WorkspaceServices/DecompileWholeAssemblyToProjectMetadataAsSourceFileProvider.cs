@@ -1,10 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Composition;
+using System.IO.Compression;
+using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using ICSharpCode.Decompiler.Metadata;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.DecompiledSource;
+using Microsoft.CodeAnalysis.Debugging;
 using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
@@ -15,6 +17,7 @@ using Microsoft.CodeAnalysis.Shared.Utilities;
 using Microsoft.CodeAnalysis.Structure;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
+using Document = Microsoft.CodeAnalysis.Document;
 
 namespace SharpIDE.Application.Features.Analysis.WorkspaceServices;
 
@@ -110,8 +113,12 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 			{
 				try
 				{
-					decompiledFiles = await DecompileAssemblyToMemoryAsync(
-						compilation, refInfo.metadataReference, refInfo.assemblyLocation, cancellationToken).ConfigureAwait(false);
+					decompiledFiles = await GetSourceFilesFromSymbolCachePdb(refInfo.metadataReference, refInfo.assemblyLocation, assemblyKey, cancellationToken);
+					if (decompiledFiles is null)
+					{
+						decompiledFiles = await DecompileAssemblyToMemoryAsync(
+							compilation, refInfo.metadataReference, refInfo.assemblyLocation, cancellationToken).ConfigureAwait(false);
+					}
 
 					telemetryMessage?.SetDecompiled(decompiledFiles is not null);
 
@@ -126,9 +133,9 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 				}
 			}
 
-		// Create the project and all documents.
-		var (temporaryProjectInfo, primaryDocumentId, allDocumentPaths) = GenerateProjectAndDocumentInfo(
-			fileInfo, metadataWorkspace.CurrentSolution.Services, sourceProject, topLevelNamedType, refInfo.metadataReference, decompiledFiles, tempDirectory);
+			// Create the project and all documents.
+			var (temporaryProjectInfo, primaryDocumentId, allDocumentPaths) = GenerateProjectAndDocumentInfo(
+				fileInfo, metadataWorkspace.CurrentSolution.Services, sourceProject, topLevelNamedType, refInfo.metadataReference, decompiledFiles, tempDirectory);
 
 			var temporarySolution = metadataWorkspace.CurrentSolution.AddProject(temporaryProjectInfo);
 
@@ -162,6 +169,79 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 			return null;
 
 		return new MetadataAsSourceFile(returnFilePath, navigateLocation, documentName, documentTooltip);
+	}
+
+	private static async Task<Dictionary<string, string>?> GetSourceFilesFromSymbolCachePdb(
+		MetadataReference? metadataReference,
+		string? assemblyLocation,
+		UniqueAssemblyKey assemblyKey,
+		CancellationToken cancellationToken)
+	{
+		if (metadataReference is null || assemblyLocation is null) return null;
+
+		// TBD
+		var symbolCacheFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp", "SharpIdeSymbolCache");
+
+		var assemblyName = Path.GetFileNameWithoutExtension(assemblyLocation);
+		var mvid = assemblyKey.Mvid;
+		var pdbPath = Path.Combine(symbolCacheFolderPath, assemblyName, mvid.ToString(), $"{assemblyName}.decompiled.pdb");
+		if (!File.Exists(pdbPath)) return null;
+		var sourceFiles = new Dictionary<string, string>();
+		try
+		{
+			var pdbStream = File.OpenRead(pdbPath);
+			var provider = MetadataReaderProvider.FromPortablePdbStream(pdbStream);
+			var reader = provider.GetMetadataReader();
+
+			foreach (var documentHandle in reader.Documents)
+			{
+				var document = reader.GetDocument(documentHandle);
+				var documentName = reader.GetString(document.Name);
+
+				var nullableEmbeddedSourceHandle = reader.GetCustomDebugInformation(documentHandle)
+					.Select(h => reader.GetCustomDebugInformation(h))
+					.Where(cdi => reader.GetGuid(cdi.Kind) == PortableCustomDebugInfoKinds.EmbeddedSource)
+					.Cast<CustomDebugInformation?>()
+					.FirstOrDefault();
+
+				if (nullableEmbeddedSourceHandle is not {} embeddedSourceHandle || embeddedSourceHandle.Kind.IsNil)
+				{
+					continue;
+				}
+
+				var blobReader = reader.GetBlobReader(embeddedSourceHandle.Value);
+
+				// First 4 bytes: if 0, the rest is raw UTF-8.
+				// If > 0, it's the uncompressed length and the rest is deflate-compressed.
+				var uncompressedSize = blobReader.ReadInt32();
+				var sourceBytes = blobReader.ReadBytes(blobReader.RemainingBytes);
+
+				string sourceText;
+				if (uncompressedSize == 0)
+				{
+					// Raw, uncompressed UTF-8
+					sourceText = Encoding.UTF8.GetString(sourceBytes);
+				}
+				else
+				{
+					// Deflate-compressed
+					using var compressedStream = new MemoryStream(sourceBytes);
+					await using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
+					using var resultStream = new MemoryStream(uncompressedSize);
+					await deflateStream.CopyToAsync(resultStream, cancellationToken);
+					sourceText = Encoding.UTF8.GetString(resultStream.ToArray());
+				}
+
+				sourceFiles[documentName] = sourceText;
+			}
+		}
+		catch (Exception e) when (FatalError.ReportAndCatchUnlessCanceled(e, cancellationToken, ErrorSeverity.General))
+		{
+			Console.WriteLine($"Failed to read source files from PDB '{pdbPath}': {e}");
+			return null;
+		}
+		if (sourceFiles.Count is 0) return null;
+		return sourceFiles;
 	}
 
 	/// <summary>
