@@ -298,7 +298,12 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		Callable.From(() =>
 		{
 			GrabFocus(true);
-			AdjustViewportToCaret();
+			var (firstVisibleLine, lastFullVisibleLine) = (GetFirstVisibleLine(), GetLastFullVisibleLine());
+			var caretLine = GetCaretLine();
+			if (caretLine < firstVisibleLine || caretLine > lastFullVisibleLine)
+			{
+				CenterViewportToCaret();
+			}
 		}).CallDeferred();
 	}
 
