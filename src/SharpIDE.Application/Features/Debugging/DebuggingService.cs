@@ -138,6 +138,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 				["name"] = "AttachRequestName",
 				["type"] = "coreclr",
 				["processId"] = debuggeeProcessId,
+				["justMyCode"] = false,
 				["console"] = "internalConsole", // integratedTerminal, externalTerminal, internalConsole
 			}
 		};
