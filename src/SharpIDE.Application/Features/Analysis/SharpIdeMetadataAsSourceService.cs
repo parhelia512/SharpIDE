@@ -31,4 +31,15 @@ public class SharpIdeMetadataAsSourceService(RoslynAnalysis roslynAnalysis)
 		return metadataAsSourceSharpIdeFile;
 	}
 
+	public async Task<SharpIdeFile?> CreateSharpIdeFileForMetadataAsSourceForTypeFromDebuggingAsync(string typeName, string assemblyPath, Guid mvid, string userCodeCallingAssemblyPath)
+	{
+		var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+		var filePath = await _roslynAnalysis.GetMetadataAsSourceFromDebuggingAssemblyAndType(typeName, assemblyName, mvid, userCodeCallingAssemblyPath);
+		if (filePath is null) return null;
+		var fileFromCache = _metadataAsSourceFileCache.GetValueOrDefault(filePath);
+		if (fileFromCache is not null) return fileFromCache;
+		var metadataAsSourceSharpIdeFile = new SharpIdeFile(filePath, Path.GetFileName(filePath), Path.GetExtension(filePath), null!, [], true);
+		_metadataAsSourceFileCache[filePath] = metadataAsSourceSharpIdeFile;
+		return metadataAsSourceSharpIdeFile;
+	}
 }

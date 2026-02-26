@@ -13,6 +13,15 @@ using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.Debugging;
 
+// TODO: get from SharpDbg
+public class DecompiledSourceInfo
+{
+	public required string TypeFullName { get; init; }
+	public required AssemblyPathAndMvid Assembly { get; init; }
+	public required string CallingUserCodeAssemblyPath { get; init; }
+}
+public record struct AssemblyPathAndMvid(string AssemblyPath, Guid Mvid);
+
 #pragma warning disable VSTHRD101
 public class DebuggingService(ILogger<DebuggingService> logger)
 {
@@ -82,7 +91,8 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 				{
 					var filePath = additionalProperties?["source"]?["path"]!.Value<string>()!;
 					var line = (additionalProperties?["line"]?.Value<int>()!).Value;
-					var executionStopInfo = new ExecutionStopInfo { FilePath = filePath, Line = line, ThreadId = @event.ThreadId!.Value, Project = project };
+					var decompiledSourceInfo = additionalProperties?["decompiledSourceInfo"]?.ToObject<DecompiledSourceInfo>();
+					var executionStopInfo = new ExecutionStopInfo { FilePath = filePath, Line = line, ThreadId = @event.ThreadId!.Value, Project = project, DecompiledSourceInfo = decompiledSourceInfo };
 					GlobalEvents.Instance.DebuggerExecutionStopped.InvokeParallelFireAndForget(executionStopInfo);
 				}
 				else
@@ -93,7 +103,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 					var topFrame = stackTraceResponse.StackFrames.Single();
 					var filePath = topFrame.Source.Path;
 					var line = topFrame.Line;
-					var executionStopInfo = new ExecutionStopInfo { FilePath = filePath, Line = line, ThreadId = @event.ThreadId!.Value, Project = project };
+					var executionStopInfo = new ExecutionStopInfo { FilePath = filePath, Line = line, ThreadId = @event.ThreadId!.Value, Project = project, DecompiledSourceInfo = null };
 					GlobalEvents.Instance.DebuggerExecutionStopped.InvokeParallelFireAndForget(executionStopInfo);
 				}
 			}

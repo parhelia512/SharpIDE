@@ -23,6 +23,7 @@ public partial class CodeEditorPanel : MarginContainer
 	private ConcurrentDictionary<SharpIdeProjectModel, ExecutionStopInfo> _debuggerExecutionStopInfoByProject = [];
 	
 	[Inject] private readonly RunService _runService = null!;
+	[Inject] private readonly SharpIdeMetadataAsSourceService _sharpIdeMetadataAsSourceService = null!;
 	public override void _Ready()
 	{
 		_tabContainer = GetNode<TabContainer>("TabContainer");
@@ -171,8 +172,19 @@ public partial class CodeEditorPanel : MarginContainer
 		
 		var lineInt = executionStopInfo.Line - 1; // Debugging is 1-indexed, Godot is 0-indexed
 		Guard.Against.Negative(lineInt);
+
+		SharpIdeFile file;
+		if (executionStopInfo.DecompiledSourceInfo is { } decompiledSourceInfo)
+		{
+			var fileFromMetadataAsSource = await _sharpIdeMetadataAsSourceService.CreateSharpIdeFileForMetadataAsSourceForTypeFromDebuggingAsync(decompiledSourceInfo.TypeFullName, decompiledSourceInfo.Assembly.AssemblyPath, decompiledSourceInfo.Assembly.Mvid, decompiledSourceInfo.CallingUserCodeAssemblyPath);
+			file = fileFromMetadataAsSource ?? throw new InvalidOperationException($"Failed to create file for metadata as source for type {decompiledSourceInfo.TypeFullName} in assembly {decompiledSourceInfo.Assembly.AssemblyPath}.");
+			executionStopInfo.FilePath = file.Path;
+		}
+		else
+		{
+			file = Solution.AllFiles[executionStopInfo.FilePath];
+		}
 		
-		var file = Solution.AllFiles[executionStopInfo.FilePath];
 		// A line being darkened by the caret being on that line completely obscures the executing line color, so as a "temporary" workaround, move the caret to the previous line
 		// Ideally, like Rider, we would only yellow highlight the sequence point range, with the cursor line black being behind it
 		var fileLinePosition = new SharpIdeFileLinePosition(lineInt is 0 ? 0 : lineInt - 1, 0);

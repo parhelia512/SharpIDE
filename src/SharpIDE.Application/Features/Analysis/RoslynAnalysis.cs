@@ -991,6 +991,48 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return changedFilesWithText;
 	}
 
+	public async Task<string?> GetMetadataAsSourceFromDebuggingAssemblyAndType(string typeName, string assemblyName, Guid mvid, string userCodeCallingAssemblyPath, CancellationToken cancellationToken = default)
+	{
+		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(FindAllSymbolReferences)}");
+		await _solutionLoadedTcs.Task;
+
+		var callingProject = _workspace!.CurrentSolution.Projects.SingleOrDefault(p => p.OutputFilePath == userCodeCallingAssemblyPath);
+		if (callingProject is null) return null;
+
+		var compilation = await callingProject.GetRequiredCompilationAsync(cancellationToken);
+		var symbols = compilation.GetTypesByMetadataName(typeName);
+
+		var symbol = symbols.SingleOrDefault(s =>
+		{
+			if (Path.GetFileNameWithoutExtension(s.ContainingModule.Name) != assemblyName) return false;
+
+			var containingAssembly = s.ContainingAssembly;
+			var metadataReference = compilation.GetMetadataReference(containingAssembly) as PortableExecutableReference;
+			if (metadataReference is null) return false;
+			var referenceAssemblyFilePath = metadataReference.FilePath;
+			// Runtime loads implementation assemblies, but Roslyn only has reference assemblies, so try to resolve the implementation assembly
+			if (referenceAssemblyFilePath is not null && MetadataAsSourceHelpers.IsReferenceAssembly(containingAssembly))
+			{
+				if (_implementationAssemblyLookupService.TryFindImplementationAssemblyPath(referenceAssemblyFilePath, out var implementationAssemblyLocation))
+				{
+					// TODO: Do we need to follow type forwards here?
+					// read the metadata from the implementation assembly, instead of the reference assembly, to get the correct MVID for comparison
+					metadataReference = MetadataReference.CreateFromFile(implementationAssemblyLocation);
+				}
+			}
+			if (metadataReference.GetMetadata() is not AssemblyMetadata assemblyMetadata) return false;
+			return assemblyMetadata.GetMvid() == mvid;
+		});
+		if (symbol is null) return null;
+
+		var options = MetadataAsSourceOptions.Default;// with { NavigateToSourceLinkAndEmbeddedSources = false };
+		var metadataAsSourceFile = await _metadataAsSourceFileService.GetGeneratedFileAsync(_workspace, callingProject, symbol, false, options, cancellationToken);
+		var metadataAsSourceWorkspace = _metadataAsSourceFileService.TryGetWorkspace();
+		var documentId = metadataAsSourceWorkspace!.CurrentSolution.GetDocumentIdsWithFilePath(metadataAsSourceFile.FilePath).SingleOrDefault();
+		var document = metadataAsSourceWorkspace.CurrentSolution.GetDocument(documentId);
+		return document?.FilePath;
+	}
+
 	public async Task<string?> WriteSourceFromMetadataAsSourceWorkspaceToDisk(string filePath, CancellationToken cancellationToken = default)
 	{
 		await _solutionLoadedTcs.Task;

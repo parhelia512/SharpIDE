@@ -4,7 +4,11 @@ using System.IO.Compression;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Text;
+using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler.CSharp;
+using ICSharpCode.Decompiler.CSharp.Transforms;
 using ICSharpCode.Decompiler.Metadata;
+using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Debugging;
 using Microsoft.CodeAnalysis.ErrorReporting;
@@ -18,6 +22,7 @@ using Microsoft.CodeAnalysis.Structure;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using Document = Microsoft.CodeAnalysis.Document;
+using ISymbol = Microsoft.CodeAnalysis.ISymbol;
 
 namespace SharpIDE.Application.Features.Analysis.WorkspaceServices;
 
@@ -116,8 +121,7 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 					decompiledFiles = await GetSourceFilesFromSymbolCachePdb(refInfo.metadataReference, refInfo.assemblyLocation, assemblyKey, cancellationToken);
 					if (decompiledFiles is null)
 					{
-						decompiledFiles = await DecompileAssemblyToMemoryAsync(
-							compilation, refInfo.metadataReference, refInfo.assemblyLocation, cancellationToken).ConfigureAwait(false);
+						decompiledFiles = await DecompileAssemblyToMemoryAsync(compilation, refInfo.metadataReference, refInfo.assemblyLocation, assemblyKey, cancellationToken);
 					}
 
 					telemetryMessage?.SetDecompiled(decompiledFiles is not null);
@@ -180,7 +184,7 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 		if (metadataReference is null || assemblyLocation is null) return null;
 
 		// TBD
-		var symbolCacheFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp", "SharpIdeSymbolCache");
+		var symbolCacheFolderPath = SharpIdeDecompilationConstants.SymbolCachePath;
 
 		var assemblyName = Path.GetFileNameWithoutExtension(assemblyLocation);
 		var mvid = assemblyKey.Mvid;
@@ -245,12 +249,14 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 	}
 
 	/// <summary>
-	/// Decompiles all types in the assembly to a dictionary of relative path -> source code.
+	/// Decompiles all types in the assembly to a dictionary of relative path -> source code,
+	/// and writes a portable PDB with embedded sources to the symbol cache.
 	/// </summary>
 	private static Task<Dictionary<string, string>?> DecompileAssemblyToMemoryAsync(
 		Compilation compilation,
 		MetadataReference? metadataReference,
 		string? assemblyLocation,
+		UniqueAssemblyKey assemblyKey,
 		CancellationToken cancellationToken)
 	{
 		return Task.Run(Dictionary<string, string>? () =>
@@ -270,8 +276,30 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 
 			using (file)
 			{
-				var decompiler = new WholeAssemblyDecompiler(resolver);
-				return decompiler.DecompileToMemory(file, cancellationToken);
+				var settings = new DecompilerSettings();
+				var ts = new DecompilerTypeSystem(file, resolver, settings);
+				var decompiler = new CSharpDecompiler(ts, settings)
+				{
+					AstTransforms = {
+						new TransformFieldAndConstructorInitializers(),
+						new AddXmlDocumentationTransform(),
+						new EscapeInvalidIdentifiers(),
+						new FixNameCollisions(),
+						new RemoveCLSCompliantAttribute(),
+						new ReplaceMethodCallsWithOperators()
+					}
+				};
+
+				// Determine PDB cache path.
+				var assemblyName = assemblyLocation is not null ? Path.GetFileNameWithoutExtension(assemblyLocation) : file.Name;
+				var pdbDir = Path.Combine(SharpIdeDecompilationConstants.SymbolCachePath, assemblyName, assemblyKey.Mvid.ToString());
+				var pdbPath = Path.Combine(pdbDir, $"{assemblyName}.decompiled.pdb");
+				Directory.CreateDirectory(pdbDir);
+
+				using var pdbStream = new FileStream(pdbPath, FileMode.Create, FileAccess.Write, FileShare.None);
+				var sourceFiles = PortablePdbWriter2.WritePdb(file, decompiler, settings, pdbStream, noLogo: true);
+
+				return sourceFiles.Count > 0 ? sourceFiles : null;
 			}
 		}, cancellationToken);
 	}
