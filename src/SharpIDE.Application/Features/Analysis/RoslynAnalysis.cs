@@ -1054,7 +1054,6 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 
 		var options = MetadataAsSourceOptions.Default;// with { NavigateToSourceLinkAndEmbeddedSources = false };
 		var metadataAsSourceFile = await _metadataAsSourceFileService.GetGeneratedFileAsync(_workspace!, documentContainingMetadataReference.Project, symbol, false, options, cancellationToken);
-		Console.WriteLine(metadataAsSourceFile.FilePath);
 		var metadataAsSourceWorkspace = _metadataAsSourceFileService.TryGetWorkspace();
 		var documentId = metadataAsSourceWorkspace!.CurrentSolution.GetDocumentIdsWithFilePath(metadataAsSourceFile.FilePath).SingleOrDefault();
 		if (documentId is null) return null;
