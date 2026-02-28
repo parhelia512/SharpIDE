@@ -148,9 +148,11 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 
 		foreach (var breakpoint in breakpointsByFile)
 		{
+			var file = breakpoint.Key;
+			var path = file.IsMetadataAsSourceFile ? file.PdbSourceFilePathForDebugger ?? throw new ArgumentNullException(nameof(file.PdbSourceFilePathForDebugger)) : file.Path;
 			var setBreakpointsRequest = new SetBreakpointsRequest
 			{
-				Source = new Source { Path = breakpoint.Key.Path },
+				Source = new Source { Path = path },
 				Breakpoints = breakpoint.Value.Select(b => new SourceBreakpoint { Line = b.Line }).ToList()
 			};
 			var breakpointsResponse = debugProtocolHost.SendRequestSync(setBreakpointsRequest);
@@ -191,9 +193,10 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task SetBreakpointsForFile(DebuggerSessionId debuggerSessionId, SharpIdeFile file, List<Breakpoint> breakpoints, CancellationToken cancellationToken = default)
 	{
 		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var path = file.IsMetadataAsSourceFile ? file.PdbSourceFilePathForDebugger ?? throw new ArgumentNullException(nameof(file.PdbSourceFilePathForDebugger)) : file.Path;
 		var setBreakpointsRequest = new SetBreakpointsRequest
 		{
-			Source = new Source { Path = file.Path },
+			Source = new Source { Path = path },
 			Breakpoints = breakpoints.Select(b => new SourceBreakpoint { Line = b.Line }).ToList()
 		};
 		var breakpointsResponse = debugProtocolHost.SendRequestSync(setBreakpointsRequest);

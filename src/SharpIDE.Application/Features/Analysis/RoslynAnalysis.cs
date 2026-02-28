@@ -1044,7 +1044,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		return document.FilePath;
 	}
 
-	public async Task<(string FilePath, Location Location)?> GetMetadataAsSourceForSymbol(SharpIdeFile currentFile, ISymbol symbol, CancellationToken cancellationToken = default)
+	public async Task<(string FilePath, string PdbSourceFilePath, Location Location)?> GetMetadataAsSourceForSymbol(SharpIdeFile currentFile, ISymbol symbol, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(FindAllSymbolReferences)}");
 		await _solutionLoadedTcs.Task;
@@ -1059,7 +1059,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		if (documentId is null) return null;
 		var document = await metadataAsSourceWorkspace.CurrentSolution.GetRequiredDocumentAsync(documentId, cancellationToken);
 		if (document.FilePath is null) return null;
-		return (document.FilePath, metadataAsSourceFile.IdentifierLocation);
+		return (document.FilePath, document.Name, metadataAsSourceFile.IdentifierLocation);
 	}
 
 	public async Task<ImmutableArray<ReferencedSymbol>> FindAllSymbolReferences(ISymbol symbol, CancellationToken cancellationToken = default)

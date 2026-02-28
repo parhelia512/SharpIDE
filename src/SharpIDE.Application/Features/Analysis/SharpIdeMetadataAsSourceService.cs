@@ -12,10 +12,10 @@ public class SharpIdeMetadataAsSourceService(RoslynAnalysis roslynAnalysis)
 	{
 		var result = await _roslynAnalysis.GetMetadataAsSourceForSymbol(currentFile, referencedSymbol);
 		if (result is null) return null;
-		var (filePath, requestedSymbolLocation) = result.Value;
+		var (filePath, pdbSourceFilePath, requestedSymbolLocation) = result.Value;
 		var fileFromCache = _metadataAsSourceFileCache.GetValueOrDefault(filePath);
 		if (fileFromCache is not null) return (fileFromCache, requestedSymbolLocation);
-		var metadataAsSourceSharpIdeFile = new SharpIdeFile(filePath, Path.GetFileName(filePath), Path.GetExtension(filePath), null!, [], true);
+		var metadataAsSourceSharpIdeFile = new SharpIdeFile(filePath, Path.GetFileName(filePath), Path.GetExtension(filePath), null!, [], true, pdbSourceFilePath);
 		_metadataAsSourceFileCache[filePath] = metadataAsSourceSharpIdeFile;
 		return (metadataAsSourceSharpIdeFile, requestedSymbolLocation);
 	}

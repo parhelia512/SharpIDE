@@ -19,6 +19,7 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode, IFileOrFolder
 	public bool IsCsharpFile => Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
 	public bool IsRoslynWorkspaceFile => IsCsharpFile || IsRazorFile || IsCshtmlFile;
 	public bool IsMetadataAsSourceFile { get; set; }
+	public string? PdbSourceFilePathForDebugger { get; set; }
 	public GitFileStatus GitStatus { get; set; } = GitFileStatus.Unaltered;
 	public required ReactiveProperty<bool> IsDirty { get; init; }
 	public required bool SuppressDiskChangeEvents { get; set; } // probably has concurrency issues
@@ -27,7 +28,7 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode, IFileOrFolder
 	public EventWrapper<Task> FileDeleted { get; } = new(() => Task.CompletedTask);
 
 	[SetsRequiredMembers]
-	internal SharpIdeFile(string fullPath, string name, string extension, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles, bool isMetadataAsSourceFile = false)
+	internal SharpIdeFile(string fullPath, string name, string extension, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles, bool isMetadataAsSourceFile = false, string? pdbSourceFilePath = null)
 	{
 		Path = fullPath;
 		Name = name;
@@ -36,6 +37,7 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode, IFileOrFolder
 		IsDirty = new ReactiveProperty<bool>(false);
 		SuppressDiskChangeEvents = false;
 		IsMetadataAsSourceFile = isMetadataAsSourceFile;
+		PdbSourceFilePathForDebugger = pdbSourceFilePath;
 		allFiles.Add(this);
 	}
 }

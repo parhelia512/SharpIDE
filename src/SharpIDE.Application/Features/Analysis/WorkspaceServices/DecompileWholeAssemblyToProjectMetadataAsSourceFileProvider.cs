@@ -469,7 +469,7 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 				var sourceText = SourceText.From(sourceCode, MetadataAsSourceGeneratedFileInfo.Encoding, MetadataAsSourceGeneratedFileInfo.ChecksumAlgorithm);
 				var docInfo = DocumentInfo.Create(
 					docId,
-					Path.GetFileName(absolutePath),
+					relativePath, // store the path matching the source files in the PDB, which are virtual paths that do not exist on disk
 					loader: TextLoader.From(sourceText.Container, VersionStamp.Default),
 					filePath: absolutePath,
 					isGenerated: true)

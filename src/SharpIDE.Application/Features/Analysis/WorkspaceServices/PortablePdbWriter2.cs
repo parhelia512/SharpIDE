@@ -68,13 +68,17 @@ namespace SharpIDE.Application.Features.Analysis.WorkspaceServices
 			var globalImportScope = metadata.AddImportScope(default, default);
 			var collectedSourceFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+			var assemblyName = reader.GetString(reader.GetAssemblyDefinition().Name);
+			var mvid = reader.GetGuid(reader.GetModuleDefinition().Mvid);
+			var sourceFilePrefix = Path.Combine("decompiled", assemblyName, mvid.ToString());
+
 			string BuildFileNameFromTypeName(TypeDefinitionHandle handle)
 			{
 				var typeName = handle.GetFullTypeName(reader).TopLevelTypeName;
 				string ns = settings.UseNestedDirectoriesForNamespaces
 					? WholeProjectDecompiler.CleanUpPath(typeName.Namespace)
 					: WholeProjectDecompiler.CleanUpDirectoryName(typeName.Namespace);
-				return Path.Combine(ns, WholeProjectDecompiler.CleanUpFileName(typeName.Name, ".cs"));
+				return Path.Combine(sourceFilePrefix, ns, WholeProjectDecompiler.CleanUpFileName(typeName.Name, ".cs"));
 			}
 
 			var sourceFiles = reader.GetTopLevelTypeDefinitions().Where(t => IncludeTypeWhenGeneratingPdb(file, t, settings)).GroupBy(BuildFileNameFromTypeName).ToList();
