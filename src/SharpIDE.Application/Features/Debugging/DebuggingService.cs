@@ -87,11 +87,11 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 				}
 				var additionalProperties = @event.AdditionalProperties;
 				// source, line, column
-				if (additionalProperties.Count is not 0)
+				if (additionalProperties?.Count is > 0)
 				{
-					var filePath = additionalProperties?["source"]?["path"]!.Value<string>()!;
-					var line = (additionalProperties?["line"]?.Value<int>()!).Value;
-					var decompiledSourceInfo = additionalProperties?["decompiledSourceInfo"]?.ToObject<DecompiledSourceInfo>();
+					var filePath = additionalProperties["source"]?["path"]!.Value<string>()!;
+					var line = (additionalProperties["line"]?.Value<int>()!).Value;
+					var decompiledSourceInfo = additionalProperties.GetValueOrDefault("decompiledSourceInfo")?.ToObject<DecompiledSourceInfo>();
 					var executionStopInfo = new ExecutionStopInfo { FilePath = filePath, Line = line, ThreadId = @event.ThreadId!.Value, Project = project, DecompiledSourceInfo = decompiledSourceInfo };
 					GlobalEvents.Instance.DebuggerExecutionStopped.InvokeParallelFireAndForget(executionStopInfo);
 				}
