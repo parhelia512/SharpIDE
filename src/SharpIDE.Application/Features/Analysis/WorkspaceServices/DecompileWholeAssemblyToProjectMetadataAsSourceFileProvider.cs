@@ -92,7 +92,7 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 		if (_assemblyKeyToProjectInfo.TryGetValue(assemblyKey, out var existingProjectInfo))
 		{
 			// The assembly has already been decompiled. Find the document for the requested type.
-			var primaryFilePath = GetPrimaryFilePath(existingProjectInfo.TempDirectory, topLevelNamedType);
+			var primaryFilePath = GetPrimaryFilePath(existingProjectInfo.TempDirectory, topLevelNamedType, assemblyKey.Mvid, Path.GetFileNameWithoutExtension(assemblyKey.FilePath));
 
 			if (_generatedFilenameToInformation.TryGetValue(primaryFilePath, out var existingDocInfo))
 			{
@@ -431,21 +431,25 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 		// Read the assembly name and version from the actual resolved PE (after ref->impl and type-forward resolution),
 		// not from the symbol in the source compilation which may point to a reference assembly.
 		AssemblyIdentity? resolvedIdentity = null;
-		if (portableExecutableReference.GetMetadata() is AssemblyMetadata assemblyMetadata)
+		if (portableExecutableReference.GetMetadata() is not AssemblyMetadata assemblyMetadata)
 		{
-			// The manifest module (first) contains the assembly definition with name and version.
-			var manifestModule = assemblyMetadata.GetModules().FirstOrDefault();
-			if (manifestModule is not null)
-			{
-				var reader = manifestModule.GetMetadataReader();
-				var asmDef = reader.GetAssemblyDefinition();
-				var name = reader.GetString(asmDef.Name);
-				resolvedIdentity = new AssemblyIdentity(name, asmDef.Version);
-			}
+			throw new InvalidOperationException("PE metadata reference must be assembly metadata.");
 		}
+
+		// The manifest module (first) contains the assembly definition with name and version.
+		var manifestModule = assemblyMetadata.GetModules().FirstOrDefault();
+		if (manifestModule is not null)
+		{
+			var reader = manifestModule.GetMetadataReader();
+			var asmDef = reader.GetAssemblyDefinition();
+			var name = reader.GetString(asmDef.Name);
+			resolvedIdentity = new AssemblyIdentity(name, asmDef.Version);
+		}
+
 		resolvedIdentity ??= topLevelNamedType.ContainingAssembly.Identity;
 
 		var assemblyNameForMetadataAsSourceProjectName = resolvedIdentity.Name;
+		var mvid = assemblyMetadata.GetMvid();
 		var assemblyVersion = resolvedIdentity.Version;
 
 		var compilationOptions = services.GetRequiredLanguageService<ICompilationFactoryService>(fileInfo.LanguageName)
@@ -457,7 +461,7 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 
 		// Track which document is the primary one for the requested type.
 		DocumentId? primaryDocumentId = null;
-		var primaryRelativePath = GetRelativePathForType(topLevelNamedType);
+		var primaryRelativePath = GetRelativePathForType(topLevelNamedType, mvid, assemblyNameForMetadataAsSourceProjectName);
 
 		if (decompiledFiles is not null && decompiledFiles.Count > 0)
 		{
@@ -538,22 +542,21 @@ internal sealed class DecompileWholeAssemblyToProjectMetadataAsSourceFileProvide
 	/// <summary>
 	/// Computes the expected relative path for a type, matching <see cref="WholeAssemblyDecompiler"/>'s naming logic.
 	/// </summary>
-	private static string GetRelativePathForType(INamedTypeSymbol topLevelNamedType)
+	private static string GetRelativePathForType(INamedTypeSymbol topLevelNamedType, Guid mvid, string assemblyName)
 	{
 		var fileName = WholeAssemblyDecompiler.CleanUpFileName(topLevelNamedType.Name, ".cs");
 		var ns = topLevelNamedType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
-		if (string.IsNullOrEmpty(ns))
-			return fileName;
+		if (string.IsNullOrEmpty(ns)) return fileName;
 
 		var dir = WholeAssemblyDecompiler.CleanUpDirectoryName(ns);
-		return Path.Combine(dir, fileName);
+		return Path.Combine("decompiled", assemblyName, mvid.ToString(), dir, fileName);
 	}
 
 	/// <summary>
 	/// Gets the absolute path for the primary file of a type within the assembly's temp directory.
 	/// </summary>
-	private static string GetPrimaryFilePath(string tempDirectory, INamedTypeSymbol topLevelNamedType)
-		=> Path.Combine(tempDirectory, GetRelativePathForType(topLevelNamedType));
+	private static string GetPrimaryFilePath(string tempDirectory, INamedTypeSymbol topLevelNamedType, Guid mvid, string assemblyName)
+		=> Path.Combine(tempDirectory, GetRelativePathForType(topLevelNamedType, mvid, assemblyName));
 
 	private (PortableExecutableReference? metadataReference, string? assemblyLocation, bool isReferenceAssembly) GetReferenceInfo(Compilation compilation, ISymbol symbolToFind)
 	{
