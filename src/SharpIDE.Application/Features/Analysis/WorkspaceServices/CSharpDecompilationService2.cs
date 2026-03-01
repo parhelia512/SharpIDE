@@ -18,6 +18,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.CSharp.DecompiledSource;
 
+// Unused, as DecompileWholeAssemblyToProjectMetadataAsSourceFileProvider replaces/reimplements this all
 [ExportLanguageService(typeof(IDecompilationService), LanguageNames.CSharp), Shared]
 internal sealed class CSharpDecompilationService2 : IDecompilationService
 {
