@@ -40,6 +40,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private Window _completionDescriptionWindow = null!;
 	private Window _methodSignatureHelpWindow = null!;
 	private RichTextLabel _completionDescriptionLabel = null!;
+	private FindReplaceBar _findReplaceBar = null!;
 
 	private ImmutableArray<SharpIdeDiagnostic> _fileDiagnostics = [];
 	private ImmutableArray<SharpIdeDiagnostic> _fileAnalyzerDiagnostics = [];
@@ -76,6 +77,8 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		_methodSignatureHelpWindow = GetNode<Window>("%MethodSignatureHelpWindow");
 		_completionDescriptionLabel = _completionDescriptionWindow.GetNode<RichTextLabel>("PanelContainer/RichTextLabel");
 		RenderingServer.Singleton.CanvasItemSetParent(_aboveCanvasItemRid.Value, GetCanvasItem());
+		_findReplaceBar = GetNode<FindReplaceBar>("%FindReplaceBar");
+		_findReplaceBar.SetTextEdit(this);
 		_popupMenu.IdPressed += OnCodeFixSelected;
 		CustomCodeCompletionRequested.Subscribe(OnCodeCompletionRequested);
 		CodeFixesRequested += OnCodeFixesRequested;
@@ -230,10 +233,12 @@ public partial class SharpIdeCodeEdit : CodeEdit
 			_editorCaretPositionService.SelectionInfo = null;
 		}
 		_editorCaretPositionService.CaretPosition = caretPosition;
+		_findReplaceBar.LineColChangedForResult = false;
 	}
 
 	private void OnTextChanged()
 	{
+		_findReplaceBar.NeedsToCountResults = true;
 		var text = Text;
 		var pendingCompletionTrigger = _pendingCompletionTrigger;
 		_pendingCompletionTrigger = null;
@@ -496,7 +501,17 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		}
 		// Now we filter to only the focused tab
 		if (HasFocus() is false) return;
-		if (@event.IsActionPressed(InputStringNames.RenameSymbol))
+		if (@event.IsActionPressed(InputStringNames.FindInCurrentFile))
+		{
+			AcceptEvent();
+			_findReplaceBar.PopupSearch();
+		}
+		else if (@event.IsActionPressed(InputStringNames.ReplaceInCurrentFile))
+		{
+			AcceptEvent();
+			_findReplaceBar.PopupReplace();
+		}
+		else if (@event.IsActionPressed(InputStringNames.RenameSymbol))
 		{
 			_ = Task.GodotRun(async () => await RenameSymbol());
 		}

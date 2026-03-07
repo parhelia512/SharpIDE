@@ -23,6 +23,8 @@ public static class InputStringNames
     public static readonly StringName CodeEditorRemoveLine = nameof(CodeEditorRemoveLine);
     public static readonly StringName CodeEditorMoveLineUp = nameof(CodeEditorMoveLineUp);
     public static readonly StringName CodeEditorMoveLineDown = nameof(CodeEditorMoveLineDown);
+    public static readonly StringName FindInCurrentFile = nameof(FindInCurrentFile);
+    public static readonly StringName ReplaceInCurrentFile = nameof(ReplaceInCurrentFile);
 }
 
 public static class ThemeStringNames

@@ -1,9 +1,23 @@
 [gd_scene format=3 uid="uid://cinaqbdghcvoi"]
 
 [ext_resource type="FontVariation" uid="uid://cctwlwcoycek7" path="res://Features/CodeEditor/Resources/CascadiaFontVariation.tres" id="1_s7ira"]
+[ext_resource type="Script" uid="uid://blwx5v5ufga65" path="res://Features/CodeEditor/SharpIdeCodeEditContainer.cs" id="1_so235"]
 [ext_resource type="Script" uid="uid://du2lt7r1p1qfy" path="res://Features/CodeEditor/SharpIdeCodeEdit.cs" id="2_kp2fd"]
+[ext_resource type="PackedScene" uid="uid://b4m8xvyw3nq6t" path="res://Features/CodeEditor/FindReplaceBar.tscn" id="3_frbar"]
 
-[node name="SharpIdeCodeEdit" type="CodeEdit" unique_id=2021737984]
+[node name="SharpIdeCodeEditContainer" type="VBoxContainer" unique_id=921667605 node_paths=PackedStringArray("CodeEdit")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_so235")
+CodeEdit = NodePath("SharpIdeCodeEdit")
+
+[node name="SharpIdeCodeEdit" type="CodeEdit" parent="." unique_id=2021737984]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("1_s7ira")
 theme_override_font_sizes/font_size = 18
 highlight_all_occurrences = true
@@ -20,20 +34,20 @@ auto_brace_completion_enabled = true
 auto_brace_completion_highlight_matching = true
 script = ExtResource("2_kp2fd")
 
-[node name="CodeFixesMenu" type="PopupMenu" parent="." unique_id=54277800]
+[node name="CodeFixesMenu" type="PopupMenu" parent="SharpIdeCodeEdit" unique_id=54277800]
 size = Vector2i(217, 100)
 item_count = 1
 item_0/text = "Getting Context Actions..."
 item_0/id = 0
 
-[node name="AboveCanvasItem" type="Control" parent="." unique_id=650087366]
+[node name="AboveCanvasItem" type="Control" parent="SharpIdeCodeEdit" unique_id=650087366]
 unique_name_in_owner = true
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
 
-[node name="CompletionDescriptionWindow" type="Window" parent="." unique_id=1776589946]
+[node name="CompletionDescriptionWindow" type="Window" parent="SharpIdeCodeEdit" unique_id=1776589946]
 unique_name_in_owner = true
 transparent_bg = true
 oversampling_override = 1.0
@@ -44,7 +58,7 @@ transparent = true
 unfocusable = true
 popup_window = true
 
-[node name="PanelContainer" type="PanelContainer" parent="CompletionDescriptionWindow" unique_id=1912640024]
+[node name="PanelContainer" type="PanelContainer" parent="SharpIdeCodeEdit/CompletionDescriptionWindow" unique_id=1912640024]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -52,12 +66,12 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"EditorHoverPopupPanelContainer"
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CompletionDescriptionWindow/PanelContainer" unique_id=1926560774]
+[node name="RichTextLabel" type="RichTextLabel" parent="SharpIdeCodeEdit/CompletionDescriptionWindow/PanelContainer" unique_id=1926560774]
 layout_mode = 2
 fit_content = true
 autowrap_mode = 0
 
-[node name="MethodSignatureHelpWindow" type="Window" parent="." unique_id=687652298]
+[node name="MethodSignatureHelpWindow" type="Window" parent="SharpIdeCodeEdit" unique_id=687652298]
 unique_name_in_owner = true
 transparent_bg = true
 oversampling_override = 1.0
@@ -68,7 +82,7 @@ transparent = true
 unfocusable = true
 popup_window = true
 
-[node name="PanelContainer" type="PanelContainer" parent="MethodSignatureHelpWindow" unique_id=1449181862]
+[node name="PanelContainer" type="PanelContainer" parent="SharpIdeCodeEdit/MethodSignatureHelpWindow" unique_id=1449181862]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -76,7 +90,11 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"EditorHoverPopupPanelContainer"
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MethodSignatureHelpWindow/PanelContainer" unique_id=2089385442]
+[node name="RichTextLabel" type="RichTextLabel" parent="SharpIdeCodeEdit/MethodSignatureHelpWindow/PanelContainer" unique_id=2089385442]
 layout_mode = 2
 fit_content = true
 autowrap_mode = 0
+
+[node name="FindReplaceBar" parent="." unique_id=-447676240 instance=ExtResource("3_frbar")]
+unique_name_in_owner = true
+layout_mode = 2
