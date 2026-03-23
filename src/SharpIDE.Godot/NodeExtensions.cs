@@ -229,7 +229,7 @@ public static class NodeExtensions
             {
                 try
                 {
-                    await workItem();
+                    await workItem().ConfigureAwait(false);
                     taskCompletionSource.SetResult();
                 }
                 catch (Exception ex)
@@ -267,7 +267,7 @@ public static class NodeExtensions
             {
                 try
                 {
-                    await workItem();
+                    await workItem().ConfigureAwait(false);
                     taskCompletionSource.SetResult();
                 }
                 catch (Exception ex)
