@@ -60,9 +60,10 @@ public partial class SolutionExplorerPanel
                 PopupWindow = true,
                 PopupWMHint = true
             };
+            popupWindow.CloseRequested += () => this.RemoveChildAndQueueFree(popupWindow);
             popupWindow.AddChild(newProjectContainer);
             AddChild(popupWindow);
-            popupWindow.Show();
+            popupWindow.PopupCenteredRatio(0.5f);
         }
     }
 }
