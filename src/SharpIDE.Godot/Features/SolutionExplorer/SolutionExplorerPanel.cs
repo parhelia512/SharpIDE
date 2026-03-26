@@ -95,6 +95,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 			case (MouseButtonMask.Left, SharpIdeFolder): break;
 			case (MouseButtonMask.Right, SharpIdeFolder folder): OpenContextMenuFolder(folder, selected); break;
 			case (MouseButtonMask.Left, SharpIdeSolutionFolder): break;
+			case (MouseButtonMask.Right, SharpIdeSolutionFolder slnFolder): OpenContextMenuSlnFolder(slnFolder, selected); break;
 			default: break;
 		}
 	}
