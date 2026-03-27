@@ -1,8 +1,6 @@
 ﻿using Godot;
-using SharpIDE.Application.Features.FileWatching;
-using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
-using SharpIDE.Godot.Features.SolutionExplorer.ContextMenus.Dialogs;
+using SharpIDE.Godot.Features.NewProject;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
 
@@ -51,7 +49,7 @@ public partial class SolutionExplorerPanel
         var actionId = (SlnFolderAddSubmenuOptions)id;
         if (actionId is SlnFolderAddSubmenuOptions.Project)
         {
-            var newProjectContainer = _newProjectContainerScene.Instantiate<NewProject.NewProjectContainer>();
+            var newProjectContainer = _newProjectContainerScene.Instantiate<NewProjectContainer>();
             var popupWindow = new Window
             {
                 Title = "New Project",
