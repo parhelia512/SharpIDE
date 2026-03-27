@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using Ardalis.GuardClauses;
 using LibGit2Sharp;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
@@ -8,8 +10,17 @@ public static class VsPersistenceMapper
 	public static async Task<SharpIdeSolutionModel> GetSolutionModel(string solutionFilePath, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity();
+
+		SolutionModel vsSolution;
+		using (SharpIdeOtel.Source.StartActivity("VsPersistence.OpenSolution"))
+		{
+			var serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+			Guard.Against.Null(serializer);
+			vsSolution = await serializer.OpenAsync(solutionFilePath, cancellationToken);
+		}
+
 		// This intermediate model is pretty much useless, but I have left it around as we grab the project nodes with it, which we might use later.
-		var intermediateModel = await IntermediateMapper.GetIntermediateModel(solutionFilePath, cancellationToken);
+		var intermediateModel = await IntermediateMapper.GetIntermediateModel(solutionFilePath, vsSolution, cancellationToken);
 
 		var solutionModel = new SharpIdeSolutionModel(solutionFilePath, intermediateModel);
 

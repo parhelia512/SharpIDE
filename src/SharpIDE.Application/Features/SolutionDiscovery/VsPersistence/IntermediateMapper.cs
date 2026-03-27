@@ -7,13 +7,9 @@ namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 public static class IntermediateMapper
 {
-	internal static async Task<IntermediateSolutionModel> GetIntermediateModel(string solutionFilePath,
-		CancellationToken cancellationToken = default)
+	internal static async Task<IntermediateSolutionModel> GetIntermediateModel(string solutionFilePath, SolutionModel vsSolution, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity();
-		var serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
-		Guard.Against.Null(serializer, nameof(serializer));
-		var vsSolution = await serializer.OpenAsync(solutionFilePath, cancellationToken);
 
 		// Remove any projects that aren't csproj, TODO: Instead of removing, display in the solution explorer that the project type isn't supported
 		foreach (var vsSolutionSolutionProject in vsSolution.SolutionProjects.Where(s => s.Extension is not ".csproj").ToList())
