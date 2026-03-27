@@ -2,6 +2,7 @@ using Ardalis.GuardClauses;
 using Godot;
 using Microsoft.TemplateEngine.Abstractions;
 using SharpIDE.Application.Features.DotnetNew;
+using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Godot.Features.NewProject;
 
@@ -9,7 +10,7 @@ public partial class NewProjectContainer : VBoxContainer
 {
     [Inject] private readonly DotnetTemplateService _dotnetTemplateService = null!;
 
-    public string DefaultNewProjectParentPath { get; set; } = null!;
+    public SharpIdeSolutionFolder SlnFolder { get; set; } = null!;
     
     private ButtonGroup _categoryButtonGroup = new ButtonGroup();
 
@@ -21,11 +22,11 @@ public partial class NewProjectContainer : VBoxContainer
 
     public override void _Ready()
     {
-        Guard.Against.NullOrWhiteSpace(DefaultNewProjectParentPath);
+        Guard.Against.Null(SlnFolder);
         _microsoftTemplatesVBoxContainer = GetNode<VBoxContainer>("%MicrosoftTemplatesVBoxContainer");
         _customTemplatesVBoxContainer = GetNode<VBoxContainer>("%CustomTemplatesVBoxContainer");
         _templateComponent = GetNode<TemplateComponent>("%TemplateComponent");
-        _templateComponent.DefaultNewProjectParentPath = DefaultNewProjectParentPath;
+        _templateComponent.SlnFolder = SlnFolder;
         _templateComponent.Visible = false; // Hide until the categories are loaded, to select an entry
         _categoryButtonGroup.Pressed += baseButton =>
         {

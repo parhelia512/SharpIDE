@@ -71,6 +71,6 @@ public class DotnetTemplateService(ILoggerFactory loggerFactory)
 	/// </summary>
 	public async Task ExecuteTemplate(ITemplateInfo template, string projectName, string path, Dictionary<string, string?> parameters, CancellationToken cancellationToken = default)
 	{
-		var templateCreator = await _bootstrapper!.CreateAsync(template, projectName, path, parameters, null, cancellationToken);
+		var templateCreationResult = await _bootstrapper!.CreateAsync(template, projectName, path, parameters, null, cancellationToken);
 	}
 }

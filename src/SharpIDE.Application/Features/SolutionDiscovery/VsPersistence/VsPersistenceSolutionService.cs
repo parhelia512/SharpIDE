@@ -1,5 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using LibGit2Sharp;
+using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
@@ -8,15 +9,19 @@ namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 public class VsPersistenceSolutionService
 {
 	private SolutionModel? _vsSolution;
+	private ISolutionSerializer? _solutionSerializer;
+	private string? _solutionFilePath;
+
 	public async Task<SharpIdeSolutionModel> LoadSolution(string solutionFilePath, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity();
+		_solutionFilePath = solutionFilePath;
 
 		using (SharpIdeOtel.Source.StartActivity("VsPersistence.OpenSolution"))
 		{
-			var serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
-			Guard.Against.Null(serializer);
-			_vsSolution = await serializer.OpenAsync(solutionFilePath, cancellationToken);
+			_solutionSerializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+			Guard.Against.Null(_solutionSerializer);
+			_vsSolution = await _solutionSerializer.OpenAsync(solutionFilePath, cancellationToken);
 		}
 
 		// This intermediate model is pretty much useless, but I have left it around as we grab the project nodes with it, which we might use later.
@@ -48,6 +53,25 @@ public class VsPersistenceSolutionService
 		}
 
 		return solutionModel;
+	}
+
+	public async Task AddProject(IExpandableSharpIdeNode parentNode, string projectName, string projectFilePath, CancellationToken cancellationToken = default)
+	{
+		Guard.Against.Null(_vsSolution);
+		Guard.Against.Null(_solutionSerializer);
+		Guard.Against.Null(parentNode);
+		Guard.Against.NullOrWhiteSpace(_solutionFilePath);
+		Guard.Against.NullOrWhiteSpace(projectName);
+		Guard.Against.NullOrWhiteSpace(projectFilePath);
+
+		SolutionFolderModel? vsSolutionFolder = null;
+		if (parentNode is SharpIdeSolutionFolder solutionFolder)
+		{
+			vsSolutionFolder = _vsSolution.FindFolder(solutionFolder.VsPersistencePath);
+		}
+
+		_vsSolution.AddProject(projectFilePath, null, vsSolutionFolder);
+		await _solutionSerializer.SaveAsync(_solutionFilePath, _vsSolution, cancellationToken);
 	}
 }
 

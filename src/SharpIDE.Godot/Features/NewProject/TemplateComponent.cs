@@ -1,12 +1,14 @@
+using Ardalis.GuardClauses;
 using Godot;
 using Microsoft.TemplateEngine.Abstractions;
 using SharpIDE.Application.Features.DotnetNew;
+using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Godot.Features.NewProject;
 
 public partial class TemplateComponent : VBoxContainer
 {
-    public string DefaultNewProjectParentPath { get; set; } = null!;
+    public SharpIdeSolutionFolder SlnFolder { get; set; } = null!;
     
     private LineEdit _projectNameLineEdit = null!;
     private LineEdit _projectDirectoryLineEdit = null!;
@@ -26,7 +28,8 @@ public partial class TemplateComponent : VBoxContainer
     private Dictionary<string, List<ITemplateInfo>> _templatesForCurrentCategory = null!;
     private ITemplateInfo _selectedTemplate = null!;
     
-    [Inject] DotnetTemplateService _dotnetTemplateService = null!;
+    [Inject] private readonly DotnetTemplateService _dotnetTemplateService = null!;
+    [Inject] private readonly VsPersistenceSolutionService _vsPersistenceSolutionService = null!;
 
     public override void _Ready()
     {
@@ -57,6 +60,9 @@ public partial class TemplateComponent : VBoxContainer
             _ = Task.GodotRun(async () =>
             {
                 await _dotnetTemplateService.ExecuteTemplate(_selectedTemplate, projectName, path, []);
+                var projectFilePath = Path.Combine(path, $"{projectName}.csproj");
+                Guard.Against.Null(SlnFolder);
+                await _vsPersistenceSolutionService.AddProject(SlnFolder, projectName, projectFilePath);
             });
             GetWindow().QueueFree();
         };
@@ -75,8 +81,9 @@ public partial class TemplateComponent : VBoxContainer
         var defaultProjectName = selectedTemplate.DefaultName;
         defaultProjectName ??= "Project1";
         _projectNameLineEdit.Text = defaultProjectName;
-        _projectDirectoryLineEdit.Text = DefaultNewProjectParentPath;
-        _projectDirectoryAndProjectNameLabel.Text = Path.Combine(DefaultNewProjectParentPath, defaultProjectName);
+        var defaultNewProjectParentPath = GetDefaultNewProjectParentPath(SlnFolder);
+        _projectDirectoryLineEdit.Text = defaultNewProjectParentPath;
+        _projectDirectoryAndProjectNameLabel.Text = Path.Combine(defaultNewProjectParentPath, defaultProjectName);
         _templateTypeLabel.Text = selectedTemplate.Name;
         _templatesItemList.Clear();
         
@@ -101,5 +108,26 @@ public partial class TemplateComponent : VBoxContainer
     private void ProjectNameOrDirectoryChanged(string _)
     {
         _projectDirectoryAndProjectNameLabel.Text = Path.Combine(_projectDirectoryLineEdit.Text, _projectNameLineEdit.Text);
+    }
+    
+    private static string GetDefaultNewProjectParentPath(SharpIdeSolutionFolder slnFolder)
+    {
+        List<string> folderNames = [];
+        IExpandableSharpIdeNode node = slnFolder;
+        while (node is SharpIdeSolutionFolder slnFolderNode)
+        {
+            folderNames.Add(slnFolderNode.Name);
+            node = slnFolderNode.Parent!;
+        }
+        var slnNode = (SharpIdeSolutionModel)node;
+        folderNames.Reverse();
+        var idealPath = Path.Combine([slnNode.DirectoryPath, ..folderNames]);
+        if (Directory.Exists(idealPath)) return idealPath;
+        var directoryInfo = new DirectoryInfo(idealPath);
+        while (!directoryInfo.Exists && directoryInfo.FullName != slnNode.DirectoryPath)
+        {
+            directoryInfo = directoryInfo.Parent!;
+        }
+        return directoryInfo.FullName;
     }
 }
