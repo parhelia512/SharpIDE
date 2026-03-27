@@ -12,25 +12,33 @@ public class VsPersistenceSolutionService
 	private ISolutionSerializer? _solutionSerializer;
 	private string? _solutionFilePath;
 
-	public async Task<SharpIdeSolutionModel> LoadSolution(string solutionFilePath, CancellationToken cancellationToken = default)
+	public async Task LoadSolution(string solutionFilePath, SolutionModel vsSln, ISolutionSerializer slnSerializer, CancellationToken cancellationToken = default)
+	{
+		_vsSolution = vsSln;
+		_solutionSerializer = slnSerializer;
+		_solutionFilePath = solutionFilePath;
+	}
+	// Weird separation between ReadSolution and LoadSolution is so we can call the static ReadSolution in IdeRoot before all the UI Nodes are ready and DI services injected
+	public static async Task<(SharpIdeSolutionModel, SolutionModel, ISolutionSerializer)> ReadSolution(string solutionFilePath, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity();
-		_solutionFilePath = solutionFilePath;
 
+		ISolutionSerializer? solutionSerializer;
+		SolutionModel vsSolution;
 		using (SharpIdeOtel.Source.StartActivity("VsPersistence.OpenSolution"))
 		{
-			_solutionSerializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
-			Guard.Against.Null(_solutionSerializer);
-			_vsSolution = await _solutionSerializer.OpenAsync(solutionFilePath, cancellationToken);
+			solutionSerializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+			Guard.Against.Null(solutionSerializer);
+			vsSolution = await solutionSerializer.OpenAsync(solutionFilePath, cancellationToken);
 		}
 
 		// This intermediate model is pretty much useless, but I have left it around as we grab the project nodes with it, which we might use later.
-		var intermediateModel = await IntermediateMapper.GetIntermediateModel(solutionFilePath, _vsSolution, cancellationToken);
+		var intermediateModel = await IntermediateMapper.GetIntermediateModel(solutionFilePath, vsSolution, cancellationToken);
 
 		var solutionModel = new SharpIdeSolutionModel(solutionFilePath, intermediateModel);
 
 		var gitFolderPath = Repository.Discover(solutionFilePath);
-		if (gitFolderPath is null) return solutionModel;
+		if (gitFolderPath is null) return (solutionModel, vsSolution, solutionSerializer);
 		using var repo = new Repository(gitFolderPath);
 		var status = repo.RetrieveStatus(new StatusOptions());
 
@@ -52,7 +60,7 @@ public class VsPersistenceSolutionService
 			fileInSolution.GitStatus = mappedGitStatus;
 		}
 
-		return solutionModel;
+		return (solutionModel, vsSolution, solutionSerializer);
 	}
 
 	public async Task AddProject(IExpandableSharpIdeNode parentNode, string projectName, string projectFilePath, CancellationToken cancellationToken = default)

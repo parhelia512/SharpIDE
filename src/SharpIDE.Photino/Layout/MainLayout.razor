@@ -184,7 +184,7 @@
 		var solutionFilePath = (string)result.Data!;
 		_solutionFilePath = solutionFilePath;
 
-		var solutionModel = await VsPersistenceSolutionService.LoadSolution(_solutionFilePath);
+		var (solutionModel, _, _) = await VsPersistenceSolutionService.ReadSolution(_solutionFilePath);
 		_solutionModel = solutionModel;
 		RoslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel);
 	}

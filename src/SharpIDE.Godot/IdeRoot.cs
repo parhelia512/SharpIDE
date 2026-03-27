@@ -152,12 +152,13 @@ public partial class IdeRoot : Control
 		_ = Task.GodotRun(async () =>
 		{
 			GD.Print($"Selected: {path}");
-			await _nodeReadyTcs.Task;
-			// Do not use injected services until after _nodeReadyTcs - Services aren't injected until _Ready
 			var timer = Stopwatch.StartNew();
-			var solutionModel = await _vsPersistenceSolutionService.LoadSolution(path);
+			var (solutionModel, vsSln, solutionSerializer) = await VsPersistenceSolutionService.ReadSolution(path);
 			timer.Stop();
 			_logger.LogInformation("Solution model fully created in {ElapsedMilliseconds} ms", timer.ElapsedMilliseconds);
+			await _nodeReadyTcs.Task;
+			// Do not use injected services until after _nodeReadyTcs - Services aren't injected until _Ready
+			await _vsPersistenceSolutionService.LoadSolution(path, vsSln, solutionSerializer);
 			_sharpIdeSolutionAccessor.SolutionModel = solutionModel;
 			_sharpIdeSolutionAccessor.SolutionReadyTcs.SetResult();
 			_solutionExplorerPanel.SolutionModel = solutionModel;
