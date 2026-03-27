@@ -196,9 +196,11 @@ layout_mode = 2
 alignment = 2
 
 [node name="CreateTemplateButton" type="Button" parent="HBoxContainer" unique_id=1257716889]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Create"
 
 [node name="CancelButton" type="Button" parent="HBoxContainer" unique_id=313071932]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Cancel"

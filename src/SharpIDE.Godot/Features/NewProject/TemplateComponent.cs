@@ -15,6 +15,9 @@ public partial class TemplateComponent : VBoxContainer
     private Label _templateGroupIdentityLabel = null!;
     private Label _templateAuthorLabel = null!;
     private Label _templateClassificationsLabel = null!;
+    
+    private Button _createTemplateButton = null!;
+    private Button _cancelButton = null!;
 
     private Dictionary<string, List<ITemplateInfo>> _templatesForCurrentCategory = null!;
 
@@ -30,6 +33,13 @@ public partial class TemplateComponent : VBoxContainer
         _templateGroupIdentityLabel = GetNode<Label>("%TemplateGroupIdentityLabel");
         _templateAuthorLabel = GetNode<Label>("%TemplateAuthorLabel");
         _templateClassificationsLabel = GetNode<Label>("%TemplateClassificationsLabel");
+        
+        _createTemplateButton = GetNode<Button>("%CreateTemplateButton");
+        _cancelButton = GetNode<Button>("%CancelButton");
+        _cancelButton.Pressed += () =>
+        {
+            GetWindow().QueueFree();
+        };
     }
 
     public void SetTemplates(Dictionary<string, List<ITemplateInfo>> templatesForCategory)
