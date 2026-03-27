@@ -44,6 +44,8 @@ public partial class TemplateComponent : VBoxContainer
         
         _createTemplateButton = GetNode<Button>("%CreateTemplateButton");
         _cancelButton = GetNode<Button>("%CancelButton");
+        _projectDirectoryLineEdit.TextChanged += ProjectNameOrDirectoryChanged;
+        _projectNameLineEdit.TextChanged += ProjectNameOrDirectoryChanged;
         _cancelButton.Pressed += () =>
         {
             GetWindow().QueueFree();
@@ -94,5 +96,10 @@ public partial class TemplateComponent : VBoxContainer
         _templateGroupIdentityLabel.Text = selectedTemplate.GroupIdentity;
         _templateAuthorLabel.Text = selectedTemplate.Author;
         _templateClassificationsLabel.Text = string.Join("; ", selectedTemplate.Classifications);
+    }
+
+    private void ProjectNameOrDirectoryChanged(string _)
+    {
+        _projectDirectoryAndProjectNameLabel.Text = Path.Combine(_projectDirectoryLineEdit.Text, _projectNameLineEdit.Text);
     }
 }
