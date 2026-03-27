@@ -46,9 +46,9 @@ public class DotnetTemplateService(ILoggerFactory loggerFactory)
 
 	public async Task<IReadOnlyList<ITemplateInfo>> GetTemplates(CancellationToken cancellationToken = default)
 	{
-		var templateEngineHost = _templateEngineHost ?? CliTemplateEngineHost.CreateHost(false, false, null, null, false, LogLevel.Information, _loggerFactory);
-		var bootstrapper = _bootstrapper ?? new Bootstrapper(templateEngineHost, false);
-		var templates = await bootstrapper.GetTemplatesAsync(cancellationToken);
+		_templateEngineHost ??= CliTemplateEngineHost.CreateHost(false, false, null, null, false, LogLevel.Information, _loggerFactory);
+		_bootstrapper ??= new Bootstrapper(_templateEngineHost, false);
+		var templates = await _bootstrapper.GetTemplatesAsync(cancellationToken);
 
 		return templates;
 

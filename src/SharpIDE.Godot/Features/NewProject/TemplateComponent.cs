@@ -53,7 +53,7 @@ public partial class TemplateComponent : VBoxContainer
         _createTemplateButton.Pressed += () =>
         {
             var projectName = _projectNameLineEdit.Text;
-            var path = _projectDirectoryLineEdit.Text;
+            var path = _projectDirectoryAndProjectNameLabel.Text;
             _ = Task.GodotRun(async () =>
             {
                 await _dotnetTemplateService.ExecuteTemplate(_selectedTemplate, projectName, path, []);
