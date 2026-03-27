@@ -1,3 +1,4 @@
+using Ardalis.GuardClauses;
 using Godot;
 using Microsoft.TemplateEngine.Abstractions;
 using SharpIDE.Application.Features.DotnetNew;
@@ -7,6 +8,8 @@ namespace SharpIDE.Godot.Features.NewProject;
 public partial class NewProjectContainer : VBoxContainer
 {
     [Inject] private readonly DotnetTemplateService _dotnetTemplateService = null!;
+
+    public string DefaultNewProjectParentPath { get; set; } = null!;
     
     private ButtonGroup _categoryButtonGroup = new ButtonGroup();
 
@@ -18,9 +21,11 @@ public partial class NewProjectContainer : VBoxContainer
 
     public override void _Ready()
     {
+        Guard.Against.NullOrWhiteSpace(DefaultNewProjectParentPath);
         _microsoftTemplatesVBoxContainer = GetNode<VBoxContainer>("%MicrosoftTemplatesVBoxContainer");
         _customTemplatesVBoxContainer = GetNode<VBoxContainer>("%CustomTemplatesVBoxContainer");
         _templateComponent = GetNode<TemplateComponent>("%TemplateComponent");
+        _templateComponent.DefaultNewProjectParentPath = DefaultNewProjectParentPath;
         _categoryButtonGroup.Pressed += baseButton =>
         {
             var button = (Button)baseButton;

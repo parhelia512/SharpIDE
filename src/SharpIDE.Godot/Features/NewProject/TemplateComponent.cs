@@ -6,6 +6,8 @@ namespace SharpIDE.Godot.Features.NewProject;
 
 public partial class TemplateComponent : VBoxContainer
 {
+    public string DefaultNewProjectParentPath { get; set; } = null!;
+    
     private LineEdit _projectNameLineEdit = null!;
     private LineEdit _projectDirectoryLineEdit = null!;
     private Label _templateTypeLabel = null!;
@@ -46,11 +48,11 @@ public partial class TemplateComponent : VBoxContainer
         };
         _createTemplateButton.Pressed += () =>
         {
-            var projectName = _projectDirectoryLineEdit.Text;
-            var text = _projectNameLineEdit.Text;
+            var projectName = _projectNameLineEdit.Text;
+            var path = _projectDirectoryLineEdit.Text;
             _ = Task.GodotRun(async () =>
             {
-                await _dotnetTemplateService.ExecuteTemplate(_selectedTemplate, projectName, text, []);
+                await _dotnetTemplateService.ExecuteTemplate(_selectedTemplate, projectName, path, []);
             });
             GetWindow().QueueFree();
         };
@@ -67,6 +69,7 @@ public partial class TemplateComponent : VBoxContainer
     {
         _selectedTemplate = selectedTemplate;
         _projectNameLineEdit.Text = selectedTemplate.DefaultName;
+        _projectDirectoryLineEdit.Text = DefaultNewProjectParentPath;
         _templateTypeLabel.Text = selectedTemplate.Name;
         _templatesItemList.Clear();
         

@@ -50,6 +50,7 @@ public partial class SolutionExplorerPanel
         if (actionId is SlnFolderAddSubmenuOptions.Project)
         {
             var newProjectContainer = _newProjectContainerScene.Instantiate<NewProjectContainer>();
+            newProjectContainer.DefaultNewProjectParentPath = GetDefaultNewProjectParentPath(slnFolder);
             var popupWindow = new Window
             {
                 Title = "New Project",
@@ -63,5 +64,26 @@ public partial class SolutionExplorerPanel
             AddChild(popupWindow);
             popupWindow.PopupCenteredRatio(0.5f);
         }
+    }
+
+    private string GetDefaultNewProjectParentPath(SharpIdeSolutionFolder slnFolder)
+    {
+        List<string> folderNames = [];
+        IExpandableSharpIdeNode node = slnFolder;
+        while (node is SharpIdeSolutionFolder slnFolderNode)
+        {
+            folderNames.Add(slnFolderNode.Name);
+            node = slnFolderNode.Parent!;
+        }
+        var slnNode = (SharpIdeSolutionModel)node;
+        folderNames.Reverse();
+        var idealPath = Path.Combine([slnNode.DirectoryPath, ..folderNames]);
+        if (Directory.Exists(idealPath)) return idealPath;
+        var directoryInfo = new DirectoryInfo(idealPath);
+        while (!directoryInfo.Exists && directoryInfo.FullName != slnNode.DirectoryPath)
+        {
+            directoryInfo = directoryInfo.Parent!;
+        }
+        return directoryInfo.FullName;
     }
 }
