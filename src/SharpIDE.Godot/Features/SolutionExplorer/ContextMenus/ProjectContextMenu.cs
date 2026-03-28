@@ -4,6 +4,7 @@ using SharpIDE.Application.Features.Build;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.Run;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.BottomPanel;
 

@@ -1,4 +1,5 @@
-﻿using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+﻿using SharpIDE.Application.Features.SolutionDiscovery;
+using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Godot;
 

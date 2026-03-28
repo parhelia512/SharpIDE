@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using ObservableCollections;
 using R3;
 using SharpIDE.Application.Features.Analysis;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.Common;
 

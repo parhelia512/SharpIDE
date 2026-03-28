@@ -1,5 +1,6 @@
 using Godot;
 using SharpIDE.Application.Features.FileWatching;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer.ContextMenus.Dialogs;

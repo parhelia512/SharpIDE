@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Application.Features.Testing.Client;
 using SharpIDE.Application.Features.Testing.Client.Dtos;

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using ObservableCollections;
+using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
-namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+namespace SharpIDE.Application.Features.SolutionDiscovery;
 
 public class SharpIdeSolutionFolder : ISharpIdeNode, IExpandableSharpIdeNode, IChildSharpIdeNode
 {

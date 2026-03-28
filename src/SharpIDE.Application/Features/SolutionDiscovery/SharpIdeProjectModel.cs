@@ -8,8 +8,9 @@ using R3;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.Events;
+using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
-namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+namespace SharpIDE.Application.Features.SolutionDiscovery;
 
 public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChildSharpIdeNode, IFolderOrProject, ISolutionOrProject
 {

@@ -1,5 +1,6 @@
 using GDExtensionBindgen;
 using Godot;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.Debug_.Tab.SubTabs;
 using SharpIDE.Godot.Features.TerminalBase;

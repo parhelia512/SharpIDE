@@ -1,7 +1,7 @@
 ﻿using ObservableCollections;
 using R3;
 
-namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+namespace SharpIDE.Application.Features.SolutionDiscovery;
 
 public interface ISharpIdeNode;
 

@@ -1,5 +1,6 @@
 using Godot;
 using SharpIDE.Application.Features.Run;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.BottomPanel;
 

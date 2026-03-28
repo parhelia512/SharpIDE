@@ -2,6 +2,7 @@ using Ardalis.GuardClauses;
 using Godot;
 using Microsoft.TemplateEngine.Abstractions;
 using SharpIDE.Application.Features.DotnetNew;
+using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Godot.Features.NewProject;
