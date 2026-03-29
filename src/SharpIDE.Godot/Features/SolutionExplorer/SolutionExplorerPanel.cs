@@ -7,12 +7,9 @@ using SharpIDE.Application;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.SolutionDiscovery;
-using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
-
 using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.Common;
 using SharpIDE.Godot.Features.Git;
-using SharpIDE.Godot.Features.Problems;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
 
@@ -304,8 +301,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 		folderItem.SharpIdeNode = sharpIdeFolder;
 
 		var disposableBuilder = Disposable.CreateBuilder();
-		Observable.EveryValueChanged(sharpIdeFolder, folder => folder.Name.Value)
-			.Skip(1).SubscribeOnThreadPool().ObserveOnThreadPool().SubscribeAwait(async (s, ct) =>
+		sharpIdeFolder.Name.Skip(1).SubscribeOnThreadPool().ObserveOnThreadPool().SubscribeAwait(async (s, ct) =>
 			{
 				await this.InvokeAsync(() => folderItem.SetText(0, s));
 			}, configureAwait: false).AddTo(ref disposableBuilder);
