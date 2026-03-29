@@ -44,7 +44,7 @@ public partial class SolutionExplorerPanel
         menu.AddSeparator();
         createNewSubmenu.AddItem("Directory", (int)CreateNewSubmenuOptions.Directory);
         createNewSubmenu.AddItem("C# File", (int)CreateNewSubmenuOptions.CSharpFile);
-        createNewSubmenu.IdPressed += id => OnCreateNewSubmenuPressed(id, project);
+        createNewSubmenu.IdPressed += id => OnCreateNewSubmenuPressed(id, project.Folder);
 
         if (project is { IsLoaded: true, IsRunnable: true })
         {

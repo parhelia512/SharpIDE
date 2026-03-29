@@ -39,7 +39,7 @@ public static class DependencyInjection
 		services.AddScoped<IdeOpenTabsFileManager>();
 		services.AddScoped<RoslynAnalysis>();
 		services.AddScoped<IdeFileOperationsService>();
-		services.AddScoped<SharpIdeSolutionModificationService>();
+		services.AddScoped<SharpIdeRootFolderModificationService>();
 		services.AddScoped<AnalyzerFileWatcher>();
 		services.AddScoped<EditorCaretPositionService>();
 		services.AddScoped<SharpIdeMetadataAsSourceService>();

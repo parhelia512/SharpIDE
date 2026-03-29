@@ -1,7 +1,6 @@
 ﻿using Godot;
 using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.SolutionDiscovery;
-using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.SolutionExplorer.ContextMenus.Dialogs;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
@@ -88,7 +87,7 @@ public partial class SolutionExplorerPanel
         menu.Popup();
     }
 
-    private void OnCreateNewSubmenuPressed(long id, IFolderOrProject folder)
+    private void OnCreateNewSubmenuPressed(long id, SharpIdeFolder folder)
     {
         var actionId = (CreateNewSubmenuOptions)id;
         if (actionId is CreateNewSubmenuOptions.Directory)

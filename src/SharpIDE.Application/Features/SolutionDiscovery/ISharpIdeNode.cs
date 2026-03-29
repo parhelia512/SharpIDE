@@ -13,13 +13,6 @@ public interface ISolutionOrProject
 {
 	public string DirectoryPath { get; set; }
 }
-public interface IFolderOrProject : IExpandableSharpIdeNode, IChildSharpIdeNode
-{
-	public ObservableList<SharpIdeFolder> Folders { get; init; }
-	public ObservableList<SharpIdeFile> Files { get; init; }
-	public ReactiveProperty<string> Name { get; set; }
-	public string ChildNodeBasePath { get; }
-}
 public interface IFileOrFolder : IChildSharpIdeNode
 {
 	public string Path { get; set; }

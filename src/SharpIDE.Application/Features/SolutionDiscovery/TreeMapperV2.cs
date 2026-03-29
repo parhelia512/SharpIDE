@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using SharpIDE.Application.Features.FileSystem;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
@@ -14,7 +14,6 @@ public static class TreeMapperV2
 
 	private static readonly string[] _excludedFolders = ["bin", "obj", "node_modules"];
 	public static List<SharpIdeFolder> GetSubFolders(this SharpIdeFolder folder, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles, ConcurrentBag<SharpIdeFolder> allFolders) => GetSubFolders(folder.Path, parent, allFiles, allFolders);
-	public static List<SharpIdeFolder> GetSubFolders(this SharpIdeRootFolder folder, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles, ConcurrentBag<SharpIdeFolder> allFolders) => GetSubFolders(folder.Path, parent, allFiles, allFolders);
 	public static List<SharpIdeFolder> GetSubFolders(string folderPath, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles, ConcurrentBag<SharpIdeFolder> allFolders)
 	{
 		var directoryInfo = new DirectoryInfo(folderPath);

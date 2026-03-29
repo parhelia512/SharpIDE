@@ -49,7 +49,7 @@ public partial class IdeRoot : Control
 	[Inject] private readonly BuildService _buildService = null!;
     [Inject] private readonly IdeOpenTabsFileManager _openTabsFileManager = null!;
     [Inject] private readonly RoslynAnalysis _roslynAnalysis = null!;
-    [Inject] private readonly SharpIdeSolutionModificationService _sharpIdeSolutionModificationService = null!;
+    [Inject] private readonly SharpIdeRootFolderModificationService _rootFolderModificationService = null!;
     [Inject] private readonly SharpIdeSolutionAccessor _sharpIdeSolutionAccessor = null!;
     [Inject] private readonly IdeNavigationHistoryService _navigationHistoryService = null!;
     [Inject] private readonly VsPersistenceSolutionService _vsPersistenceSolutionService = null!;
@@ -169,7 +169,7 @@ public partial class IdeRoot : Control
 			_searchAllFilesWindow.Solution = solutionModel;
 			_fileExternalChangeHandler.SolutionModel = solutionModel;
 			_fileChangedService.SolutionModel = solutionModel;
-			_sharpIdeSolutionModificationService.SolutionModel = solutionModel;
+			_rootFolderModificationService.RootFolder = sharpIdeRootFolder;
 			_ = Task.GodotRun(_solutionExplorerPanel.BindToSolution);
 			_roslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel, sharpIdeRootFolder);
 			_fileWatcher.StartWatching(solutionModel);

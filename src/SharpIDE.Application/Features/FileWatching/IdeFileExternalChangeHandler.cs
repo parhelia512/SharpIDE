@@ -1,7 +1,8 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
 using SharpIDE.Application.Features.Events;
+using SharpIDE.Application.Features.FileSystem;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
@@ -11,13 +12,16 @@ public class IdeFileExternalChangeHandler
 {
 	private readonly ILogger<IdeFileExternalChangeHandler> _logger;
 	private readonly FileChangedService _fileChangedService;
-	private readonly SharpIdeSolutionModificationService _sharpIdeSolutionModificationService;
+	private readonly SharpIdeRootFolderModificationService _rootFolderModificationService;
 	public SharpIdeSolutionModel SolutionModel { get; set; } = null!;
-	public IdeFileExternalChangeHandler(FileChangedService fileChangedService, SharpIdeSolutionModificationService sharpIdeSolutionModificationService, ILogger<IdeFileExternalChangeHandler> logger)
+
+	private SharpIdeRootFolder RootFolder => SolutionModel.RootFolder;
+
+	public IdeFileExternalChangeHandler(FileChangedService fileChangedService, SharpIdeRootFolderModificationService rootFolderModificationService, ILogger<IdeFileExternalChangeHandler> logger)
 	{
 		_logger = logger;
 		_fileChangedService = fileChangedService;
-		_sharpIdeSolutionModificationService = sharpIdeSolutionModificationService;
+		_rootFolderModificationService = rootFolderModificationService;
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileChanged.Subscribe(OnFileChanged);
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileCreated.Subscribe(OnFileCreated);
 		GlobalEvents.Instance.FileSystemWatcherInternal.FileDeleted.Subscribe(OnFileDeleted);
@@ -30,22 +34,22 @@ public class IdeFileExternalChangeHandler
 
 	private async Task OnFileRenamed(string oldFilePath, string newFilePath)
 	{
-		var sharpIdeFile = SolutionModel.AllFiles.GetValueOrDefault(oldFilePath);
+		var sharpIdeFile = RootFolder.AllFiles.GetValueOrDefault(oldFilePath);
 		if (sharpIdeFile is null) return;
-		await _sharpIdeSolutionModificationService.RenameFile(sharpIdeFile, Path.GetFileName(newFilePath));
+		await _rootFolderModificationService.RenameFile(sharpIdeFile, Path.GetFileName(newFilePath));
 	}
 
 	private async Task OnFileDeleted(string filePath)
 	{
-		var sharpIdeFile = SolutionModel.AllFiles.GetValueOrDefault(filePath);
+		var sharpIdeFile = RootFolder.AllFiles.GetValueOrDefault(filePath);
 		if (sharpIdeFile is null) return;
-		await _sharpIdeSolutionModificationService.RemoveFile(sharpIdeFile);
+		await _rootFolderModificationService.RemoveFile(sharpIdeFile);
 	}
 
 	// TODO: Test - this most likely only will ever be called on linux - windows and macos(?) does delete + create on rename of folders
 	private async Task OnFolderRenamed(string oldFolderPath, string newFolderPath)
 	{
-		var sharpIdeFolder = SolutionModel.AllFolders.SingleOrDefault(f => f.Path == oldFolderPath);
+		var sharpIdeFolder = RootFolder.AllFolders.SingleOrDefault(f => f.Path == oldFolderPath);
 		if (sharpIdeFolder is null)
 		{
 			return;
@@ -53,66 +57,68 @@ public class IdeFileExternalChangeHandler
 		var isMoveRatherThanRename = Path.GetDirectoryName(oldFolderPath) != Path.GetDirectoryName(newFolderPath);
 		if (isMoveRatherThanRename)
 		{
-			await _sharpIdeSolutionModificationService.MoveDirectory(sharpIdeFolder, sharpIdeFolder);
+			var newParentPath = Path.GetDirectoryName(newFolderPath)!;
+			var destinationParent = RootFolder.AllFolders.SingleOrDefault(f => f.Path == newParentPath) ?? (newParentPath == RootFolder.Path ? RootFolder : throw new InvalidOperationException($"Destination parent folder '{newParentPath}' of moved folder '{oldFolderPath}' does not exist in the SharpIdeRootFolder"));
+			await _rootFolderModificationService.MoveDirectory(destinationParent, sharpIdeFolder);
 		}
 		else
 		{
 			var newFolderName = Path.GetFileName(newFolderPath);
-			await _sharpIdeSolutionModificationService.RenameDirectory(sharpIdeFolder, newFolderName);
+			await _rootFolderModificationService.RenameDirectory(sharpIdeFolder, newFolderName);
 		}
 	}
 
 	private async Task OnFolderDeleted(string folderPath)
 	{
-		var sharpIdeFolder = SolutionModel.AllFolders.SingleOrDefault(f => f.Path == folderPath);
+		var sharpIdeFolder = RootFolder.AllFolders.SingleOrDefault(f => f.Path == folderPath);
 		if (sharpIdeFolder is null)
 		{
 			return;
 		}
-		await _sharpIdeSolutionModificationService.RemoveDirectory(sharpIdeFolder);
+		await _rootFolderModificationService.RemoveDirectory(sharpIdeFolder);
 	}
 
 	private async Task OnFolderCreated(string folderPath)
 	{
-		var sharpIdeFolder = SolutionModel.AllFolders.SingleOrDefault(f => f.Path == folderPath);
+		var sharpIdeFolder = RootFolder.AllFolders.SingleOrDefault(f => f.Path == folderPath);
 		if (sharpIdeFolder is not null)
 		{
 			return;
 		}
 		var containingFolderPath = Path.GetDirectoryName(folderPath)!;
-		var containingFolderOrProject = (IFolderOrProject?)SolutionModel.AllFolders.SingleOrDefault(f => f.ChildNodeBasePath == containingFolderPath) ?? SolutionModel.AllProjects.SingleOrDefault(s => s.ChildNodeBasePath == containingFolderPath);
-		if (containingFolderOrProject is null)
+		var containingFolder = RootFolder.AllFolders.SingleOrDefault(f => f.ChildNodeBasePath == containingFolderPath)
+		                       ?? (containingFolderPath == RootFolder.Path ? (SharpIdeFolder)RootFolder : null);
+		if (containingFolder is null)
 		{
-			_logger.LogError("Containing Folder or Project of folder '{FolderPath}' does not exist", folderPath);
+			_logger.LogError("Containing folder of folder '{FolderPath}' does not exist", folderPath);
 			return;
 		}
 		var folderName = Path.GetFileName(folderPath);
-		await _sharpIdeSolutionModificationService.AddDirectory(containingFolderOrProject, folderName);
+		await _rootFolderModificationService.AddDirectory(containingFolder, folderName);
 	}
 
 	private async Task OnFileCreated(string filePath)
 	{
-		var sharpIdeFile = SolutionModel.AllFiles.GetValueOrDefault(filePath);
+		var sharpIdeFile = RootFolder.AllFiles.GetValueOrDefault(filePath);
 		if (sharpIdeFile is not null)
 		{
 			// It was likely already created via a parent folder creation
 			return;
 		}
 		var createdFileDirectory = Path.GetDirectoryName(filePath)!;
-
-		var containingFolderOrProject = (IFolderOrProject?)SolutionModel.AllFolders.SingleOrDefault(f => f.ChildNodeBasePath == createdFileDirectory) ?? SolutionModel.AllProjects.SingleOrDefault(s => s.ChildNodeBasePath == createdFileDirectory);
-		if (containingFolderOrProject is null)
+		var containingFolder = RootFolder.AllFolders.SingleOrDefault(f => f.ChildNodeBasePath == createdFileDirectory)
+		                       ?? (createdFileDirectory == RootFolder.Path ? (SharpIdeFolder)RootFolder : null);
+		if (containingFolder is null)
 		{
-			_logger.LogError("Containing Folder or Project of file '{FilePath}' does not exist", filePath);
+			_logger.LogError("Containing folder of file '{FilePath}' does not exist", filePath);
 			return;
 		}
-
-		await _sharpIdeSolutionModificationService.CreateFile(containingFolderOrProject, filePath, Path.GetFileName(filePath), await File.ReadAllTextAsync(filePath));
+		await _rootFolderModificationService.CreateFile(containingFolder, filePath, Path.GetFileName(filePath), await File.ReadAllTextAsync(filePath));
 	}
 
 	private async Task OnFileChanged(string filePath)
 	{
-		var sharpIdeFile = SolutionModel.AllFiles.GetValueOrDefault(filePath);
+		var sharpIdeFile = RootFolder.AllFiles.GetValueOrDefault(filePath);
 		if (sharpIdeFile is null) return;
 		if (sharpIdeFile.SuppressDiskChangeEvents is true) return;
 		if (sharpIdeFile.LastIdeWriteTime is not null)
@@ -125,10 +131,9 @@ public class IdeFileExternalChangeHandler
 			}
 		}
 		_logger.LogInformation("IdeFileExternalChangeHandler: Changed - '{FilePath}'", filePath);
-		var file = SolutionModel.AllFiles.GetValueOrDefault(filePath);
-		if (file is not null)
+		if (sharpIdeFile is not null)
 		{
-			await _fileChangedService.SharpIdeFileChanged(file, await File.ReadAllTextAsync(file.Path), FileChangeType.ExternalChange);
+			await _fileChangedService.SharpIdeFileChanged(sharpIdeFile, await File.ReadAllTextAsync(sharpIdeFile.Path), FileChangeType.ExternalChange);
 		}
 	}
 

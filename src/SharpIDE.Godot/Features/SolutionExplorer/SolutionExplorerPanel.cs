@@ -8,6 +8,7 @@ using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+
 using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.Common;
 using SharpIDE.Godot.Features.Git;
@@ -266,8 +267,10 @@ public partial class SolutionExplorerPanel : MarginContainer
 			});
 		}, configureAwait: false).AddToDeferred(this);
 
-		// Observe project folders
-		var foldersView = projectModel.Folders.CreateView(y => new TreeItemContainer());
+		// Observe project folder's subfolders and files
+		var projectFolder = projectModel.Folder;
+
+		var foldersView = projectFolder.Folders.CreateView(y => new TreeItemContainer());
 		foldersView.Unfiltered.ToList().ForEach(s => s.View.Value = CreateFolderTreeItem(_tree, projectItem, s.Value));
 		
 		foldersView.ObserveChanged().SubscribeOnThreadPool().ObserveOnThreadPool()
@@ -279,8 +282,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 				_ => Task.CompletedTask
 			}), configureAwait: false).AddToDeferred(this);
 		
-		// Observe project files
-		var filesView = projectModel.Files.CreateView(y => new TreeItemContainer());
+		var filesView = projectFolder.Files.CreateView(y => new TreeItemContainer());
 		filesView.Unfiltered.ToList().ForEach(s => s.View.Value = CreateFileTreeItem(_tree, projectItem, s.Value));
 		filesView.ObserveChanged().SubscribeOnThreadPool().ObserveOnThreadPool()
 			.SubscribeAwait(async (innerEvent, ct) => await (innerEvent.Action switch
@@ -341,7 +343,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 		// because the newStartingIndex is calculated based on all children, but we are only inserting files here
 		if (newStartingIndex >= 0)
 		{
-			var sharpIdeParent = sharpIdeFile.Parent as IFolderOrProject;
+			var sharpIdeParent = sharpIdeFile.Parent as SharpIdeFolder;
 			Guard.Against.Null(sharpIdeParent, nameof(sharpIdeParent));
 			var folderCount = sharpIdeParent.Folders.Count;
 			newStartingIndex += folderCount;
@@ -373,7 +375,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 		var isFile = fileOrFolder is SharpIdeFile;
 		if (isFile)
 		{
-			var sharpIdeParent = fileOrFolder.Parent as IFolderOrProject;
+			var sharpIdeParent = fileOrFolder.Parent as SharpIdeFolder;
 			Guard.Against.Null(sharpIdeParent, nameof(sharpIdeParent));
 			var folderCount = sharpIdeParent.Folders.Count;
 			newStartingIndex += folderCount;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Channels;
 using Ardalis.GuardClauses;
@@ -13,14 +13,13 @@ using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
 namespace SharpIDE.Application.Features.SolutionDiscovery;
 
-public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChildSharpIdeNode, IFolderOrProject, ISolutionOrProject
+public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChildSharpIdeNode, ISolutionOrProject
 {
 	public required ReactiveProperty<string> Name { get; set; }
 	public required string FilePath { get; set; }
 	public required string DirectoryPath { get; set; }
-	public string ChildNodeBasePath => DirectoryPath;
-	public required ObservableList<SharpIdeFolder> Folders { get; init; }
-	public required ObservableList<SharpIdeFile> Files { get; init; }
+	/// The folder on disk that contains this project's .csproj file and all its source files.
+	public required SharpIdeFolder Folder { get; set; }
 	public bool Expanded { get; set; }
 	public required IExpandableSharpIdeNode Parent { get; set; }
 	public bool Running { get; set; }
@@ -35,7 +34,7 @@ public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChi
 		Name = new ReactiveProperty<string>(projectModel.Model.ActualDisplayName);
 		FilePath = projectModel.FullFilePath;
 		DirectoryPath = Path.GetDirectoryName(projectModel.FullFilePath)!;
-		(Files, Folders) = sharpIdeRootFolder.GetFilesAndFoldersForProject(projectModel.FullFilePath);
+		Folder = sharpIdeRootFolder.GetFolderForProject(projectModel.FullFilePath);
 		MsBuildProjectLoadState = new ReactiveProperty<MsBuildProjectLoadState>(Evaluation.MsBuildProjectLoadState.Loading);
 		MsBuildEvaluationProjectTask = LoadOrReloadProjectInMsBuild();
 		allProjects.Add(this);

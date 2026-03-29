@@ -1,6 +1,5 @@
 ﻿using Godot;
 using SharpIDE.Application.Features.SolutionDiscovery;
-using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 using SharpIDE.Godot.Features.Problems;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
@@ -66,13 +65,13 @@ public partial class SolutionExplorerPanel
         var selected = _tree.GetSelected();
         if (selected is null || _itemsOnClipboard is null) return;
         var sharpIdeNode = selected.SharpIdeNode;
-        IFolderOrProject? destinationFolderOrProject = sharpIdeNode switch
+        SharpIdeFolder? destinationFolder = sharpIdeNode switch
         {
             SharpIdeFolder f => f,
-            SharpIdeProjectModel p => p,
+            SharpIdeProjectModel p => p.Folder,
             _ => null
         };
-        if (destinationFolderOrProject is null) return;
+        if (destinationFolder is null) return;
 			
         var (filesToPaste, operation) = _itemsOnClipboard.Value;
         _itemsOnClipboard = null;
@@ -84,11 +83,11 @@ public partial class SolutionExplorerPanel
                 {
                     if (fileOrFolderToPaste is SharpIdeFolder folderToPaste)
                     {
-                        await _ideFileOperationsService.CopyDirectory(destinationFolderOrProject, folderToPaste.Path, folderToPaste.Name.Value);
+                        await _ideFileOperationsService.CopyDirectory(destinationFolder, folderToPaste.Path, folderToPaste.Name.Value);
                     }
                     else if (fileOrFolderToPaste is SharpIdeFile fileToPaste)
                     {
-                        await _ideFileOperationsService.CopyFile(destinationFolderOrProject, fileToPaste.Path, fileToPaste.Name.Value);
+                        await _ideFileOperationsService.CopyFile(destinationFolder, fileToPaste.Path, fileToPaste.Name.Value);
                     }
                 }
             }
@@ -99,11 +98,11 @@ public partial class SolutionExplorerPanel
                 {
                     if (fileOrFolderToPaste is SharpIdeFolder folderToPaste)
                     {
-                        await _ideFileOperationsService.MoveDirectory(destinationFolderOrProject, folderToPaste);
+                        await _ideFileOperationsService.MoveDirectory(destinationFolder, folderToPaste);
                     }
                     else if (fileOrFolderToPaste is SharpIdeFile fileToPaste)
                     {
-                        await _ideFileOperationsService.MoveFile(destinationFolderOrProject, fileToPaste);
+                        await _ideFileOperationsService.MoveFile(destinationFolder, fileToPaste);
                     }
                 }
             }
