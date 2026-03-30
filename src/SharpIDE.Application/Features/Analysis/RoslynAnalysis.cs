@@ -99,43 +99,8 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		_logger.LogInformation("RoslynAnalysis: Loading solution {SolutionPath}", solutionModel.FilePath);
 		_sharpIdeSolutionModel = solutionModel;
 		var timer = Stopwatch.StartNew();
-		if (_workspace is null)
-		{
-			using var __ = SharpIdeOtel.Source.StartActivity("CreateWorkspace");
-			var configuration = new ContainerConfiguration()
-				.WithAssemblies(MefHostServices.DefaultAssemblies)
-				.WithAssembly(typeof(RemoteSnapshotManager).Assembly)
-				.WithPart<CSharpDecompilationService2>()
-				.WithPart<DecompileWholeAssemblyToProjectMetadataAsSourceFileProvider>()
-				.WithPart<PythiaStub>();
 
-			// TODO: dispose container at some point?
-			var container = configuration.CreateContainer();
-
-			var host = MefHostServices.Create(container);
-			_workspace = new AdhocWorkspace(host);
-			_workspace.RegisterWorkspaceFailedHandler(o => _logger.LogError("WorkspaceFailedHandler - Workspace failure: {DiagnosticMessage}", o.Diagnostic.Message));
-
-			var snapshotManager = container.GetExports<RemoteSnapshotManager>().FirstOrDefault();
-			_snapshotManager = snapshotManager;
-
-			_codeFixService = container.GetExports<ICodeFixService>().FirstOrDefault();
-			_codeRefactoringService = container.GetExports<ICodeRefactoringService>().FirstOrDefault();
-			_signatureHelpService = container.GetExports<SignatureHelpService>().FirstOrDefault()!;
-			// TODO: Write an implementation of ISourceLinkService, as MS's implementation does not appear to be open source
-			_metadataAsSourceFileService = container.GetExports<IMetadataAsSourceFileService>().FirstOrDefault()!;
-			_implementationAssemblyLookupService = container.GetExports<IImplementationAssemblyLookupService>().FirstOrDefault()!;
-			_semanticTokensLegendService = (RemoteSemanticTokensLegendService)container.GetExports<ISemanticTokensLegendService>().FirstOrDefault()!;
-			_semanticTokensLegendService!.OnLspInitialized(new RemoteClientLSPInitializationOptions
-			{
-				ClientCapabilities = new VSInternalClientCapabilities(),
-				TokenModifiers = TokenTypeProvider.ConstructTokenModifiers(),
-				TokenTypes = TokenTypeProvider.ConstructTokenTypes(false)
-			});
-			_documentMappingService = container.GetExports<IDocumentMappingService>().FirstOrDefault();
-
-			_msBuildProjectLoader = new CustomMsBuildProjectLoader(_workspace);
-		}
+		if (_workspace is null) CreateWorkspace();
 
 		using (var ___ = SharpIdeOtel.Source.StartActivity("RestoreSolution"))
 		{
@@ -181,19 +146,45 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			_codeRefactoringProviders = _codeRefactoringProviders.DistinctBy(s => s.GetType().Name).ToHashSet();
 			_codeFixProviders = _codeFixProviders.DistinctBy(s => s.GetType().Name).ToHashSet();
 		}
+	}
 
-		// // TODO: Distinct on the assemblies first
-		// foreach (var project in solution.Projects)
-		// {
-		// 	var relevantAnalyzerReferences = project.AnalyzerReferences.OfType<AnalyzerFileReference>().ToArray();
-		// 	var assemblies = relevantAnalyzerReferences.Select(a => a.GetAssembly()).ToArray();
-		// 	var language = project.Language;
-		// 	//var analyzers = relevantAnalyzerReferences.SelectMany(a => a.GetAnalyzers(language));
-		// 	var fixers = CodeFixProviderLoader.LoadCodeFixProviders(assemblies, language);
-		// 	_codeFixProviders.AddRange(fixers);
-		// 	var refactoringProviders = CodeRefactoringProviderLoader.LoadCodeRefactoringProviders(assemblies, language);
-		// 	_codeRefactoringProviders.AddRange(refactoringProviders);
-		// }
+	private void CreateWorkspace()
+	{
+		using var __ = SharpIdeOtel.Source.StartActivity();
+
+		var configuration = new ContainerConfiguration()
+			.WithAssemblies(MefHostServices.DefaultAssemblies)
+			.WithAssembly(typeof(RemoteSnapshotManager).Assembly)
+			.WithPart<CSharpDecompilationService2>()
+			.WithPart<DecompileWholeAssemblyToProjectMetadataAsSourceFileProvider>()
+			.WithPart<PythiaStub>();
+
+		// TODO: dispose container at some point?
+		var container = configuration.CreateContainer();
+
+		var host = MefHostServices.Create(container);
+		_workspace = new AdhocWorkspace(host);
+		_workspace.RegisterWorkspaceFailedHandler(o => _logger.LogError("WorkspaceFailedHandler - Workspace failure: {DiagnosticMessage}", o.Diagnostic.Message));
+
+		var snapshotManager = container.GetExports<RemoteSnapshotManager>().FirstOrDefault();
+		_snapshotManager = snapshotManager;
+
+		_codeFixService = container.GetExports<ICodeFixService>().FirstOrDefault();
+		_codeRefactoringService = container.GetExports<ICodeRefactoringService>().FirstOrDefault();
+		_signatureHelpService = container.GetExports<SignatureHelpService>().FirstOrDefault()!;
+		// TODO: Write an implementation of ISourceLinkService, as MS's implementation does not appear to be open source
+		_metadataAsSourceFileService = container.GetExports<IMetadataAsSourceFileService>().FirstOrDefault()!;
+		_implementationAssemblyLookupService = container.GetExports<IImplementationAssemblyLookupService>().FirstOrDefault()!;
+		_semanticTokensLegendService = (RemoteSemanticTokensLegendService)container.GetExports<ISemanticTokensLegendService>().FirstOrDefault()!;
+		_semanticTokensLegendService!.OnLspInitialized(new RemoteClientLSPInitializationOptions
+		{
+			ClientCapabilities = new VSInternalClientCapabilities(),
+			TokenModifiers = TokenTypeProvider.ConstructTokenModifiers(),
+			TokenTypes = TokenTypeProvider.ConstructTokenTypes(false)
+		});
+		_documentMappingService = container.GetExports<IDocumentMappingService>().FirstOrDefault();
+
+		_msBuildProjectLoader = new CustomMsBuildProjectLoader(_workspace);
 	}
 
 	/// Callers should call UpdateSolutionDiagnostics after this
