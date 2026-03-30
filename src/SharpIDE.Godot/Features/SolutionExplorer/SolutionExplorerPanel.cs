@@ -94,6 +94,8 @@ public partial class SolutionExplorerPanel : MarginContainer
 			case (MouseButtonMask.Right, SharpIdeFolder folder): OpenContextMenuFolder(folder, selected); break;
 			case (MouseButtonMask.Left, SharpIdeSolutionFolder): break;
 			case (MouseButtonMask.Right, SharpIdeSolutionFolder slnFolder): OpenContextMenuSlnFolder(slnFolder, selected); break;
+			case (MouseButtonMask.Left, SharpIdeSolutionModel): break;
+			case (MouseButtonMask.Right, SharpIdeSolutionModel solution): OpenContextMenuSolution(solution, selected); break;
 			default: break;
 		}
 	}
@@ -162,6 +164,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 	    var rootItem = _tree.CreateItem();
 	    rootItem.SetText(0, solution.Name);
 	    rootItem.SetIcon(0, SlnIcon);
+	    rootItem.SharpIdeNode = solution;
 	    _rootItem = rootItem;
 	    
 	    var disposableBuilder = new DisposableBuilder();
