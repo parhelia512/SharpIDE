@@ -15,6 +15,51 @@ public class SharpIdeFileComparer : IComparer<SharpIdeFile>
 	}
 }
 
+public class SharpIdeSolutionFileComparer : IComparer<SharpIdeSolutionFile>
+{
+	public static readonly SharpIdeSolutionFileComparer Instance = new SharpIdeSolutionFileComparer();
+	public int Compare(SharpIdeSolutionFile? x, SharpIdeSolutionFile? y)
+	{
+		if (ReferenceEquals(x, y)) return 0;
+		if (x is null) return -1;
+		if (y is null) return 1;
+
+		int result = string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+
+		return result;
+	}
+}
+
+public class SharpIdeSolutionFolderComparer : IComparer<SharpIdeSolutionFolder>
+{
+	public static readonly SharpIdeSolutionFolderComparer Instance = new SharpIdeSolutionFolderComparer();
+	public int Compare(SharpIdeSolutionFolder? x, SharpIdeSolutionFolder? y)
+	{
+		if (ReferenceEquals(x, y)) return 0;
+		if (x is null) return -1;
+		if (y is null) return 1;
+
+		int result = string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+
+		return result;
+	}
+}
+
+public class SharpIdeProjectComparer : IComparer<SharpIdeProjectModel>
+{
+	public static readonly SharpIdeProjectComparer Instance = new SharpIdeProjectComparer();
+	public int Compare(SharpIdeProjectModel? x, SharpIdeProjectModel? y)
+	{
+		if (ReferenceEquals(x, y)) return 0;
+		if (x is null) return -1;
+		if (y is null) return 1;
+
+		int result = string.Compare(x.Name.Value, y.Name.Value, StringComparison.OrdinalIgnoreCase);
+
+		return result;
+	}
+}
+
 // AI
 public class SharpIdeFolderComparer : IComparer<SharpIdeFolder>
 {
