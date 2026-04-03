@@ -12,7 +12,7 @@ public class SharpIdeSolutionFolder : ISharpIdeNode, IExpandableSharpIdeNode, IC
 	public required string VsPersistencePath { get; set; }
 	public required ObservableHashSet<SharpIdeSolutionFolder> Folders { get; set; }
 	public required ObservableHashSet<SharpIdeProjectModel> Projects { get; set; }
-	public required ObservableHashSet<SharpIdeFile> Files { get; set; }
+	public required ObservableHashSet<SharpIdeSolutionFile> Files { get; set; }
 	public bool Expanded { get; set; }
 	public required IExpandableSharpIdeNode Parent { get; set; }
 
@@ -22,7 +22,7 @@ public class SharpIdeSolutionFolder : ISharpIdeNode, IExpandableSharpIdeNode, IC
 		Name = intermediateModel.Model.Name;
 		VsPersistencePath = intermediateModel.Model.Path;
 		Parent = parent;
-		Files = new ObservableHashSet<SharpIdeFile>(intermediateModel.Files.Select(s => new SharpIdeFile(s.FullPath, s.Name, s.Extension, this, allFiles)));
+		Files = new ObservableHashSet<SharpIdeSolutionFile>(intermediateModel.Files.Select(s => new SharpIdeSolutionFile(s.FullPath, s.Name, s.Extension, this, sharpIdeRootFolder)));
 		Folders = new ObservableHashSet<SharpIdeSolutionFolder>(intermediateModel.Folders.Select(x => new SharpIdeSolutionFolder(x, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
 		Projects = new ObservableHashSet<SharpIdeProjectModel>(intermediateModel.Projects.Select(x => new SharpIdeProjectModel(x, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
 	}

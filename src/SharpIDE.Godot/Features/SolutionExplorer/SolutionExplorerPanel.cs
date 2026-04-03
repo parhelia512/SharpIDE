@@ -233,11 +233,11 @@ public partial class SolutionExplorerPanel : MarginContainer
             }), configureAwait: false).AddTo(ref disposableBuilder);
 
         var filesView = slnFolder.Files.CreateView(y => new TreeItemContainer());
-        filesView.Unfiltered.ToList().ForEach(s => s.View.Value = CreateFileTreeItem(_tree, folderItem, s.Value));
+        filesView.Unfiltered.ToList().ForEach(s => s.View.Value = CreateSolutionFileTreeItem(_tree, folderItem, s.Value));
         filesView.ObserveChanged().SubscribeOnThreadPool().ObserveOnThreadPool()
             .SubscribeAwait(async (innerEvent, ct) => await (innerEvent.Action switch
             {
-                NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value, innerEvent.NewStartingIndex)),
+                NotifyCollectionChangedAction.Add => this.InvokeAsync(() => innerEvent.NewItem.View.Value = CreateSolutionFileTreeItem(_tree, folderItem, innerEvent.NewItem.Value, innerEvent.NewStartingIndex)),
                 NotifyCollectionChangedAction.Remove => FreeTreeItem(innerEvent.OldItem.View.Value),
                 _ => Task.CompletedTask
             }), configureAwait: false).AddTo(ref disposableBuilder);
@@ -344,6 +344,38 @@ public partial class SolutionExplorerPanel : MarginContainer
 			}), configureAwait: false).AddTo(ref disposableBuilder);
 		folderItem.SharpIdeDisposable = disposableBuilder.Build();
 		return folderItem;
+	}
+
+	[RequiresGodotUiThread]
+	private TreeItem CreateSolutionFileTreeItem(Tree tree, TreeItem parent, SharpIdeSolutionFile sharpIdeSolutionFile, int newStartingIndex = -1)
+	{
+		// We need to offset the starting index by the number of non-file items (folders/projects) in the parent
+		// because the newStartingIndex is calculated based on all children, but we are only inserting files here
+		if (newStartingIndex >= 0)
+		{
+			var sharpIdeParent = sharpIdeSolutionFile.Parent as SharpIdeSolutionFolder;
+			Guard.Against.Null(sharpIdeParent, nameof(sharpIdeParent));
+			var folderCount = sharpIdeParent.Folders.Count;
+			var projectsCount = sharpIdeParent.Projects.Count;
+			newStartingIndex += folderCount + projectsCount;
+		}
+		var fileItem = tree.CreateItem(parent, newStartingIndex);
+		fileItem.SetText(0, sharpIdeSolutionFile.Name);
+		if (sharpIdeSolutionFile.File is {} file)
+		{
+			fileItem.SetIconsForFileExtension(file);
+			if (GitColours.GetColorForGitFileStatus(file.GitStatus) is { } notnullColor) fileItem.SetCustomColor(0, notnullColor);
+			else fileItem.ClearCustomColor(0);
+		}
+		else
+		{
+			fileItem.SetWarningIcon();
+			fileItem.ClearCustomColor(0);
+		}
+		
+		fileItem.SharpIdeNode = sharpIdeSolutionFile;
+		
+		return fileItem;
 	}
 
 	[RequiresGodotUiThread]

@@ -19,5 +19,12 @@ public static class SolutionExplorerExtensions
             // Set even if null, to support renaming files
             fileItem.SetIconOverlay(0, overlayIcon);
         }
+        
+        public void SetWarningIcon()
+        {
+            var icon = FileIconHelper.WarningIcon;
+            fileItem.SetIcon(0, icon);
+            fileItem.SetIconOverlay(0, null);
+        }
     }
 }

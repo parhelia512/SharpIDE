@@ -4,6 +4,8 @@ namespace SharpIDE.Godot.Features.SolutionExplorer;
 
 public static class FileIconHelper
 {
+    private static readonly Texture2D _warningIcon = ResourceLoader.Load<Texture2D>("uid://pd3h5qfjn8pb");
+    
     private static readonly Texture2D _csIcon = ResourceLoader.Load<Texture2D>("uid://do0edciarrnp0");
     private static readonly Texture2D _razorIcon = ResourceLoader.Load<Texture2D>("uid://cff7jlvj2tlg2");
     private static readonly Texture2D _jsonIcon = ResourceLoader.Load<Texture2D>("uid://csrwpjk77r731");
@@ -25,6 +27,7 @@ public static class FileIconHelper
     private static readonly Texture2D _targetsFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://xy5ad1lc24lv");
     private static readonly Texture2D _unknownFileOverlayIcon = ResourceLoader.Load<Texture2D>("uid://7rqmyeiy4y82");
 
+    public static Texture2D WarningIcon => _warningIcon;
     public static (Texture2D Icon, Texture2D? OverlayIcon) GetIconForFileExtension(string fileExtension)
     {
         var texture = fileExtension switch
