@@ -30,8 +30,14 @@ public static class SharpIdeSolutionModelExtensions
 
 	private static void DiffProjects(ObservableList<SharpIdeProjectModel> existing, ObservableList<SharpIdeProjectModel> updated)
 	{
+		// Projects whose Folder null-state changed: remove old, re-add new
+		var folderChanged = existing
+			.Join(updated, p => p.FilePath, np => np.FilePath, (p, np) => (Old: p, New: np))
+			.Where(pair => (pair.Old.Folder is null) != (pair.New.Folder is null))
+			.ToList();
+		foreach (var (old, _) in folderChanged) existing.Remove(old);
 		var toRemove = existing.ExceptBy(updated.Select(np => np.FilePath), p => p.FilePath).ToList();
-		var toAdd = updated.ExceptBy(existing.Select(p => p.FilePath), np => np.FilePath).ToList();
+		List<SharpIdeProjectModel> toAdd = [..updated.ExceptBy(existing.Select(p => p.FilePath), np => np.FilePath), ..folderChanged.Select(pair => pair.New)];
 		foreach (var s in toRemove) existing.Remove(s);
 		foreach (var s in toAdd) existing.Insert(GetInsertionPosition(existing, s), s);
 	}
