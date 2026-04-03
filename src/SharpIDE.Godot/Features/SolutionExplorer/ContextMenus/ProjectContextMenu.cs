@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using Ardalis.GuardClauses;
+using Godot;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Build;
 using SharpIDE.Application.Features.Evaluation;
@@ -37,6 +38,7 @@ public partial class SolutionExplorerPanel
 
     private void OpenContextMenuProject(SharpIdeProjectModel project)
     {
+        Guard.Against.Null(project.Folder);
         var menu = new PopupMenu();
         AddChild(menu);
         var createNewSubmenu = new PopupMenu();

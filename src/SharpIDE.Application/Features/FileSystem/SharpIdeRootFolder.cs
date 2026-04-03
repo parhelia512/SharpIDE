@@ -30,10 +30,10 @@ public class SharpIdeRootFolder : SharpIdeFolder
 
 	/// Returns the SharpIdeFolder that directly contains the given .csproj file.
 	/// If the .csproj is at the solution root, returns this SharpIdeRootFolder itself.
-	public SharpIdeFolder GetFolderForProject(string csprojFullPath)
+	public SharpIdeFolder? GetFolderForProject(string csprojFullPath)
 	{
 		var csprojFile = AllFiles.GetValueOrDefault(csprojFullPath);
-		if (csprojFile is null) throw new InvalidOperationException($"Project file '{csprojFullPath}' not found in root folder.");
+		if (csprojFile is null) return null;
 		return csprojFile.Parent as SharpIdeFolder ?? throw new InvalidOperationException($"Parent of '{csprojFullPath}' is not a SharpIdeFolder.");
 	}
 }

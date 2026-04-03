@@ -19,7 +19,7 @@ public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChi
 	public required string FilePath { get; set; }
 	public required string DirectoryPath { get; set; }
 	/// The folder on disk that contains this project's .csproj file and all its source files.
-	public required SharpIdeFolder Folder { get; set; }
+	public required SharpIdeFolder? Folder { get; set; }
 	public bool Expanded { get; set; }
 	public required IExpandableSharpIdeNode Parent { get; set; }
 	public bool Running { get; set; }

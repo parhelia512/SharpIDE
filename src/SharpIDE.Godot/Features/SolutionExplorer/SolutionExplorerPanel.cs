@@ -91,7 +91,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 			case (MouseButtonMask.Left, SharpIdeSolutionFile { File: not null } slnFile): GodotGlobalEvents.Instance.FileSelected.InvokeParallelFireAndForget(slnFile.File, null); break;
 			case (MouseButtonMask.Right, SharpIdeSolutionFile { File: not null } slnFile): OpenContextMenuFile(slnFile.File); break;
 			case (MouseButtonMask.Left, SharpIdeProjectModel { IsInvalid: true }): GodotGlobalEvents.Instance.BottomPanelTabExternallySelected.InvokeParallelFireAndForget(BottomPanelType.Problems); break;
-			case (MouseButtonMask.Right, SharpIdeProjectModel project): OpenContextMenuProject(project); break;
+			case (MouseButtonMask.Right, SharpIdeProjectModel { Folder: not null } project): OpenContextMenuProject(project); break;
 			case (MouseButtonMask.Left, SharpIdeFolder): break;
 			case (MouseButtonMask.Right, SharpIdeFolder folder): OpenContextMenuFolder(folder, selected); break;
 			case (MouseButtonMask.Left, SharpIdeSolutionFolder): break;
