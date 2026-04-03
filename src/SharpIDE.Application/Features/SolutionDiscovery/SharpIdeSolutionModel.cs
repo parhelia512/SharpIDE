@@ -11,8 +11,8 @@ public class SharpIdeSolutionModel : ISharpIdeNode, IExpandableSharpIdeNode, ISo
 	public required string Name { get; set; }
 	public required string FilePath { get; set; }
 	public required string DirectoryPath { get; set; }
-	public required ObservableHashSet<SharpIdeProjectModel> Projects { get; set; }
-	public required ObservableHashSet<SharpIdeSolutionFolder> SlnFolders { get; set; }
+	public required ObservableList<SharpIdeProjectModel> Projects { get; set; }
+	public required ObservableList<SharpIdeSolutionFolder> SlnFolders { get; set; }
 	public required HashSet<SharpIdeProjectModel> AllProjects { get; set; } // TODO: this isn't thread safe
 	public bool Expanded { get; set; }
 
@@ -31,17 +31,8 @@ public class SharpIdeSolutionModel : ISharpIdeNode, IExpandableSharpIdeNode, ISo
 		FilePath = solutionFilePath;
 		DirectoryPath = Path.GetDirectoryName(solutionFilePath)!;
 		RootFolder = sharpIdeRootFolder;
-		Projects = new ObservableHashSet<SharpIdeProjectModel>(intermediateModel.Projects.Select(s => new SharpIdeProjectModel(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
-		SlnFolders = new ObservableHashSet<SharpIdeSolutionFolder>(intermediateModel.SolutionFolders.Select(s => new SharpIdeSolutionFolder(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
+		Projects = new ObservableList<SharpIdeProjectModel>(intermediateModel.Projects.Select(s => new SharpIdeProjectModel(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
+		SlnFolders = new ObservableList<SharpIdeSolutionFolder>(intermediateModel.SolutionFolders.Select(s => new SharpIdeSolutionFolder(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
 		AllProjects = allProjects.ToHashSet();
-	}
-}
-
-public static class SharpIdeSolutionModelExtensions
-{
-	public static SharpIdeProjectModel? GetProjectForContainingFolderPath(this SharpIdeSolutionModel solution, SharpIdeFolder folder)
-	{
-		var sharpIdeProject = solution.AllProjects.SingleOrDefault(s => s.DirectoryPath == folder.Path);
-		return sharpIdeProject;
 	}
 }
