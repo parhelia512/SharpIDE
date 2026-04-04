@@ -3,12 +3,15 @@ using LibGit2Sharp;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.FileSystem;
 
 namespace SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
 
-public class SharpIdeSolutionService
+public class SharpIdeSolutionService(RoslynAnalysis roslynAnalysis)
 {
+	private readonly RoslynAnalysis _roslynAnalysis = roslynAnalysis;
+
 	private SharpIdeSolutionModel? _sharpIdeSolutionModel;
 	private SolutionModel? _vsSolution;
 	private ISolutionSerializer? _solutionSerializer;
@@ -28,6 +31,8 @@ public class SharpIdeSolutionService
 		var (newSharpIdeSolutionModel, solutionModel, _) = await ReadSolution(_solutionFilePath, _sharpIdeSolutionModel!.RootFolder, cancellationToken);
 		_vsSolution = solutionModel;
 		_sharpIdeSolutionModel!.UpdateFromNewSolution(newSharpIdeSolutionModel);
+		await _roslynAnalysis.ReloadSolution(cancellationToken);
+		await _roslynAnalysis.UpdateSolutionDiagnostics(cancellationToken);
 	}
 
 	// Weird separation between ReadSolution and LoadSolution is so we can call the static ReadSolution in IdeRoot before all the UI Nodes are ready and DI services injected
