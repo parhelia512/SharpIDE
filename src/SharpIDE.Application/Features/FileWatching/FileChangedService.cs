@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Razor.Utilities;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
-using Microsoft.CodeAnalysis.Threading;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
@@ -8,6 +8,7 @@ using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.FilePersistence;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
+using AsyncBatchingWorkQueue = Microsoft.CodeAnalysis.Threading.AsyncBatchingWorkQueue;
 
 namespace SharpIDE.Application.Features.FileWatching;
 
@@ -23,13 +24,15 @@ public enum FileChangeType
 public class FileChangedService
 {
 	private readonly RoslynAnalysis _roslynAnalysis;
+	private readonly SharpIdeSolutionService _sharpIdeSolutionService;
 	private readonly IdeOpenTabsFileManager _openTabsFileManager;
 	private readonly AsyncBatchingWorkQueue _updateSolutionDiagnosticsQueue;
 
-	public FileChangedService(RoslynAnalysis roslynAnalysis, IdeOpenTabsFileManager openTabsFileManager)
+	public FileChangedService(RoslynAnalysis roslynAnalysis, IdeOpenTabsFileManager openTabsFileManager, SharpIdeSolutionService sharpIdeSolutionService)
 	{
 		_roslynAnalysis = roslynAnalysis;
 		_openTabsFileManager = openTabsFileManager;
+		_sharpIdeSolutionService = sharpIdeSolutionService;
 		_updateSolutionDiagnosticsQueue = new AsyncBatchingWorkQueue(TimeSpan.FromMilliseconds(200), ProcessBatchAsync, IAsynchronousOperationListener.Instance, CancellationToken.None);
 	}
 
@@ -115,6 +118,7 @@ public class FileChangedService
 		}
 		var afterSaveTask = (file, changeType) switch
 		{
+			({ IsSlnFile: true }, FileChangeType.IdeSaveToDisk or FileChangeType.ExternalChange) => HandleSlnChanged(file),
 			({ IsCsprojFile: true }, FileChangeType.IdeSaveToDisk or FileChangeType.ExternalChange) => HandleCsprojChanged(file),
 			({ IsCsprojFile: true }, _) => Task.CompletedTask,
 			(_, _) => HandlePotentialWorkspaceFile_Changed(file, newContents)
@@ -136,6 +140,12 @@ public class FileChangedService
 		await _roslynAnalysis.ReloadProject(project, CancellationToken.None);
 		GlobalEvents.Instance.SolutionAltered.InvokeParallelFireAndForget();
 		_updateSolutionDiagnosticsQueue.AddWork();
+	}
+
+	private async Task HandleSlnChanged(SharpIdeFile file)
+	{
+		if (FilePathNormalizer.AreFilePathsEquivalent(file.Path, SolutionModel.FilePath) is false) return;
+		await _sharpIdeSolutionService.ReloadSolution();
 	}
 
 	/// AdditionalFiles such as txt files may have changed, so we need to attempt to update the workspace regardless of extension

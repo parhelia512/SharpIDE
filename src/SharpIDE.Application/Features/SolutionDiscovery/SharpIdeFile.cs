@@ -17,6 +17,7 @@ public class SharpIdeFile : ISharpIdeNode, IChildSharpIdeNode, IFileOrFolder
 	public bool IsCsprojFile => Path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase);
 	public bool IsCshtmlFile => Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase);
 	public bool IsCsharpFile => Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
+	public bool IsSlnFile => Path.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase) || Path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase);
 	public bool IsRoslynWorkspaceFile => IsCsharpFile || IsRazorFile || IsCshtmlFile;
 	public bool IsMetadataAsSourceFile { get; set; }
 	public string? PdbSourceFilePathForDebugger { get; set; }
