@@ -1,15 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System.Net.Sockets;
 using Ardalis.GuardClauses;
 using Microsoft.Build.Execution;
 using SharpIDE.Application.Features.Build;
 using SharpIDE.MsBuildHost.Contracts;
-using StreamJsonRpc;
 
 namespace SharpIDE.MsBuildHost;
 
 public class RpcBuildService : IRpcBuildService
 {
-	public ChannelTextWriter BuildTextWriter { get; } = new ChannelTextWriter();
+	private PipeTextWriter _buildTextWriter = new PipeTextWriter();
+	private Task? _socketWriteTask;
 	public async Task<bool> Ping()
 	{
 		return true;
@@ -17,7 +17,7 @@ public class RpcBuildService : IRpcBuildService
 
 	public async Task<(BuildResultDto buildResultDto, Exception? Exception)> MsBuildAsync(string solutionOrProjectFilePath, BuildTypeDto buildType = BuildTypeDto.Build, CancellationToken cancellationToken = default)
 	{
-		var terminalLogger = InternalTerminalLoggerFactory.CreateLogger(BuildTextWriter);
+		var terminalLogger = InternalTerminalLoggerFactory.CreateLogger(_buildTextWriter);
 
 		var nodesToBuildWith = GetBuildNodeCount(Environment.ProcessorCount);
 		var buildParameters = new BuildParameters
@@ -50,6 +50,35 @@ public class RpcBuildService : IRpcBuildService
 			_ => throw new ArgumentOutOfRangeException()
 		};
 		return (mappedResult, buildResult.Exception);
+	}
+
+	public async Task BeginWritingMsBuildOutputToSocket(string unixDomainSocketFilePath)
+	{
+		var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+		var endpoint = new UnixDomainSocketEndPoint(unixDomainSocketFilePath);
+		await socket.ConnectAsync(endpoint);
+		if (_socketWriteTask is not null) throw new InvalidOperationException("A socket write task is already running.");
+		_socketWriteTask = Task.Run(async () =>
+		{
+			var pipeReader = _buildTextWriter.Reader;
+			while (true)
+			{
+				var result = await pipeReader.ReadAsync();
+				var buffer = result.Buffer;
+
+				foreach (var segment in buffer)
+				{
+					await socket.SendAsync(segment, SocketFlags.None);
+				}
+
+				pipeReader.AdvanceTo(buffer.End);
+
+				if (result.IsCompleted) break;
+			}
+
+			await pipeReader.CompleteAsync();
+			socket.Shutdown(SocketShutdown.Send);
+		});
 	}
 
 	private static string[] TargetsToBuild(BuildTypeDto buildType)

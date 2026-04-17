@@ -10,10 +10,14 @@ public partial class SharpIdeTerminal
     // So we need to replace lone \n with \r\n ourselves
     // TODO: Probably run processes with PTY instead, so that this is not needed, and so we can capture user input and Ctrl+C etc
     // 🤖
-    private (byte[] array, int length, bool wasRented) ProcessLineEndings(byte[] input)
+    // processed should be a ReadOnlySpan, but Godot currently can't cast a ReadOnlySpan<T> to Variant, only Span<T> 
+    private void ProcessLineEndings(ReadOnlySpan<byte> input, Span<byte> workingBuffer, out Span<byte> processed)
     {
-        if (input.Length == 0) return (input, 0, false);
-
+        if (input.Length == 0)
+        {
+            processed = Span<byte>.Empty;
+            return;
+        }
         // Count how many \n need to be replaced (those not preceded by \r)
         var replacementCount = 0;
         var previousWasCr = _previousArrayEndedInCr;
@@ -34,11 +38,13 @@ public partial class SharpIdeTerminal
         }
 
         // If no replacements needed, return original array
-        if (replacementCount == 0) return (input, input.Length, false);
+        if (replacementCount == 0)
+        {
+            input.CopyTo(workingBuffer);
+            processed = workingBuffer[..input.Length];
+            return;
+        }
 
-        // Rent array from pool with space for additional \r characters
-        var requiredSize = input.Length + replacementCount;
-        var result = ArrayPool<byte>.Shared.Rent(requiredSize);
         var writeIndex = 0;
         previousWasCr = _previousArrayEndedInCr;
 
@@ -50,14 +56,14 @@ public partial class SharpIdeTerminal
                 var precededByCr = (i > 0 && input[i - 1] == (byte)'\r') || (i == 0 && previousWasCr);
                 if (!precededByCr)
                 {
-                    result[writeIndex++] = (byte)'\r';
+                    workingBuffer[writeIndex++] = (byte)'\r';
                 }
             }
 
-            result[writeIndex++] = input[i];
+            workingBuffer[writeIndex++] = input[i];
             previousWasCr = input[i] == (byte)'\r';
         }
 
-        return (result, writeIndex, true);
+        processed = workingBuffer[..writeIndex];
     }
 }

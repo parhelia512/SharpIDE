@@ -38,7 +38,7 @@ public partial class DebugPanelTab : Control
         {
             await foreach (var array in Project.RunningOutputChannel!.Reader.ReadAllAsync().ConfigureAwait(false))
             {
-                _terminal.Write(array);
+                _terminal.Write(array.AsSpan());
             }
         });
     }

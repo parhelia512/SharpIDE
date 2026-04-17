@@ -13,27 +13,13 @@ public partial class SharpIdeTerminal : Control
 		var terminalControl = GetNode<Control>("Terminal");
 		_terminal = new Terminal(terminalControl);
 	}
-
-	public void Write(string text)
-	{
-		var bytes = Encoding.UTF8.GetBytes(text);
-		Write(bytes);
-	}
 	
-	public void Write(byte[] text)
+	public void Write(ReadOnlySpan<byte> text)
 	{
-		var (processedArray, length, wasRented) = ProcessLineEndings(text);
-		try
-		{
-			_terminal.Write(processedArray.AsSpan(0, length));
-		}
-		finally
-		{
-			if (wasRented)
-			{
-				ArrayPool<byte>.Shared.Return(processedArray);
-			}
-		}
+		// need a buffer 2x the length of our span, as in theory each byte could be \n, requiring a new \r to accompany it
+		Span<byte> workingBuffer = stackalloc byte[text.Length * 2];
+		ProcessLineEndings(text, workingBuffer, out var processedArray);
+		_terminal.Write(processedArray);
 		_previousArrayEndedInCr = text.Length > 0 && text[^1] == (byte)'\r';
 	}
 

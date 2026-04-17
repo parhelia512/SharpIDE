@@ -16,9 +16,20 @@
 		{
 			try
 			{
-				await foreach (var logLine in BuildService.BuildTextWriter.ConsoleChannel.Reader.ReadAllAsync())
+				while (true)
 				{
-					await _terminalDisplayRef.Write(logLine);
+					var readResult = await BuildService.BuildLogPipeReader!.ReadAsync();
+					var byteSequence = readResult.Buffer;
+					if (byteSequence.IsEmpty)
+					{
+						BuildService.BuildLogPipeReader.AdvanceTo(byteSequence.End);
+						return;
+					}
+					foreach (var segment in byteSequence)
+					{
+						await _terminalDisplayRef.Write(segment);
+					}
+					BuildService.BuildLogPipeReader.AdvanceTo(byteSequence.End);
 				}
 			}
 			catch (Exception e)
