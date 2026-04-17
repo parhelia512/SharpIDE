@@ -43,7 +43,7 @@ public class RoslynAnalysisTests
 
 	    var timer = Stopwatch.StartNew();
 		roslynAnalysis._solutionLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-	    await roslynAnalysis.LoadSolutionInWorkspace(solutionModel, rootFolder, TestContext.Current.CancellationToken);
+	    await roslynAnalysis.LoadSolutionInWorkspace(solutionModel, TestContext.Current.CancellationToken);
 	    timer.Stop();
 	    _testOutputHelper.WriteLine($"Solution load: {timer.ElapsedMilliseconds} ms");
 

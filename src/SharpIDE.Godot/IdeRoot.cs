@@ -170,7 +170,7 @@ public partial class IdeRoot : Control
 			_fileChangedService.SolutionModel = solutionModel;
 			_rootFolderModificationService.RootFolder = sharpIdeRootFolder;
 			_ = Task.GodotRun(_solutionExplorerPanel.BindToSolution);
-			_roslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel, sharpIdeRootFolder);
+			_roslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel);
 			_fileWatcher.StartWatching(solutionModel);
 			
 			var previousTabs = Singletons.AppState.RecentSlns.Single(s => s.FilePath == solutionModel.FilePath).IdeSolutionState.OpenTabs;

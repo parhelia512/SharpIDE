@@ -190,7 +190,7 @@
 		await SharpIdeSolutionService.LoadSolution(solutionModel, solutionFilePath, vsSln, solutionSerializer);
 
 		_solutionModel = solutionModel;
-		RoslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel, sharpIdeRootFolder);
+		RoslynAnalysis.StartLoadingSolutionInWorkspace(solutionModel);
 	}
 
 	private CancellationTokenSource? _cancellationTokenSource = null!;

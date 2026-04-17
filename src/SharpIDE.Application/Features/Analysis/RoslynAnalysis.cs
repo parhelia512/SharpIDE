@@ -75,8 +75,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 
 	public TaskCompletionSource _solutionLoadedTcs = null!;
 	private SharpIdeSolutionModel? _sharpIdeSolutionModel;
-	private SharpIdeRootFolder? _sharpIdeRootFolder;
-	public void StartLoadingSolutionInWorkspace(SharpIdeSolutionModel solutionModel, SharpIdeRootFolder sharpIdeRootFolder)
+	public void StartLoadingSolutionInWorkspace(SharpIdeSolutionModel solutionModel)
 	{
 		_solutionLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		_ = Task.Run(async () =>
@@ -84,7 +83,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			try
 			{
 				CreateWorkspace();
-				await LoadSolutionInWorkspace(solutionModel, sharpIdeRootFolder);
+				await LoadSolutionInWorkspace(solutionModel);
 				var diagnosticsTask = UpdateSolutionDiagnostics();
 				LoadCodeActions();
 				await diagnosticsTask;
@@ -95,7 +94,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 			}
 		});
 	}
-	public async Task LoadSolutionInWorkspace(SharpIdeSolutionModel solutionModel, SharpIdeRootFolder sharpIdeRootFolder, CancellationToken cancellationToken = default)
+	public async Task LoadSolutionInWorkspace(SharpIdeSolutionModel solutionModel, CancellationToken cancellationToken = default)
 	{
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(RoslynAnalysis)}.{nameof(LoadSolutionInWorkspace)}");
 		_logger.LogInformation("RoslynAnalysis: Loading solution {SolutionPath}", solutionModel.FilePath);
