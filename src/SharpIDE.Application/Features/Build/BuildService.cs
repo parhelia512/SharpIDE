@@ -32,7 +32,7 @@ public partial class BuildService(ILogger<BuildService> logger) : IDisposable
 
 	public async Task<SharpIdeBuildResult> MsBuildAsync(string solutionOrProjectFilePath, BuildType buildType = BuildType.Build, BuildStartedFlags buildStartedFlags = BuildStartedFlags.UserFacing, CancellationToken cancellationToken = default)
 	{
-		_rpcBuildService ??= await ConnectRpc();
+		_rpcBuildService ??= await ConnectRpc(solutionOrProjectFilePath);
 		if (_cancellationTokenSource is not null) throw new InvalidOperationException("A build is already in progress.");
 		_cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		using var _ = SharpIdeOtel.Source.StartActivity($"{nameof(BuildService)}.{nameof(MsBuildAsync)}");

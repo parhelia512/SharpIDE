@@ -1,10 +1,18 @@
-﻿using Microsoft.Build.Locator;
+﻿using System.Runtime.InteropServices;
+using Ardalis.GuardClauses;
 using PolyType.SourceGenerator;
 using SharpIDE.MsBuildHost;
 using SharpIDE.MsBuildHost.Contracts;
 using StreamJsonRpc;
 
-SharpIdeMsbuildLocator.Register();
+var sdkVersion = args[0];
+Guard.Against.NullOrWhiteSpace(sdkVersion);
+SharpIdeMsbuildLocator.Register(sdkVersion);
+
+if (args.Contains("--diag"))
+{
+	Console.WriteLine($"'{RuntimeInformation.FrameworkDescription}' Runtime, MSBuild from SDK: '{SharpIdeMsbuildLocator.ResolvedMsBuildSdkPath}'");
+}
 
 var inputStream = Console.OpenStandardInput();
 var outputStream = Console.OpenStandardOutput();

@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using CliWrap;
+using CliWrap.Buffered;
 using Microsoft.Extensions.Logging;
 using NeoSmart.AsyncLock;
+using NuGet.Versioning;
 using PolyType.SourceGenerator;
 using SharpIDE.MsBuildHost.Contracts;
 using StreamJsonRpc;
@@ -16,17 +19,18 @@ public partial class BuildService
     private Socket? _buildLogSocket;
 	private readonly AsyncLock _rpcInitLock = new AsyncLock();
 
-    private async Task<IRpcBuildService> ConnectRpc()
+    private async Task<IRpcBuildService> ConnectRpc(string solutionOrProjectFilePath)
     {
         using (await _rpcInitLock.LockAsync())
         {
             if (_rpcBuildService is not null) return _rpcBuildService;
             if (_fillPipeFromLoggerTask is not null) throw new InvalidOperationException("Build logger pipe is already open, but RPC service is not initialized. This should never happen.");
             var sharpIdeMsBuildHostDllPath = Path.Combine(AppContext.BaseDirectory, "SharpIdeMsBuildHost", "SharpIDE.MsBuildHost.dll");
+            var sdkVersion = await GetCorrectDotnetSdkVersion(solutionOrProjectFilePath);
             var startupInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = sharpIdeMsBuildHostDllPath,
+                ArgumentList = { sharpIdeMsBuildHostDllPath, sdkVersion.ToNormalizedString() },
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -56,6 +60,14 @@ public partial class BuildService
             _sharpIdeMsBuildHostProcess = process;
             return proxy;
         }
+    }
+
+    private static async Task<NuGetVersion> GetCorrectDotnetSdkVersion(string solutionOrProjectFilePath)
+    {
+	    var workingDirectory = Path.GetDirectoryName(solutionOrProjectFilePath) ?? throw new InvalidOperationException("Could not determine working directory from solution or project file path.");
+	    var result = await Cli.Wrap("dotnet").WithWorkingDirectory(workingDirectory).WithArguments("--version").ExecuteBufferedAsync();
+	    var sdkVersion = NuGetVersion.Parse(result.StandardOutput.Trim());
+	    return sdkVersion;
     }
 
     private async Task<Task> OpenMsBuildLoggerPipe(IRpcBuildService rpcBuildService)
