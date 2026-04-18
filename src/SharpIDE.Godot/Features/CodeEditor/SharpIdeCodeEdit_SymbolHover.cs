@@ -23,17 +23,17 @@ public partial class SharpIdeCodeEdit
         GD.Print($"Symbol hovered: {symbol} at line {line}, column {column}");
 
         var linePosition = new LinePosition((int)line, (int)column);
-        var (roslynSymbol, linePositionSpan) = await _roslynAnalysis.LookupSymbol(_currentFile, linePosition);
-        if (roslynSymbol is null || linePositionSpan is null)
-        {
-            return;
-        }
+        var (roslynSymbol, symbolLinePositionSpan) = await _roslynAnalysis.LookupSymbol(_currentFile, linePosition);
 
-        
         var diagnostics = _fileDiagnostics.AsEnumerable().Concat(_fileAnalyzerDiagnostics).Concat(_projectDiagnosticsForFile);
         var diagnosticsForLinePosition = diagnostics.FirstOrDefault(s => s.Span.Start.Line == linePosition.Line &&
                                                                       s.Span.Start.Character <= linePosition.Character &&
                                                                       s.Span.End.Character >= linePosition.Character);
+
+        if ((roslynSymbol is null || symbolLinePositionSpan is null) && diagnosticsForLinePosition is null)
+        {
+            return;
+        }
         
         var symbolNameHoverWindow = new Window();
         symbolNameHoverWindow.WrapControls = true;
@@ -58,16 +58,26 @@ public partial class SharpIdeCodeEdit
         // To debug location, make type a PopupPanel, and uncomment
         //symbolNameHoverWindow.AddThemeStyleboxOverride(ThemeStringNames.Panel, new StyleBoxFlat { BgColor = new Color(1, 0, 0, 0.5f) });
 
-        var startSymbolCharRect = GetRectAtLineColumn(linePositionSpan.Value.Start.Line, linePositionSpan.Value.Start.Character + 1);
-        var endSymbolCharRect = GetRectAtLineColumn(linePositionSpan.Value.End.Line, linePositionSpan.Value.End.Character);
-        symbolNameHoverWindow.Size = new Vector2I(endSymbolCharRect.End.X - startSymbolCharRect.Position.X, lineHeight);
-
         var globalPosition = GetGlobalPosition();
-        var startSymbolCharGlobalPos = startSymbolCharRect.Position + globalPosition;
-        var endSymbolCharGlobalPos = endSymbolCharRect.Position + globalPosition;
-
-        AddChild(symbolNameHoverWindow);
-        symbolNameHoverWindow.Position = new Vector2I((int)startSymbolCharGlobalPos.X, (int)endSymbolCharGlobalPos.Y);
+        Vector2 startSymbolCharGlobalPos;
+        if (symbolLinePositionSpan is not null)
+        {
+            var startSymbolCharRect = GetRectAtLineColumn(symbolLinePositionSpan.Value.Start.Line, symbolLinePositionSpan.Value.Start.Character + 1);
+            var endSymbolCharRect = GetRectAtLineColumn(symbolLinePositionSpan.Value.End.Line, symbolLinePositionSpan.Value.End.Character);
+            symbolNameHoverWindow.Size = new Vector2I(endSymbolCharRect.End.X - startSymbolCharRect.Position.X, lineHeight);
+            startSymbolCharGlobalPos = startSymbolCharRect.Position + globalPosition;
+            var endSymbolCharGlobalPos = endSymbolCharRect.Position + globalPosition;
+            AddChild(symbolNameHoverWindow);
+            symbolNameHoverWindow.Position = new Vector2I((int)startSymbolCharGlobalPos.X, (int)endSymbolCharGlobalPos.Y);
+        }
+        else
+        {
+            var hoveredCharRect = GetRectAtLineColumn((int)line, (int)column);
+            symbolNameHoverWindow.Size = new Vector2I(lineHeight, lineHeight);
+            startSymbolCharGlobalPos = hoveredCharRect.Position + globalPosition;
+            AddChild(symbolNameHoverWindow);
+            symbolNameHoverWindow.Position = new Vector2I((int)startSymbolCharGlobalPos.X, (int)startSymbolCharGlobalPos.Y);
+        }
 
         var tooltipWindow = new Window();
         tooltipWindow.WrapControls = true;
@@ -127,22 +137,18 @@ public partial class SharpIdeCodeEdit
             ContentMarginLeft = 12,
             ContentMarginRight = 12
         };
-        var panel = new PanelContainer();
-        panel.AddThemeStyleboxOverride(ThemeStringNames.Panel, styleBox);
-        
-        var diagnosticNode = diagnosticsForLinePosition is not null
-            ? SymbolInfoComponents.GetDiagnostic(diagnosticsForLinePosition)
-            : null;
-        diagnosticNode?.FitContent = true;
-        diagnosticNode?.AutowrapMode = TextServer.AutowrapMode.Off;
-        diagnosticNode?.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        var diagnosticPanel = diagnosticNode switch
+
+        PanelContainer? diagnosticPanel = null;
+        if (diagnosticsForLinePosition is not null)
         {
-            not null => new PanelContainer(),
-            _ => null
-        };
-        diagnosticPanel?.AddThemeStyleboxOverride(ThemeStringNames.Panel, styleBox);
-        diagnosticPanel?.AddChild(diagnosticNode);
+            var diagnosticNode = SymbolInfoComponents.GetDiagnostic(diagnosticsForLinePosition);
+            diagnosticNode.FitContent = true;
+            diagnosticNode.AutowrapMode = TextServer.AutowrapMode.Off;
+            diagnosticNode.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+            diagnosticPanel = new PanelContainer();
+            diagnosticPanel.AddThemeStyleboxOverride(ThemeStringNames.Panel, styleBox);
+            diagnosticPanel.AddChild(diagnosticNode);
+        }
         
         var symbolInfoNode = roslynSymbol switch
         {
@@ -159,17 +165,24 @@ public partial class SharpIdeCodeEdit
             IEventSymbol eventSymbol => SymbolInfoComponents.GetEventSymbolInfo(eventSymbol),
             IDiscardSymbol discardSymbol => SymbolInfoComponents.GetDiscardSymbolInfo(discardSymbol),
             ILabelSymbol labelSymbol => SymbolInfoComponents.GetLabelSymbolInfo(labelSymbol),
-            _ => SymbolInfoComponents.GetUnknownTooltip(roslynSymbol)
+            not null => SymbolInfoComponents.GetUnknownTooltip(roslynSymbol),
+            _ => null
         };
-        symbolInfoNode.FitContent = true;
-        symbolInfoNode.AutowrapMode = TextServer.AutowrapMode.Off;
-        symbolInfoNode.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        PanelContainer? symbolInfoPanel = null;
+        if (symbolInfoNode is not null)
+        {
+            symbolInfoNode.FitContent = true;
+            symbolInfoNode.AutowrapMode = TextServer.AutowrapMode.Off;
+            symbolInfoNode.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+            symbolInfoPanel = new PanelContainer();
+            symbolInfoPanel.AddThemeStyleboxOverride(ThemeStringNames.Panel, styleBox);
+            symbolInfoPanel.AddChild(symbolInfoNode);
+        }
 
-        panel.AddChild(symbolInfoNode);
         var vboxContainer = new VBoxContainer();
         vboxContainer.AddThemeConstantOverride(ThemeStringNames.Separation, 0);
         if (diagnosticPanel is not null) vboxContainer.AddChild(diagnosticPanel);
-        vboxContainer.AddChild(panel);
+        if (symbolInfoPanel is not null) vboxContainer.AddChild(symbolInfoPanel);
         tooltipWindow.AddChild(vboxContainer);
         tooltipWindow.ChildControlsChanged();
         AddChild(tooltipWindow);
