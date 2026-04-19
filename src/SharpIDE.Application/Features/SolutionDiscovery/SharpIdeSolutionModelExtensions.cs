@@ -16,7 +16,7 @@ public static class SharpIdeSolutionModelExtensions
 		DiffProjects(sharpIdeSolutionModel.Projects, newSharpIdeSolutionModel.Projects);
 		DiffSlnFolders(sharpIdeSolutionModel.SlnFolders, newSharpIdeSolutionModel.SlnFolders);
 
-		sharpIdeSolutionModel.AllProjects.Clear();
+		sharpIdeSolutionModel.AllProjects.RemoveRange(sharpIdeSolutionModel.AllProjects.set);
 		foreach (var project in CollectAllProjects(sharpIdeSolutionModel))
 			sharpIdeSolutionModel.AllProjects.Add(project);
 	}

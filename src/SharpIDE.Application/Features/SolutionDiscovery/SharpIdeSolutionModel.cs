@@ -13,7 +13,7 @@ public class SharpIdeSolutionModel : ISharpIdeNode, IExpandableSharpIdeNode, ISo
 	public required string DirectoryPath { get; set; }
 	public required ObservableList<SharpIdeProjectModel> Projects { get; set; }
 	public required ObservableList<SharpIdeSolutionFolder> SlnFolders { get; set; }
-	public required HashSet<SharpIdeProjectModel> AllProjects { get; set; } // TODO: this isn't thread safe
+	public required ObservableHashSet<SharpIdeProjectModel> AllProjects { get; set; }
 	public bool Expanded { get; set; }
 
 	public required SharpIdeRootFolder RootFolder { get; set; }
@@ -33,6 +33,6 @@ public class SharpIdeSolutionModel : ISharpIdeNode, IExpandableSharpIdeNode, ISo
 		RootFolder = sharpIdeRootFolder;
 		Projects = new ObservableList<SharpIdeProjectModel>(intermediateModel.Projects.Select(s => new SharpIdeProjectModel(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
 		SlnFolders = new ObservableList<SharpIdeSolutionFolder>(intermediateModel.SolutionFolders.Select(s => new SharpIdeSolutionFolder(s, allProjects, allFiles, allFolders, this, sharpIdeRootFolder)));
-		AllProjects = allProjects.ToHashSet();
+		AllProjects = new ObservableHashSet<SharpIdeProjectModel>(allProjects);
 	}
 }

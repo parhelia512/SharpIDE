@@ -340,7 +340,7 @@ public partial class RoslynAnalysis(ILogger<RoslynAnalysis> logger, BuildService
 		var timer = Stopwatch.StartNew();
 		await _solutionLoadedTcs.Task;
 		// Performance improvements of ~15% have been observed with a large solution (100+ projects) by parallelizing this with Task.WhenAll, however it seems much heavier (14700K crashes sometimes 😅) so re-evaluate later
-		foreach (var project in _sharpIdeSolutionModel!.AllProjects)
+		foreach (var project in _sharpIdeSolutionModel!.AllProjects.ToList()) // .ToList to avoid 'Object synchronization method was called from an unsynchronized block of code'
 		{
 			await UpdateProjectDiagnostics(project, cancellationToken);
 		}

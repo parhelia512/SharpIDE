@@ -24,8 +24,6 @@ public partial class ProblemsPanel : Control
     
 	private Tree _tree = null!;
     private TreeItem _rootItem = null!;
-    // TODO: Use observable collections in the solution model and downwards
-    private readonly ObservableHashSet<SharpIdeProjectModel> _projects = [];
 
     public override void _Ready()
     {
@@ -34,7 +32,6 @@ public partial class ProblemsPanel : Control
         _tree.ItemActivated += TreeOnItemActivated;
         _rootItem = _tree.CreateItem();
         _rootItem.SetText(0, "Problems");
-        BindToTree(_projects);
         _ = Task.GodotRun(AsyncReady);
     }
 
@@ -42,12 +39,14 @@ public partial class ProblemsPanel : Control
     {
         await _sharpIdeSolutionAccessor.SolutionReadyTcs.Task;
         _solution = _sharpIdeSolutionAccessor.SolutionModel;
-        _projects.AddRange(_solution!.AllProjects);
+        await this.InvokeAsync(() => BindToTree(_solution.AllProjects));
     }
 
-    public void BindToTree(ObservableHashSet<SharpIdeProjectModel> list)
+    [RequiresGodotUiThread]
+    private void BindToTree(ObservableHashSet<SharpIdeProjectModel> list)
     {
         var view = list.CreateView(y => new TreeItemContainer());
+        view.Unfiltered.ToList().ForEach(s => CreateProjectTreeItem(_tree, _rootItem, s.Value, s.View));
         var disposableBuilder = new DisposableBuilder();
         view.ObserveChanged().SubscribeOnThreadPool().ObserveOnThreadPool()
             .Chunk(TimeSpan.FromMilliseconds(50))
@@ -59,7 +58,7 @@ public partial class ProblemsPanel : Control
                     {
                         switch (e.Action)
                         {
-                            case NotifyCollectionChangedAction.Add: CreateProjectTreeItem(_tree, _rootItem, e); break;
+                            case NotifyCollectionChangedAction.Add: CreateProjectTreeItem(_tree, _rootItem, e.NewItem.Value, e.NewItem.View); break;
                             case NotifyCollectionChangedAction.Remove: FreeTreeItem(e.OldItem.View.Value); break;
                         }
                     }
@@ -70,16 +69,17 @@ public partial class ProblemsPanel : Control
     }
 
     [RequiresGodotUiThread]
-    private void CreateProjectTreeItem(Tree tree, TreeItem parent, ViewChangedEvent<SharpIdeProjectModel, TreeItemContainer> e)
+    private void CreateProjectTreeItem(Tree tree, TreeItem parent, SharpIdeProjectModel sharpIdeProjectModel, TreeItemContainer container)
     {
         var treeItem = tree.CreateItem(parent);
-        treeItem.SetText(0, e.NewItem.Value.Name.Value);
+        treeItem.SetText(0, sharpIdeProjectModel.Name.Value);
         treeItem.SetIcon(0, CsprojIcon);
-        treeItem.Visible = e.NewItem.Value.Diagnostics.Count is not 0;
-        e.NewItem.View.Value = treeItem;
+        treeItem.Visible = sharpIdeProjectModel.Diagnostics.Count is not 0;
+        container.Value = treeItem;
         var disposableBuilder = new DisposableBuilder();
         
-        var projectDiagnosticsView = e.NewItem.Value.Diagnostics.CreateView(y => new TreeItemContainer());
+        var projectDiagnosticsView = sharpIdeProjectModel.Diagnostics.CreateView(y => new TreeItemContainer());
+        projectDiagnosticsView.Unfiltered.ToList().ForEach(s => CreateDiagnosticTreeItem(_tree, treeItem, s.Value, s.View));
         projectDiagnosticsView.ObserveChanged().SubscribeOnThreadPool().ObserveOnThreadPool()
             .Chunk(TimeSpan.FromMilliseconds(50))
             .SubscribeAwait(async (innerEvents, ct) =>
@@ -89,10 +89,10 @@ public partial class ProblemsPanel : Control
                     foreach (var innerEvent in innerEvents)
                     {
                         if (innerEvent.Action is not (NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Remove)) return;
-                        treeItem.Visible = e.NewItem.Value.Diagnostics.Count is not 0;
+                        treeItem.Visible = sharpIdeProjectModel.Diagnostics.Count is not 0;
                         switch (innerEvent.Action)
                         {
-                            case NotifyCollectionChangedAction.Add: CreateDiagnosticTreeItem(_tree, treeItem, innerEvent); break;
+                            case NotifyCollectionChangedAction.Add: CreateDiagnosticTreeItem(_tree, treeItem, innerEvent.NewItem.Value, innerEvent.NewItem.View); break;
                             case NotifyCollectionChangedAction.Remove: FreeTreeItem(innerEvent.OldItem.View.Value); break;
                         }
                     }
@@ -185,16 +185,16 @@ public partial class ProblemsPanel : Control
     }
 
     [RequiresGodotUiThread]
-    private void CreateDiagnosticTreeItem(Tree tree, TreeItem parent, ViewChangedEvent<SharpIdeDiagnostic, TreeItemContainer> e)
+    private void CreateDiagnosticTreeItem(Tree tree, TreeItem parent, SharpIdeDiagnostic sharpIdeDiagnostic, TreeItemContainer container)
     {
         var diagItem = tree.CreateItem(parent);
         diagItem.SetCellMode(0, TreeItem.TreeCellMode.Custom);
         diagItem.SetCustomAsButton(0, true);
-        diagItem.SetTooltipText(0, e.NewItem.Value.Diagnostic.GetMessage());
-        diagItem.SharpIdeDiagnostic = e.NewItem.Value;
+        diagItem.SetTooltipText(0, sharpIdeDiagnostic.Diagnostic.GetMessage());
+        diagItem.SharpIdeDiagnostic = sharpIdeDiagnostic;
         // Avoid allocation via Callable.From((TreeItem s, Rect2 x) => CustomDraw(s, x))
         diagItem.SetCustomDrawCallback(0, _diagnosticCustomDrawCallable!.Value);
-        e.NewItem.View.Value = diagItem;
+        container.Value = diagItem;
     }
     
     [RequiresGodotUiThread]
