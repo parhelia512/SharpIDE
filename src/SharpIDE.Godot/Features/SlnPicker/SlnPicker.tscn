@@ -27,6 +27,7 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="SlnPickerTitleBar" type="MarginContainer" parent="VBoxContainer" unique_id=2089998183]
+visible = false
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 script = ExtResource("2_6t7l7")
