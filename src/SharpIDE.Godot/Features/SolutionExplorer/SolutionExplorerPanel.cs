@@ -119,7 +119,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 			if (selectedSharpIdeNode == file)
 				return;
 		}
-		var item = FindItemRecursive(_tree.GetRoot(), file);
+		var item = _rootItem is null ? null : FindItemRecursive(_rootItem, file);
 		if (item is not null)
 		{
 			await this.InvokeAsync(() =>
