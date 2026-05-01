@@ -406,7 +406,13 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	public override void _Draw()
 	{
 		RenderingServer.Singleton.CanvasItemClear(_aboveCanvasItemRid!.Value);
-		//UnderlineRange(_currentLine, _selectionStartCol, _selectionEndCol, new Color(1, 0, 0));
+		
+		// Draw a guideline at the left edge of the text area
+		var gutterWidth = GetTotalGutterWidth();
+		var leftEdgeStart = new Vector2(gutterWidth, 0);
+		var leftEdgeEnd = new Vector2(gutterWidth, Size.Y);
+		RenderingServer.Singleton.CanvasItemAddLine(_aboveCanvasItemRid.Value, leftEdgeStart, leftEdgeEnd, new Color("464646"), 1);
+		
 		foreach (var sharpIdeDiagnostic in _fileDiagnostics.Concat(_fileAnalyzerDiagnostics).ConcatFast(_projectDiagnosticsForFile))
 		{
 			var line = sharpIdeDiagnostic.Span.Start.Line;
