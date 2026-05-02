@@ -99,6 +99,18 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		var vScrollBar = GetVScrollBar();
 		hScrollBar.ValueChanged += OnCodeEditScrolled;
 		vScrollBar.ValueChanged += OnCodeEditScrolled;
+		AddCommentDelimiter("#","", true);
+		SetCodeRegionTags("region", "endregion");
+		GodotGlobalEvents.Instance.TextEditorCodeFoldingChanged.Subscribe(SetCodeFoldingAsync);
+		SetCodeFolding(Singletons.AppState.IdeSettings.EditorEnableFolding);
+	}
+
+	private async Task SetCodeFoldingAsync(bool enabled) => await this.InvokeAsync(() => SetCodeFolding(enabled));
+	[RequiresGodotUiThread]
+	private void SetCodeFolding(bool enabled)
+	{
+		LineFolding = enabled;
+		GuttersDrawFoldGutter = enabled;
 	}
 
 	private readonly CancellationSeries _solutionAlteredCancellationTokenSeries = new();
@@ -186,6 +198,7 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		_projectDiagnosticsObserveDisposable?.Dispose();
 		GlobalEvents.Instance.SolutionAltered.Unsubscribe(OnSolutionAltered);
 		GodotGlobalEvents.Instance.TextEditorThemeChanged.Unsubscribe(UpdateEditorThemeAsync);
+		GodotGlobalEvents.Instance.TextEditorCodeFoldingChanged.Unsubscribe(SetCodeFoldingAsync);
 		if (_currentFile is not null) _openTabsFileManager.CloseFile(_currentFile);
 	}
 	

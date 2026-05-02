@@ -16,6 +16,9 @@ public class IdeSettings
     public bool DebuggerUseSharpDbg { get; set; } = true;
     public float UiScale { get; set; } = 1.0f;
     public LightOrDarkTheme Theme { get; set; } = LightOrDarkTheme.Dark;
+    public string? EditorSystemFontName { get; set; } = null;
+    public int? EditorFontSize { get; set; } = null;
+    public bool EditorEnableFolding { get; set; } = true;
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
