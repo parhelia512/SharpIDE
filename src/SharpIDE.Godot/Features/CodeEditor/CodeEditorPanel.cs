@@ -9,6 +9,7 @@ using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.Run;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Godot.Features.IdeSettings;
+using SharpIDE.Godot.Features.Settings;
 using SharpIDE.Godot.Features.SolutionExplorer;
 
 namespace SharpIDE.Godot.Features.CodeEditor;
@@ -56,18 +57,12 @@ public partial class CodeEditorPanel : MarginContainer
 		const int minFontSize = 8;
 		const int maxFontSize = 72;
 
-		var editors = _tabContainer.GetChildren().OfType<SharpIdeCodeEditContainer>().ToList();
-		if (editors.Count is 0) return;
-
-		var currentFontSize = editors.First().CodeEdit.GetThemeFontSize(ThemeStringNames.FontSize);
+		var currentFontSize = GetThemeFontSize(ThemeStringNames.FontSize, GodotNodeStringNames.CodeEdit);
 		var newFontSize = increase
 			? Mathf.Clamp(currentFontSize + 2, minFontSize, maxFontSize)
 			: Mathf.Clamp(currentFontSize - 2, minFontSize, maxFontSize);
 
-		foreach (var editor in editors)
-		{ 
-			editor.CodeEdit.AddThemeFontSizeOverride(ThemeStringNames.FontSize, newFontSize);
-		}
+		this.ThemeSetCodeEditFontSize(newFontSize);
 	}
 
 	public override void _ExitTree()

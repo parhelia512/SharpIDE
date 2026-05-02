@@ -148,6 +148,7 @@ CodeEdit/colors/font_readonly_color = Color(1, 1, 1, 1)
 CodeEdit/colors/search_result_border_color = Color(0.14117648, 0.35686275, 0.50980395, 1)
 CodeEdit/colors/search_result_color = Color(0.3, 0.3, 0.3, 0.4117647)
 CodeEdit/colors/selection_color = Color(0.14117648, 0.35686275, 0.50980395, 1)
+CodeEdit/font_sizes/font_size = 18
 CodeEdit/fonts/font = ExtResource("1_6e8is")
 CodeEdit/styles/completion = SubResource("StyleBoxFlat_38n5o")
 CodeEdit/styles/normal = SubResource("StyleBoxFlat_82udi")

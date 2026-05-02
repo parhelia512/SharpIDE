@@ -53,3 +53,8 @@ public static class ThemeVariationStringNames
 {
     public static readonly StringName Gray700Label = nameof(Gray700Label);
 }
+
+public static class GodotNodeStringNames
+{
+    public static readonly StringName CodeEdit = nameof(CodeEdit);
+}

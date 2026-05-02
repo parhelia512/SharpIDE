@@ -24,4 +24,10 @@ public static class SetTheme
             rootWindow.Theme = DarkTheme;
         }
     }
+
+    public static void ThemeSetCodeEditFontSize(this Node node, int fontSize)
+    {
+        LightTheme.SetFontSize(ThemeStringNames.FontSize, GodotNodeStringNames.CodeEdit, fontSize);
+        DarkTheme.SetFontSize(ThemeStringNames.FontSize, GodotNodeStringNames.CodeEdit, fontSize);
+    }
 }
