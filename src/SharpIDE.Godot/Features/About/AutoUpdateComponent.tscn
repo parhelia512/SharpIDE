@@ -99,7 +99,7 @@ text = "Update ready"
 [node name="Label" type="Label" parent="FinishUpdateAndRestartVBoxContainer" unique_id=1451493380]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
-text = "Self-updating requires the .NET 10 SDK to be installed.
+text = "Self-updating requires the .NET 10 SDK or later to be installed.
 Review the updater logs if SharpIDE doesn't re-launch:"
 
 [node name="UpdaterLogLinkButton" type="LinkButton" parent="FinishUpdateAndRestartVBoxContainer" unique_id=1979836369]

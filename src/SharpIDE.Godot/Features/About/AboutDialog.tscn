@@ -8,7 +8,7 @@
 oversampling_override = 1.0
 title = "About"
 position = Vector2i(0, 36)
-size = Vector2i(500, 400)
+size = Vector2i(520, 400)
 transient = true
 exclusive = true
 script = ExtResource("1_xawuc")
