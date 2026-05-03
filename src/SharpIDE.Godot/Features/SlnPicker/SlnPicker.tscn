@@ -70,11 +70,12 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/VSplitContainer/Panel2/MarginContainer" unique_id=351628223]
 layout_mode = 2
+theme_override_constants/separation = 20
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/VSplitContainer/Panel2/MarginContainer/VBoxContainer" unique_id=307759588]
 layout_mode = 2
