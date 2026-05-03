@@ -30,7 +30,6 @@ public partial class AutoUpdateComponent : VBoxContainer
 	private HBoxContainer _failedHBoxContainer = null!;
 	private Label _failedLabel = null!;
 
-	private readonly AutoUpdate _autoUpdate = new();
 	private Release? _pendingRelease;
 	private string? _pendingArchivePath;
 	
@@ -97,7 +96,7 @@ public partial class AutoUpdateComponent : VBoxContainer
 		SetStage(UpdateStage.Checking);
 
 		var timer = Stopwatch.StartNew();
-		var release = await _autoUpdate.CheckForUpdates(Singletons.AppState.LastCheckedForUpdates);
+		var release = await AutoUpdate.CheckForUpdates(Singletons.AppState.LastCheckedForUpdates);
 		timer.Stop();
 		if (release is null && timer.Elapsed < TimeSpan.FromSeconds(1))
 		{
@@ -124,7 +123,7 @@ public partial class AutoUpdateComponent : VBoxContainer
 		if (_pendingRelease is null) return;
 		
 		SetStage(UpdateStage.Downloading);
-		_pendingArchivePath = await _autoUpdate.EnsureReleaseZipReadyForSwap(_pendingRelease);
+		_pendingArchivePath = await AutoUpdate.EnsureReleaseZipReadyForSwap(_pendingRelease);
 		SetStage(UpdateStage.ReadyToInstall);
 	}
 
@@ -133,7 +132,7 @@ public partial class AutoUpdateComponent : VBoxContainer
 		if (_pendingArchivePath is null) return;
 		
 		SetStage(UpdateStage.Installing);
-		await _autoUpdate.StartUpdaterProcess(_pendingArchivePath);
+		await AutoUpdate.StartUpdaterProcess(_pendingArchivePath);
 		GetTree().Quit();
 	}
 

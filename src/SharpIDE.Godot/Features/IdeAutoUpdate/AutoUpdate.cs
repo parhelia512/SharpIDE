@@ -12,9 +12,9 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 namespace SharpIDE.Godot.Features.IdeAutoUpdate;
 
-public class AutoUpdate
+public static class AutoUpdate
 {
-    public async Task<Release?> CheckForUpdates(DateTimeOffset? lastChecked)
+    public static async Task<Release?> CheckForUpdates(DateTimeOffset? lastChecked)
     {
         var requiresCheck = lastChecked is null || (DateTimeOffset.UtcNow - lastChecked) > TimeSpan.FromMinutes(5);
         if (!requiresCheck) return null;
@@ -68,7 +68,7 @@ public class AutoUpdate
         _ => throw new ArgumentOutOfRangeException()
     };
     
-    public async Task<string> EnsureReleaseZipReadyForSwap(Release release)
+    public static async Task<string> EnsureReleaseZipReadyForSwap(Release release)
     {
         Directory.CreateDirectory(UpdateTempPath);
         Directory.CreateDirectory(Path.Combine(UpdateTempPath, "raw"));
@@ -83,7 +83,7 @@ public class AutoUpdate
         return uncompressedReleaseArchive.FullName;
     }
 
-    private async Task CreateUncompressedArchiveForRelease(Release release, FileInfo uncompressedReleaseArchiveToCreate)
+    private static async Task CreateUncompressedArchiveForRelease(Release release, FileInfo uncompressedReleaseArchiveToCreate)
     {
         // remove the 'v' prefix from the release name
         var compressedReleaseArchive = new FileInfo(Path.Combine(UpdateTempPath, "raw", $"{ReleaseAssetNamePrefix}{release.Name[1..]}{CompressedArchiveExtension}"));
@@ -154,7 +154,7 @@ public class AutoUpdate
         return new GitHubClient(new ProductHeaderValue("SharpIDE-AutoUpdate"));
     }
 
-    public async Task StartUpdaterProcess(string uncompressedReleaseArchiveFilePath)
+    public static async Task StartUpdaterProcess(string uncompressedReleaseArchiveFilePath)
     {
         var currentProcessExecutablePath = OS.GetExecutablePath();
         List<string> args = [Path.Combine(AppContext.BaseDirectory, "update-sharpide.cs"), "--", Path.GetDirectoryName(currentProcessExecutablePath)!, currentProcessExecutablePath, uncompressedReleaseArchiveFilePath, Environment.ProcessId.ToString()];
