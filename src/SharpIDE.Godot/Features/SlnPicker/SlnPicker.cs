@@ -1,4 +1,5 @@
 using Godot;
+using SharpIDE.Godot.Features.About;
 
 namespace SharpIDE.Godot.Features.SlnPicker;
 
@@ -10,6 +11,9 @@ public partial class SlnPicker : Control
     private VBoxContainer _previousSlnsVBoxContainer = null!;
     private Label _versionLabel = null!;
     private Button _aboutButton = null!;
+
+    // cached so that a user can re-open the same instance that might have an update in progress
+    private static AboutDialog? _aboutDialog;
 
     private PackedScene _previousSlnEntryScene = ResourceLoader.Load<PackedScene>("res://Features/SlnPicker/PreviousSlnEntry.tscn");
     private PackedScene _aboutDialogScene = ResourceLoader.Load<PackedScene>("uid://ojk87rgonxey");
@@ -31,10 +35,22 @@ public partial class SlnPicker : Control
         _openSlnButton.Pressed += () => _fileDialog.PopupCentered();
         _aboutButton.Pressed += () =>
         {
-            var aboutDialog = _aboutDialogScene.Instantiate<Window>();
-            aboutDialog.CloseRequested += aboutDialog.QueueFree;
-            AddChild(aboutDialog);
-            aboutDialog.PopupCentered();
+            // We are doing funky reparenting here because
+            // 1. blocking mouse inputs to behind windows seems to relying on on-top windows being children in the scene tree
+            // 2. We can't leave the AboutDialog unparented when not visible, as it will not be freed on exit
+            if (_aboutDialog is null)
+            {
+                var aboutDialog = _aboutDialogScene.Instantiate<AboutDialog>();
+                aboutDialog.CloseRequested += () =>
+                {
+                    aboutDialog.Visible = false;
+                    aboutDialog.Reparent(aboutDialog.GetTree().GetRoot());
+                };
+                GetTree().GetRoot().AddChild(aboutDialog);
+                _aboutDialog = aboutDialog;
+            }
+            _aboutDialog.Reparent(this);
+            _aboutDialog.PopupCentered();
         };
         var windowParent = GetParentOrNull<Window>();
         _fileDialog.FileSelected += path => _tcs.SetResult(path);
