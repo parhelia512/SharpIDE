@@ -14,16 +14,15 @@ namespace SharpIDE.Godot.Features.IdeAutoUpdate;
 
 public class AutoUpdate
 {
-    private string _currentVersion = "0.1.24"; // TODO: Replace
     public async Task<Release?> CheckForUpdates(DateTimeOffset? lastChecked)
     {
-        var requiresCheck = lastChecked is null || (DateTimeOffset.UtcNow - lastChecked) > TimeSpan.FromHours(20);
+        var requiresCheck = lastChecked is null || (DateTimeOffset.UtcNow - lastChecked) > TimeSpan.FromMinutes(5);
         if (!requiresCheck) return null;
         try
         {
             var latestRelease = await GetLatestRelease();
             var latestVersion = NuGetVersion.Parse(latestRelease.Name[1..]); // remove 'v' prefix
-            var currentVersion = NuGetVersion.Parse(_currentVersion);
+            var currentVersion = Singletons.SharpIdeVersion;
             if (latestVersion <= currentVersion) return null;
             return latestRelease;
         }
