@@ -137,6 +137,13 @@ public partial class AutoUpdateComponent : VBoxContainer
 				_downloadProgressLabel.Text = $"Downloading - {_downloadProgress.TotalBytes / (1024.0 * 1024.0):F1}MB total";
 			}
 			_downloadProgressBar.Value = _downloadProgress.CurrentBytes;
+			if (_downloadProgress.CurrentBytes == _downloadProgress.TotalBytes)
+			{
+				_downloadProgressBar.Indeterminate = true;
+				_downloadProgressBar.Value = 0;
+				_downloadProgressLabel.Text = "Extracting";
+				_downloadProgress = null;
+			}
 		}
 	}
 
@@ -149,7 +156,6 @@ public partial class AutoUpdateComponent : VBoxContainer
 		_downloadProgress = new DownloadProgress();
 		_pendingArchivePath = await AutoUpdate.EnsureReleaseZipReadyForSwap(_pendingRelease, _downloadProgress);
 		SetStage(UpdateStage.ReadyToInstall);
-		_downloadProgress = null;
 	}
 
 	private async Task OnFinishUpdateAndRestartPressed()
