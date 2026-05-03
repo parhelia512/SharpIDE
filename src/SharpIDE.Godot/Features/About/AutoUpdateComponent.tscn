@@ -5,95 +5,104 @@
 [node name="AutoUpdateComponent" type="VBoxContainer" unique_id=1366125619]
 script = ExtResource("1_j4nmt")
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="." unique_id=773780575]
+[node name="CheckForUpdatesHBoxContainer" type="HBoxContainer" parent="." unique_id=773780575]
+unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CheckForUpdatesButton" type="Button" parent="HBoxContainer2" unique_id=2026995986]
+[node name="CheckForUpdatesButton" type="Button" parent="CheckForUpdatesHBoxContainer" unique_id=2026995986]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Check for Updates"
 
-[node name="LastCheckedAtLabel" type="Label" parent="HBoxContainer2" unique_id=684027440]
+[node name="LastCheckedAtLabel" type="Label" parent="CheckForUpdatesHBoxContainer" unique_id=684027440]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "Last checked at: 12:48pm 26/06/26"
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="." unique_id=669850324]
+[node name="DownloadUpdateHBoxContainer" type="HBoxContainer" parent="." unique_id=669850324]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="CheckForUpdatesButton" type="Button" parent="HBoxContainer3" unique_id=1036301481]
+[node name="DownloadUpdateButton" type="Button" parent="DownloadUpdateHBoxContainer" unique_id=1036301481]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Download"
 
-[node name="Label" type="Label" parent="HBoxContainer3" unique_id=1705694894]
+[node name="Label" type="Label" parent="DownloadUpdateHBoxContainer" unique_id=1705694894]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "Newer version: 0.1.20"
 
-[node name="HBoxContainer4" type="HBoxContainer" parent="." unique_id=160350432]
+[node name="NoUpdatesFoundHBoxContainer" type="HBoxContainer" parent="." unique_id=160350432]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HBoxContainer4" unique_id=1269845091]
+[node name="Label" type="Label" parent="NoUpdatesFoundHBoxContainer" unique_id=1269845091]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "No updates found"
 
-[node name="HBoxContainer5" type="HBoxContainer" parent="." unique_id=1504820331]
+[node name="CheckingForUpdatesHBoxContainer" type="HBoxContainer" parent="." unique_id=1504820331]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer5" unique_id=1541317555]
+[node name="ProgressBar" type="ProgressBar" parent="CheckingForUpdatesHBoxContainer" unique_id=1541317555]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 indeterminate = true
 editor_preview_indeterminate = true
 
-[node name="Label" type="Label" parent="HBoxContainer5" unique_id=328565679]
+[node name="Label" type="Label" parent="CheckingForUpdatesHBoxContainer" unique_id=328565679]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "Checking for updates"
 
-[node name="HBoxContainer6" type="HBoxContainer" parent="." unique_id=406166212]
+[node name="DownloadingUpdateHBoxContainer" type="HBoxContainer" parent="." unique_id=406166212]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer6" unique_id=1313741992]
+[node name="ProgressBar" type="ProgressBar" parent="DownloadingUpdateHBoxContainer" unique_id=1313741992]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HBoxContainer6" unique_id=1025800488]
+[node name="Label" type="Label" parent="DownloadingUpdateHBoxContainer" unique_id=1025800488]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "Downloading"
 
-[node name="HBoxContainer7" type="HBoxContainer" parent="." unique_id=1056739365]
+[node name="FinishUpdateAndRestartHBoxContainer" type="HBoxContainer" parent="." unique_id=1056739365]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="CheckForUpdatesButton" type="Button" parent="HBoxContainer7" unique_id=1448656790]
+[node name="FinishUpdateAndRestartButton" type="Button" parent="FinishUpdateAndRestartHBoxContainer" unique_id=1448656790]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Update & Restart"
 
-[node name="Label" type="Label" parent="HBoxContainer7" unique_id=1499460401]
+[node name="Label" type="Label" parent="FinishUpdateAndRestartHBoxContainer" unique_id=1499460401]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 
-[node name="HBoxContainer8" type="HBoxContainer" parent="." unique_id=169059207]
+[node name="UpdatingAndRestartingHBoxContainer" type="HBoxContainer" parent="." unique_id=169059207]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer8" unique_id=1071213074]
+[node name="ProgressBar" type="ProgressBar" parent="UpdatingAndRestartingHBoxContainer" unique_id=1071213074]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 indeterminate = true
 editor_preview_indeterminate = true
 
-[node name="Label" type="Label" parent="HBoxContainer8" unique_id=520431907]
+[node name="Label" type="Label" parent="UpdatingAndRestartingHBoxContainer" unique_id=520431907]
 layout_mode = 2
 theme_type_variation = &"Gray600Label"
 text = "Installing update and restarting"
