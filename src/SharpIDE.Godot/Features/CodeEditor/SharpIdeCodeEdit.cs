@@ -111,8 +111,11 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	
 	public override void _Notification(int what)
 	{
-		if (what == NotificationThemeChanged) 
+		if (what == NotificationThemeChanged)
+		{
 			_cachedCurrentCaretLineColor = GetThemeColor(ThemeStringNames.CodeEdit.CurrentLineColor, GodotNodeStringNames.CodeEdit);
+			CallDeferred(CanvasItem.MethodName.QueueRedraw); // To Redraw diagnostics etc - without this, they disappear on a theme change, until the next redraw (click, scroll etc)
+		}
 	}
 
 	private async Task SetCodeFoldingAsync(bool enabled) => await this.InvokeAsync(() => SetCodeFolding(enabled));
