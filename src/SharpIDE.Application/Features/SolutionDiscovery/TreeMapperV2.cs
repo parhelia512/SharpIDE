@@ -39,18 +39,16 @@ public static class TreeMapperV2
 
 	public static List<SharpIdeFile> GetFiles(this DirectoryInfo directoryInfo, IExpandableSharpIdeNode parent, ConcurrentBag<SharpIdeFile> allFiles)
 	{
-		List<FileInfo> fileInfos;
 		try
 		{
-			fileInfos = directoryInfo.EnumerateFiles().ToList();
+			var fileInfos = directoryInfo.EnumerateFiles().AsValueEnumerable();
+			var sharpIdeFiles = fileInfos.Select(f => new SharpIdeFile(f.FullName, f.Name, f.Extension, parent, allFiles)).ToList();
+			sharpIdeFiles.Sort(SharpIdeFileComparer.Instance);
+			return sharpIdeFiles;
 		}
 		catch (UnauthorizedAccessException)
 		{
 			return [];
 		}
-
-		var sharpIdeFiles = fileInfos.Select(f => new SharpIdeFile(f.FullName, f.Name, f.Extension, parent, allFiles)).ToList();
-		sharpIdeFiles.Sort(SharpIdeFileComparer.Instance);
-		return sharpIdeFiles;
 	}
 }
