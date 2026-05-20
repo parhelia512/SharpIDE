@@ -164,8 +164,8 @@ public partial class SharpIdeCodeEdit
 
         var scrollWidth = availableCompletions > MaxLines ? themeScrollWidth : 0;
 
-        // TODO: Fix
-        var codeCompletionBase = "";
+        // TODO: Fix?
+        //var codeCompletionBase = "";
         
         const int iconOffset = 25;
 		// Desired X position for the popup to start at

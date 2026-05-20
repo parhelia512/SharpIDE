@@ -72,5 +72,6 @@
   <ItemGroup Label="Pinned Transitive Dependencies">
     <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.Razor.Features" Version="5.8.0-1.26269.119" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Remote.ServiceHub" Version="5.8.0-1.26269.119" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.8" />
   </ItemGroup>
 </Project>

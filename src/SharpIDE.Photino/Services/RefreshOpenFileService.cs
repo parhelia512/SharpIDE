@@ -5,6 +5,6 @@ public class RefreshOpenFileService
 	public event Func<Task>? RefreshOpenFile;
 	public void InvokeRefreshOpenFile()
 	{
-		RefreshOpenFile?.Invoke();
+		_ = RefreshOpenFile?.Invoke();
 	}
 }

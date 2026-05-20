@@ -131,7 +131,7 @@ public static class ProjectEvaluation
 
 			foreach (var lockFileTargetLibrary in target.Libraries.Where(l => l.Type == "package"))
 			{
-				if (string.IsNullOrEmpty(lockFileTargetLibrary.Name)) continue;
+				if (string.IsNullOrEmpty(lockFileTargetLibrary.Name) || lockFileTargetLibrary.Version is null) continue;
 
 				var isTopLevel = topLevelDependencies.Contains(lockFileTargetLibrary.Name);
 				if (!includeTransitive && !isTopLevel) continue;

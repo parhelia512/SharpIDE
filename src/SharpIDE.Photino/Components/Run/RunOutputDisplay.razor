@@ -36,7 +36,7 @@
 				await foreach (var log in Project.RunningOutputChannel.Reader.ReadAllAsync().ConfigureAwait(false))
 				{
 					// Better hope you don't get a log until we get the component ref lol
-					await _terminalDisplayRef.Write(log).ConfigureAwait(false);
+					await _terminalDisplayRef!.Write(log).ConfigureAwait(false);
 				}
 			}
 			catch (Exception e) when (e is not OperationCanceledException)
