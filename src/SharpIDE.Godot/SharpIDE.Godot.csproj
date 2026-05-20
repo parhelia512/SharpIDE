@@ -28,6 +28,7 @@
   <ItemGroup>
       <Publicize Include="Microsoft.CodeAnalysis.Workspaces" />
       <Publicize Include="Microsoft.CodeAnalysis.Features" />
+      <Publicize IncludeCompilerGeneratedMembers="false" Include="GodotSharp" MemberPattern="^(?:Godot\.StringName\.NativeValue|Godot\.CodeEdit\.MethodBind31|Godot\.GodotObject\.GetPtr)" />
       <DoNotPublicize Include="Microsoft.CodeAnalysis.Workspaces:System.Linq.RoslynEnumerableExtensions" />
   </ItemGroup>
 

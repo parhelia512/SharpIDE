@@ -54,6 +54,8 @@ public partial class SharpIdeCodeEdit : CodeEdit
 	private (int line, int col, string lineText)? _pendingLineEditOrigin;
 	private IDisposable? _projectDiagnosticsObserveDisposable;
 	private Color _cachedCurrentCaretLineColor;
+	private readonly Color _breakpointLineColor = new Color("3a2323");
+	private readonly Color _executingLineColor = new Color("665001");
 	private LinePositionSpan? _executingLineInfo; // Used for drawing orange executing background highlighting
 
 	[Inject] private readonly IdeOpenTabsFileManager _openTabsFileManager = null!;
@@ -236,7 +238,6 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		{
 			await _runService.RemoveBreakpointForFile(_currentFile, lineForDebugger);
 		}
-		SetLineColour(lineInt);
 		GD.Print($"Breakpoint {(breakpointAdded ? "added" : "removed")} at line {lineForDebugger}");
 	}
 
@@ -447,12 +448,13 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		RenderingServer.Singleton.CanvasItemAddRect(_canvasItemRid, rect, color);
 	}
 
-	public void DrawLineBackgroundColorCustom(int line, Color color)
+	public void DrawLineBackgroundColorCustom(int line, Color color, bool includeLeftGutter = true)
 	{
 		var startRect = GetRectAtLineColumn(line, 0);
 		if (startRect.Position.X < 0) return; // line is off-screen
+		var x = includeLeftGutter ? 0 : GetTotalGutterWidth();
 		var rect = new Rect2(
-			0,
+			x,
 			startRect.Position.Y,
 			Size.X - (MinimapDraw ? MinimapWidth : 0),
 			GetLineHeight()
@@ -470,6 +472,13 @@ public partial class SharpIdeCodeEdit : CodeEdit
 		RenderingServer.Singleton.CanvasItemAddLine(_aboveCanvasItemRid.Value, leftEdgeStart, leftEdgeEnd, new Color("464646"), 1);
 
 		var currentCaretLine = GetCaretLine();
+		
+		using var nativeInt32ArrayHandle = GetBreakpointedLinesUnmanaged();
+		foreach (var line in nativeInt32ArrayHandle.Span)
+		{
+			if (line == currentCaretLine) continue;
+			DrawLineBackgroundColorCustom(line, _breakpointLineColor, false);
+		}
 		// We draw this ourselves, as the normal "current caret line bg color" is placed above anything drawn in _Draw, so we can't draw e.g. 'Executing line col range bg highlights' above caret line bg, but below text
 		DrawLineBackgroundColorCustom(currentCaretLine, _cachedCurrentCaretLineColor);
 
@@ -634,21 +643,6 @@ public partial class SharpIdeCodeEdit : CodeEdit
 				await _fileChangedService.SharpIdeFileChanged(_currentFile, Text, FileChangeType.IdeSaveToDisk);
 			});
 		}
-	}
-
-	private readonly Color _breakpointLineColor = new Color("3a2323");
-	private readonly Color _executingLineColor = new Color("665001");
-	public void SetLineColour(int line)
-	{
-		var breakpointed = IsLineBreakpointed(line);
-		var executing = IsLineExecuting(line);
-		var lineColour = (breakpointed, executing) switch
-		{
-			(_, true) => _executingLineColor,
-			(true, false) => _breakpointLineColor,
-			(false, false) => Colors.Transparent
-		};
-		SetLineBackgroundColor(line, lineColour);
 	}
 
 	public void SetExecutingTextSpanInfo(LinePositionSpan? linePositionSpan)

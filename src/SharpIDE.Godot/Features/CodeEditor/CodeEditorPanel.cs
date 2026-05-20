@@ -287,7 +287,7 @@ public partial class CodeEditorPanel : MarginContainer
 			var godotLine = executionStopInfo.StartLine - 1;
 			var tabForStopInfo = _tabContainer.GetChildren().OfType<SharpIdeCodeEditContainer>().Single(t => t.CodeEdit.SharpIdeFile.Path == executionStopInfo.FilePath).CodeEdit;
 			tabForStopInfo.SetLineAsExecuting(godotLine, false);
-			tabForStopInfo.SetLineColour(godotLine);
+			tabForStopInfo.SetExecutingTextSpanInfo(null);
 		});
 	}
 }
