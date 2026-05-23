@@ -214,6 +214,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 		{
 			debugProtocolHost.SendRequestSync(new DisconnectRequest());
 			debugProtocolHost.Stop();
+			debugProtocolHost.WaitForReader();
 		}
 		else
 		{
