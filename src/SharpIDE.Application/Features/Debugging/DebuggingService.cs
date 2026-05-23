@@ -24,7 +24,7 @@ public record struct AssemblyPathAndMvid(string AssemblyPath, Guid Mvid);
 #pragma warning disable VSTHRD101
 public class DebuggingService(ILogger<DebuggingService> logger)
 {
-	private readonly ConcurrentDictionary<DebuggerSessionId, DebugProtocolHost> _debugProtocolHosts = [];
+	private readonly ConcurrentDictionary<DebuggerSessionId, (DebugProtocolHost DebugProtocolHost, IDisposable DebuggerDisposable)> _debugProtocolHosts = [];
 
 	private readonly ILogger<DebuggingService> _logger = logger;
 
@@ -34,7 +34,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 		Guard.Against.NegativeOrZero(debuggeeProcessId, nameof(debuggeeProcessId), "Process ID must be a positive integer.");
 		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 
-		var (inputStream, outputStream, isNetCoreDbg) = DebuggerProcessStreamHelper.NewDebuggerProcessStreamsForInfo(debuggerExecutableInfo, _logger);
+		var (inputStream, outputStream, isNetCoreDbg, debuggerDisposable) = DebuggerProcessStreamHelper.NewDebuggerProcessStreamsForInfo(debuggerExecutableInfo, _logger);
 
 		var debugProtocolHost = new DebugProtocolHost(inputStream, outputStream, false);
 		var initializedEventTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -180,7 +180,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 			await DiagnosticClientResumeRuntime(debuggeeProcessId);
 		}
 		var sessionId = new DebuggerSessionId(Guid.NewGuid());
-		_debugProtocolHosts[sessionId] = debugProtocolHost;
+		_debugProtocolHosts[sessionId] = (debugProtocolHost, debuggerDisposable);
 		return sessionId;
 	}
 
@@ -210,11 +210,13 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 
 	public async Task CloseDebuggerSession(DebuggerSessionId debuggerSessionId)
 	{
-		if (_debugProtocolHosts.TryRemove(debuggerSessionId, out var debugProtocolHost))
+		if (_debugProtocolHosts.TryRemove(debuggerSessionId, out var s))
 		{
+			var (debugProtocolHost, debuggerDisposable) = s;
 			debugProtocolHost.SendRequestSync(new DisconnectRequest());
 			debugProtocolHost.Stop();
 			debugProtocolHost.WaitForReader();
+			debuggerDisposable.Dispose();
 		}
 		else
 		{
@@ -224,7 +226,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 
 	public async Task SetBreakpointsForFile(DebuggerSessionId debuggerSessionId, SharpIdeFile file, List<Breakpoint> breakpoints, CancellationToken cancellationToken = default)
 	{
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var path = file.IsMetadataAsSourceFile ? file.PdbSourceFilePathForDebugger ?? throw new ArgumentNullException(nameof(file.PdbSourceFilePathForDebugger)) : file.Path;
 		var setBreakpointsRequest = new SetBreakpointsRequest
 		{
@@ -237,7 +239,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task StepOver(DebuggerSessionId debuggerSessionId, int threadId, CancellationToken cancellationToken)
 	{
 		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var nextRequest = new NextRequest(threadId);
 		debugProtocolHost.SendRequestSync(nextRequest);
 		GlobalEvents.Instance.DebuggerExecutionContinued.InvokeParallelFireAndForget();
@@ -245,7 +247,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task StepInto(DebuggerSessionId debuggerSessionId, int threadId, CancellationToken cancellationToken)
 	{
 		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var stepInRequest = new StepInRequest(threadId);
 		debugProtocolHost.SendRequestSync(stepInRequest);
 		GlobalEvents.Instance.DebuggerExecutionContinued.InvokeParallelFireAndForget();
@@ -253,7 +255,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task StepOut(DebuggerSessionId debuggerSessionId, int threadId, CancellationToken cancellationToken)
 	{
 		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var stepOutRequest = new StepOutRequest(threadId);
 		debugProtocolHost.SendRequestSync(stepOutRequest);
 		GlobalEvents.Instance.DebuggerExecutionContinued.InvokeParallelFireAndForget();
@@ -261,7 +263,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task Continue(DebuggerSessionId debuggerSessionId, int threadId, CancellationToken cancellationToken)
 	{
 		await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var continueRequest = new ContinueRequest(threadId);
 		debugProtocolHost.SendRequestSync(continueRequest);
 		GlobalEvents.Instance.DebuggerExecutionContinued.InvokeParallelFireAndForget();
@@ -270,7 +272,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task<List<ThreadModel>> GetThreadsAtStopPoint(DebuggerSessionId debuggerSessionId)
 	{
 		var threadsRequest = new ThreadsRequest();
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var threadsResponse = debugProtocolHost.SendRequestSync(threadsRequest);
 		var mappedThreads = threadsResponse.Threads.Select(s => new ThreadModel
 		{
@@ -283,7 +285,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task<List<StackFrameModel>> GetStackFramesForThread(DebuggerSessionId debuggerSessionId, int threadId)
 	{
 		var stackTraceRequest = new StackTraceRequest { ThreadId = threadId };
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var stackTraceResponse = debugProtocolHost.SendRequestSync(stackTraceRequest);
 		var stackFrames = stackTraceResponse.StackFrames;
 
@@ -308,7 +310,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 	public async Task<List<Variable>> GetVariablesForStackFrame(DebuggerSessionId debuggerSessionId, int frameId)
 	{
 		var scopesRequest = new ScopesRequest { FrameId = frameId };
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var scopesResponse = debugProtocolHost.SendRequestSync(scopesRequest);
 		var allVariables = new List<Variable>();
 		foreach (var scope in scopesResponse.Scopes)
@@ -322,7 +324,7 @@ public class DebuggingService(ILogger<DebuggingService> logger)
 
 	public async Task<List<Variable>> GetVariablesForVariablesReference(DebuggerSessionId debuggerSessionId, int variablesReference)
 	{
-		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId];
+		var debugProtocolHost = _debugProtocolHosts[debuggerSessionId].DebugProtocolHost;
 		var variablesRequest = new VariablesRequest { VariablesReference = variablesReference };
 		var variablesResponse = debugProtocolHost.SendRequestSync(variablesRequest);
 		return variablesResponse.Variables;
