@@ -21,6 +21,7 @@ public partial class ThreadsVariablesSubTab : Control
 	private Tree _threadsTree = null!;
 	private Tree _stackFramesTree = null!;
 	private Tree _variablesTree = null!;
+	private LineEdit _evaluateExpressionLineEdit = null!;
 	
 	public SharpIdeProjectModel Project { get; set; } = null!;
 	// private ThreadModel? _selectedThread = null!; // null when not at a stop point
@@ -35,13 +36,20 @@ public partial class ThreadsVariablesSubTab : Control
 		_threadsTree = GetNode<Tree>("%ThreadsTree");
 		_stackFramesTree = GetNode<Tree>("%StackFramesTree");
 		_variablesTree = GetNode<Tree>("%VariablesTree");
+		_evaluateExpressionLineEdit = GetNode<LineEdit>("%EvaluateExpressionLineEdit");
 		_debuggerVariableCustomDrawCallable = new Callable(this, MethodName.DebuggerVariableCustomDraw);
 		GlobalEvents.Instance.DebuggerExecutionStopped.Subscribe(OnDebuggerExecutionStopped);
 		GlobalEvents.Instance.DebuggerExecutionContinued.Subscribe(ClearAllTrees);
 		_threadsTree.ItemSelected += OnThreadSelected;
 		_stackFramesTree.ItemSelected += OnStackFrameSelected;
 		_variablesTree.ItemCollapsed += OnVariablesItemExpandedOrCollapsed;
+		_evaluateExpressionLineEdit.TextSubmitted += EvaluateExpression;
 		Project.ProjectStoppedRunning.Subscribe(ClearAllTrees);
+	}
+
+	private void EvaluateExpression(string newText)
+	{
+		
 	}
 
 	private void OnVariablesItemExpandedOrCollapsed(TreeItem item)

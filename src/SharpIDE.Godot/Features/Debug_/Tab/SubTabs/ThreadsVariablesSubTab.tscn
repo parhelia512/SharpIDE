@@ -64,16 +64,26 @@ hide_root = true
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VariablesTree" type="Tree" parent="HSplitContainer/VariablesPanel" unique_id=1453500091]
-unique_name_in_owner = true
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/VariablesPanel" unique_id=871515171]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="VariablesTree" type="Tree" parent="HSplitContainer/VariablesPanel/VBoxContainer" unique_id=1453500091]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/inner_item_margin_left = 4
 theme_override_constants/icon_max_width = 18
 theme_override_constants/draw_guides = 0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_hwpe6")
 hide_root = true
+
+[node name="EvaluateExpressionLineEdit" type="LineEdit" parent="HSplitContainer/VariablesPanel/VBoxContainer" unique_id=1193248699]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+placeholder_text = "> Evaluate Expression"
