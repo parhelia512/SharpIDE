@@ -51,10 +51,7 @@ LoadingProjectIcon = ExtResource("6_wpvwf")
 UnloadedProjectIcon = ExtResource("7_ykfad")
 SlnIcon = ExtResource("6_idvpu")
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1468166306]
-layout_mode = 2
-
-[node name="Tree" type="Tree" parent="PanelContainer" unique_id=1327553265]
+[node name="Tree" type="Tree" parent="." unique_id=1327553265]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/v_separation = 1

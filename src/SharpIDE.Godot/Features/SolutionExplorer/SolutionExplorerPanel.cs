@@ -30,7 +30,6 @@ public partial class SolutionExplorerPanel : MarginContainer
 	[Export]
 	public Texture2D SlnIcon { get; set; } = null!;
 
-	private PanelContainer _panelContainer = null!;
 	private Tree _tree = null!;
 	private TreeItem _rootItem = null!;
 
@@ -41,11 +40,10 @@ public partial class SolutionExplorerPanel : MarginContainer
 	private (List<IFileOrFolder>, ClipboardOperation)? _itemsOnClipboard;
 	public override void _Ready()
 	{
-		_panelContainer = GetNode<PanelContainer>("PanelContainer");
 		_tree = GetNode<Tree>("%Tree");
 		_tree.ItemMouseSelected += TreeOnItemMouseSelected;
 		// Remove the tree from the scene tree for now, we will add it back when we bind to a solution
-		_panelContainer.RemoveChild(_tree);
+		RemoveChild(_tree);
 		GodotGlobalEvents.Instance.FileExternallySelected.Subscribe(OnFileExternallySelected);
 		_ = Task.GodotRun(BindToSolution);
 	}
@@ -200,7 +198,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 	    rootItem.SharpIdeDisposable = disposableBuilder.Build();
 	    await this.InvokeAsync(() =>
 	    {
-		    _panelContainer.AddChild(_tree);
+		    AddChild(_tree);
 	    });
 	}
 
