@@ -1,4 +1,4 @@
-namespace SharpIDE.Godot.Features.BottomPanel;
+namespace SharpIDE.Godot.Features.ToolPanes;
 
 public enum ToolPaneType
 {

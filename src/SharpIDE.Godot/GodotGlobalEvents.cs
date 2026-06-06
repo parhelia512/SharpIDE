@@ -2,8 +2,8 @@
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Events;
 using SharpIDE.Application.Features.SolutionDiscovery;
-using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.IdeSettings;
+using SharpIDE.Godot.Features.ToolPanes;
 
 namespace SharpIDE.Godot;
 

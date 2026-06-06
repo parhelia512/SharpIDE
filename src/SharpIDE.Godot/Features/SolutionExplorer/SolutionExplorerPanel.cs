@@ -7,9 +7,9 @@ using SharpIDE.Application;
 using SharpIDE.Application.Features.Analysis;
 using SharpIDE.Application.Features.Evaluation;
 using SharpIDE.Application.Features.SolutionDiscovery;
-using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.Common;
 using SharpIDE.Godot.Features.Git;
+using SharpIDE.Godot.Features.ToolPanes;
 
 namespace SharpIDE.Godot.Features.SolutionExplorer;
 

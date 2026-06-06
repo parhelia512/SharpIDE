@@ -10,13 +10,13 @@ using SharpIDE.Application.Features.FileWatching;
 using SharpIDE.Application.Features.NavigationHistory;
 using SharpIDE.Application.Features.SolutionDiscovery;
 using SharpIDE.Application.Features.SolutionDiscovery.VsPersistence;
-using SharpIDE.Godot.Features.BottomPanel;
 using SharpIDE.Godot.Features.CodeEditor;
 using SharpIDE.Godot.Features.CustomControls;
 using SharpIDE.Godot.Features.Run;
 using SharpIDE.Godot.Features.Search;
 using SharpIDE.Godot.Features.Search.SearchAllFiles;
 using SharpIDE.Godot.Features.SolutionExplorer;
+using SharpIDE.Godot.Features.ToolPanes;
 
 namespace SharpIDE.Godot;
 

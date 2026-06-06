@@ -1,5 +1,4 @@
 using Godot;
-using SharpIDE.Godot.Features.BottomPanel;
 
 namespace SharpIDE.Godot.Features.ToolPanes;
 
