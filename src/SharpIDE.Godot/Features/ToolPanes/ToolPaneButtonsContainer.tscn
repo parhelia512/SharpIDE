@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://c8vujbg2psiwc"]
 
 [ext_resource type="Script" uid="uid://b24psmxpc0m02" path="res://Features/ToolPanes/ToolPaneButtonsContainer.cs" id="1_l4j03"]
-[ext_resource type="ButtonGroup" uid="uid://c2nmo2x3va0gi" path="res://Features/LeftSideBar/LeftBottomSidebarButtonGroup.tres" id="2_m8tgp"]
 
 [node name="ToolPaneButtonsContainer" type="VBoxContainer" unique_id=1392985995]
 anchors_preset = 15
@@ -10,4 +9,3 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_l4j03")
-ButtonGroup = ExtResource("2_m8tgp")

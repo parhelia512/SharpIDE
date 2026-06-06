@@ -2,6 +2,12 @@
 
 [ext_resource type="PackedScene" uid="uid://c8vujbg2psiwc" path="res://Features/ToolPanes/ToolPaneButtonsContainer.tscn" id="11_rlff3"]
 
+[sub_resource type="ButtonGroup" id="ButtonGroup_tap0l"]
+allow_unpress = true
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_rgaf0"]
+allow_unpress = true
+
 [node name="LeftSideBar" type="Panel" unique_id=1098002211]
 custom_minimum_size = Vector2(80, 0)
 anchors_preset = 13
@@ -29,6 +35,7 @@ layout_mode = 2
 [node name="TopLeftToolPaneButtonsContainer" parent="MarginContainer/VBoxContainer" unique_id=1392985995 groups=["ToolPaneButtonContainers"] instance=ExtResource("11_rlff3")]
 layout_mode = 2
 Location = 1
+ButtonGroup = SubResource("ButtonGroup_tap0l")
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1610118557]
 layout_mode = 2
@@ -37,3 +44,4 @@ size_flags_vertical = 3
 [node name="BottomLeftToolPaneButtonsContainer" parent="MarginContainer/VBoxContainer" unique_id=127020670 groups=["ToolPaneButtonContainers"] instance=ExtResource("11_rlff3")]
 layout_mode = 2
 Location = 3
+ButtonGroup = SubResource("ButtonGroup_rgaf0")
