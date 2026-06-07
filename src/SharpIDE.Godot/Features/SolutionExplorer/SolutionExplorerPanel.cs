@@ -55,6 +55,10 @@ public partial class SolutionExplorerPanel : MarginContainer
 		{
 			AcceptEvent();
 			var selectedTreeItem = _tree.GetSelected();
+			if (selectedTreeItem.SharpIdeNode is SharpIdeFile file)
+			{
+				OpenRenameFilePopup(file);
+			}
 		}
 	}
 

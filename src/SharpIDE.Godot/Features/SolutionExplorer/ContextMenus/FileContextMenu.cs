@@ -46,10 +46,7 @@ public partial class SolutionExplorerPanel
             }
             else if (actionId is FileContextMenuOptions.Rename)
             {
-                var renameFileDialog = _renameFileDialogScene.Instantiate<RenameFileDialog>();
-                renameFileDialog.File = file;
-                AddChild(renameFileDialog);
-                renameFileDialog.PopupCentered();
+	            OpenRenameFilePopup(file);
             }
             else if (actionId is FileContextMenuOptions.Delete)
             {
@@ -67,7 +64,7 @@ public partial class SolutionExplorerPanel
                 };
                 AddChild(confirmationDialog);
                 confirmationDialog.PopupCentered();
-                
+
                 _ = Task.GodotRun(async () =>
                 {
                     var confirmed = await confirmedTcs.Task;
@@ -78,9 +75,17 @@ public partial class SolutionExplorerPanel
                 });
             }
         };
-			
+
         var globalMousePosition = GetGlobalMousePosition();
         menu.Position = new Vector2I((int)globalMousePosition.X, (int)globalMousePosition.Y);
         menu.Popup();
+    }
+
+    private void OpenRenameFilePopup(SharpIdeFile file)
+    {
+	    var renameFileDialog = _renameFileDialogScene.Instantiate<RenameFileDialog>();
+	    renameFileDialog.File = file;
+	    AddChild(renameFileDialog);
+	    renameFileDialog.PopupCentered();
     }
 }
