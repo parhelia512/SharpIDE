@@ -33,7 +33,7 @@ public partial class SolutionExplorerPanel : MarginContainer
 	private Tree _tree = null!;
 	private TreeItem _rootItem = null!;
 
-	[Inject] SharpIdeSolutionAccessor _sharpIdeSolutionAccessor = null!;
+	[Inject] private readonly SharpIdeSolutionAccessor _sharpIdeSolutionAccessor = null!;
 
 	private enum ClipboardOperation { Cut, Copy }
 
