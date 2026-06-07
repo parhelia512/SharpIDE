@@ -11,14 +11,14 @@ public partial class NewCsharpFileDialog : ConfirmationDialog
     private const string RecordType = "Record";
     private const string StructType = "Struct";
     private const string EnumType = "Enum";
-    
+
     private LineEdit _nameLineEdit = null!;
     private ItemList _fileTypeItemList = null!;
 
     public SharpIdeFolder ParentNode { get; set; } = null!;
 
     [Inject] private readonly IdeFileOperationsService _ideFileOperationsService = null!;
-    
+
     private Texture2D _classIcon = GD.Load<Texture2D>("uid://do0edciarrnp0");
 
     public override void _Ready()
@@ -35,6 +35,11 @@ public partial class NewCsharpFileDialog : ConfirmationDialog
         _fileTypeItemList.Select(0);
         _fileTypeItemList.ItemSelected += FileTypeItemListOnItemSelected;
         Confirmed += OnConfirmed;
+        FocusExited += () =>
+        {
+	        // work around bug: https://github.com/godotengine/godot/issues/81370
+	        Callable.From(GrabFocus).CallDeferred();
+        };
     }
 
     public override void _Input(InputEvent @event)
@@ -78,7 +83,7 @@ public partial class NewCsharpFileDialog : ConfirmationDialog
 
         var selectedIndex = _fileTypeItemList.GetSelectedItems().Single();
         var selectedFileTypeDisplayName = _fileTypeItemList.GetItemText(selectedIndex);
-        
+
         var typeKeyword = GetCsharpTypeKeywordFromUiDisplayName(selectedFileTypeDisplayName);
 
         _ = Task.GodotRun(async () =>
@@ -88,7 +93,7 @@ public partial class NewCsharpFileDialog : ConfirmationDialog
         });
         QueueFree();
     }
-    
+
     private static bool IsNameInvalid(string name)
     {
         return string.IsNullOrWhiteSpace(name);
@@ -97,7 +102,7 @@ public partial class NewCsharpFileDialog : ConfirmationDialog
     private static string GetCsharpTypeKeywordFromUiDisplayName(string typeDisplayName) => typeDisplayName switch
     {
         ClassType => "class",
-        InterfaceType => "interface", 
+        InterfaceType => "interface",
         RecordType => "record",
         StructType => "struct",
         EnumType => "enum",

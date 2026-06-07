@@ -14,7 +14,7 @@ script = ExtResource("1_fod37")
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 342.0
-offset_bottom = 181.0
+offset_bottom = 184.0
 
 [node name="CSharpFileNameLineEdit" type="LineEdit" parent="VBoxContainer" unique_id=547364128]
 unique_name_in_owner = true

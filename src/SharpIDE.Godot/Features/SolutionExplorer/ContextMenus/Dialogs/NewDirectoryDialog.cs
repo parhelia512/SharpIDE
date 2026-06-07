@@ -7,7 +7,7 @@ namespace SharpIDE.Godot.Features.SolutionExplorer.ContextMenus.Dialogs;
 public partial class NewDirectoryDialog : ConfirmationDialog
 {
     private LineEdit _nameLineEdit = null!;
-    
+
     public SharpIdeFolder ParentFolder { get; set; } = null!;
 
     [Inject] private readonly IdeFileOperationsService _ideFileOperationsService = null!;
@@ -18,6 +18,11 @@ public partial class NewDirectoryDialog : ConfirmationDialog
         _nameLineEdit.GrabFocus();
         _nameLineEdit.SelectAll();
         Confirmed += OnConfirmed;
+        FocusExited += () =>
+        {
+	        // work around bug: https://github.com/godotengine/godot/issues/81370
+	        Callable.From(GrabFocus).CallDeferred();
+        };
     }
 
     private void OnConfirmed()
