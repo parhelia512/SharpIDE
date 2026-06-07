@@ -64,6 +64,19 @@ public partial class SolutionExplorerPanel : MarginContainer
 				OpenRenameFolderPopup(folder);
 			}
 		}
+		if (@event.IsActionPressed(InputStringNames.Delete) && this.HasFocusOrIsParentOfFocus())
+		{
+			AcceptEvent();
+			var selectedTreeItem = _tree.GetSelected();
+			if (selectedTreeItem.SharpIdeNode is SharpIdeFile file)
+			{
+				OpenDeleteFileConfirmation(file);
+			}
+			else if (selectedTreeItem.SharpIdeNode is SharpIdeFolder folder)
+			{
+				OpenDeleteFolderConfirmation(folder);
+			}
+		}
 	}
 
 	public override void _UnhandledKeyInput(InputEvent @event)

@@ -50,29 +50,7 @@ public partial class SolutionExplorerPanel
             }
             else if (actionId is FileContextMenuOptions.Delete)
             {
-                var confirmedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var confirmationDialog = new ConfirmationDialog();
-                confirmationDialog.Title = "Delete";
-                confirmationDialog.DialogText = $"Delete '{file.Name.Value}' file?";
-                confirmationDialog.Confirmed += () =>
-                {
-                    confirmedTcs.SetResult(true);
-                };
-                confirmationDialog.Canceled += () =>
-                {
-                    confirmedTcs.SetResult(false);
-                };
-                AddChild(confirmationDialog);
-                confirmationDialog.PopupCentered();
-
-                _ = Task.GodotRun(async () =>
-                {
-                    var confirmed = await confirmedTcs.Task;
-                    if (confirmed)
-                    {
-                        await _ideFileOperationsService.DeleteFile(file);
-                    }
-                });
+	            OpenDeleteFileConfirmation(file);
             }
         };
 
@@ -87,5 +65,32 @@ public partial class SolutionExplorerPanel
 	    renameFileDialog.File = file;
 	    AddChild(renameFileDialog);
 	    renameFileDialog.PopupCentered();
+    }
+
+    private void OpenDeleteFileConfirmation(SharpIdeFile file)
+    {
+	    var confirmedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+	    var confirmationDialog = new ConfirmationDialog();
+	    confirmationDialog.Title = "Delete";
+	    confirmationDialog.DialogText = $"Delete '{file.Name.Value}' file?";
+	    confirmationDialog.Confirmed += () =>
+	    {
+		    confirmedTcs.SetResult(true);
+	    };
+	    confirmationDialog.Canceled += () =>
+	    {
+		    confirmedTcs.SetResult(false);
+	    };
+	    AddChild(confirmationDialog);
+	    confirmationDialog.PopupCentered();
+
+	    _ = Task.GodotRun(async () =>
+	    {
+		    var confirmed = await confirmedTcs.Task;
+		    if (confirmed)
+		    {
+			    await _ideFileOperationsService.DeleteFile(file);
+		    }
+	    });
     }
 }

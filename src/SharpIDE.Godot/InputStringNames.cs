@@ -6,6 +6,7 @@ public static class InputStringNames
 {
     public static readonly StringName Backspace = "ui_text_backspace";
     public static readonly StringName Cancel = "ui_cancel";
+    public static readonly StringName Delete = "ui_text_delete";
     public static readonly StringName RenameSymbol = nameof(RenameSymbol);
     public static readonly StringName CodeFixes = nameof(CodeFixes);
     public static readonly StringName StepOver = nameof(StepOver);
@@ -36,10 +37,10 @@ public static class ThemeStringNames
     public static readonly StringName FontSelectedColor = "font_selected_color";
     public static readonly StringName FontHoveredColor = "font_hovered_color";
     public static readonly StringName FontHoveredSelectedColor = "font_hovered_selected_color";
-    
+
     public static readonly StringName Panel = "panel";
     public static readonly StringName Separation = "separation";
-    
+
     public static readonly StringName Completion = "completion";
     public static readonly StringName CompletionBackgroundColor = "completion_background_color";
     public static readonly StringName CompletionSelectedColor = "completion_selected_color";
