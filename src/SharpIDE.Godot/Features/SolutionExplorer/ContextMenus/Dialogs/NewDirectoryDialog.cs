@@ -23,6 +23,11 @@ public partial class NewDirectoryDialog : ConfirmationDialog
 	        // work around bug: https://github.com/godotengine/godot/issues/81370
 	        Callable.From(GrabFocus).CallDeferred();
         };
+        _nameLineEdit.TextSubmitted += text =>
+		{
+			OnConfirmed();
+			QueueFree();
+		};
     }
 
     private void OnConfirmed()
