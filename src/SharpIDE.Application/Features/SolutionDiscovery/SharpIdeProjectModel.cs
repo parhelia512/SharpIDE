@@ -72,6 +72,7 @@ public class SharpIdeProjectModel : ISharpIdeNode, IExpandableSharpIdeNode, IChi
 	public bool IsGodotProject => MsBuildEvaluationProject.Xml.Sdk.StartsWith("Godot.NET.Sdk");
 	public bool IsMtpTestProject => MsBuildEvaluationProject.GetPropertyValue("IsTestingPlatformApplication") is "true";
 	public string BlazorDevServerVersion => MsBuildEvaluationProject.Items.Single(s => s.ItemType is "PackageReference" && s.EvaluatedInclude is "Microsoft.AspNetCore.Components.WebAssembly.DevServer").GetMetadataValue("Version");
+	public string RootNamespace => MsBuildEvaluationProject.GetPropertyValue("RootNamespace");
 	public bool OpenInRunPanel { get; set; }
 	public StandardIo? ProcessStandardIo { get; set; }
 
