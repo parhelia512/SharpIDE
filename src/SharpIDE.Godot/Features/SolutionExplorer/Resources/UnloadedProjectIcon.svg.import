@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/UnloadedProjectIcon.svg-d41197d301a66b59a9184
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

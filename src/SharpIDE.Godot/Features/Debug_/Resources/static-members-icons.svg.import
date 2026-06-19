@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/static-members-icons.svg-9d12ee129337cef19b82
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

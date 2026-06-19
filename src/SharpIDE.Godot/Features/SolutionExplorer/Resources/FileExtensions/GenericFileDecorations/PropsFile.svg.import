@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/PropsFile.svg-64e3a71bf2929487d16594fdf3d0e90
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

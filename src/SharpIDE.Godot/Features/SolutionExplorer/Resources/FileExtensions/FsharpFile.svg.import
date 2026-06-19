@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/FsharpFile.svg-242eb8a9225eef28e876ba118ad7d9
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

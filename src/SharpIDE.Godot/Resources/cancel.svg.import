@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/cancel.svg-290a92741a9be04e833a40407cdb13de.d
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

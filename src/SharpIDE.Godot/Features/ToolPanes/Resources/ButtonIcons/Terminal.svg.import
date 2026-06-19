@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/Terminal.svg-74e2ca64aaf903efadce8b4f66a9bf27
 base_scale=3.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

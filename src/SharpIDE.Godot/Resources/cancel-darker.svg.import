@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/cancel-darker.svg-01786bd71d1e476af6cf816b258
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

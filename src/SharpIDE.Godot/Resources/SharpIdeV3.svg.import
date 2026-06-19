@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/SharpIdeV3.svg-e9401671b0c41573caad79e0f07ee2
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

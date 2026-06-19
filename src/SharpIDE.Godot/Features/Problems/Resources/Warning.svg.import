@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/Warning.svg-95fb43666a11f922fb0317f6e4f8ece8.
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

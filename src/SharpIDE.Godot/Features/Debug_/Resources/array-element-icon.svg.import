@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/array-element-icon.svg-d71c3675f67f2642b60c5e
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/SlnIcon.svg-28ea2e2bd38af71b7008abec1f750ac9.
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

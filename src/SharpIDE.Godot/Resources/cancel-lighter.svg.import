@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/cancel-lighter.svg-22eca5e7a19f3a9f9d7724a57c
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

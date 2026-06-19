@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/Running.svg-d1489f00062e673354dca7bbd3d9e4f6.
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true
