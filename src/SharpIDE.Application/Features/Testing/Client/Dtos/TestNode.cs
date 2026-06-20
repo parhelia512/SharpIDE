@@ -57,6 +57,7 @@ public sealed record TestNode
 	string? StandardError)
 {
 	// Not serialized or returned by MTP - added by us
+	[JsonIgnore]
 	public SharpIdeProjectModel? Project;
 }
 
