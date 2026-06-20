@@ -86,12 +86,18 @@ public partial class TestExplorerPanel : Control
 				}
 				else
 				{
-					var newTreeItem = _testNodesTree.GetRoot().CreateChild();
-					UpdateTestNodeTreeItem(newTreeItem, update.Node);
+					var newTreeItem = CreateTestNodeTreeItem(update.Node);
 					_testNodeTreeItems[update.Node.Uid] = newTreeItem;
 				}
 			}
 		});
+	}
+
+	private TreeItem CreateTestNodeTreeItem(TestNode testNode)
+	{
+		var newTreeItem = _testNodesTree.GetRoot().CreateChild();
+		UpdateTestNodeTreeItem(newTreeItem, testNode);
+		return newTreeItem;
 	}
 
 	private void UpdateTestNodeTreeItem(TreeItem treeItem, TestNode testNode)
