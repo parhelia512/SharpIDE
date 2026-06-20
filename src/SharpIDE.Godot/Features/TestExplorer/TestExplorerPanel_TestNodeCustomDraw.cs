@@ -18,7 +18,7 @@ public partial class TestExplorerPanel
 		var displayName = testNode.DisplayName;
 		var executionState = testNode.ExecutionState;
 
-		const float padding = 6.0f;
+		const float padding = 4.0f;
 		const float spacing = 6.0f;
 
 		var currentX = rect.Position.X + padding;
