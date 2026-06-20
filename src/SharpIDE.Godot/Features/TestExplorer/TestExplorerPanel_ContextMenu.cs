@@ -23,9 +23,11 @@ public partial class TestExplorerPanel
 
         menu.AddIconItem(_runIcon, "Run Unit Tests", (int)TestNodeContextMenuOptions.Run);
         menu.SetItemIconMaxWidth(menu.GetItemIndex((int)TestNodeContextMenuOptions.Run), 20);
+        menu.SetItemDisabled(menu.GetItemIndex((int)TestNodeContextMenuOptions.Run), true);
 
         menu.AddIconItem(_debugIcon, "Debug Unit Tests", (int)TestNodeContextMenuOptions.Debug);
 		menu.SetItemIconMaxWidth(menu.GetItemIndex((int)TestNodeContextMenuOptions.Debug), 20);
+        menu.SetItemDisabled(menu.GetItemIndex((int)TestNodeContextMenuOptions.Debug), true);
 
         menu.PopupHide += menu.QueueFree;
         menu.IdPressed += id =>
