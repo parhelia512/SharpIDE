@@ -143,15 +143,22 @@ public partial class TestExplorerPanel : Control
 		}
 		parentOfClassTreeItem ??= projectTreeItem;
 
-		// className might have + in it, indicating nested class
-		var className = fullyQualifiedClass[(lastDotIndex + 1)..];
-		classTreeItem = parentOfClassTreeItem.GetFirstChildWithName(ref className);
-		if (classTreeItem is null)
+		// className might have + in it, indicating nested class - e.g. 'UnitTest1+NestedClassTests'
+		var classSegments = fullyQualifiedClass[(lastDotIndex + 1)..];
+		var parentOfNextNestedClass = parentOfClassTreeItem;
+		foreach (var range in classSegments.Split('+'))
 		{
-			classTreeItem = parentOfClassTreeItem.CreateChild();
-			classTreeItem.SetText(0, className.ToString());
-			classTreeItem.SetIcon(0, _csharpClassIcon);
-			classTreeItem.SetIconMaxWidth(0, 20);
+			var classSegment = classSegments[range];
+			var existing = parentOfNextNestedClass.GetFirstChildWithName(ref classSegment);
+			if (existing is null)
+			{
+				existing = parentOfNextNestedClass.CreateChild();
+				existing.SetText(0, classSegment.ToString());
+				existing.SetIcon(0, _csharpClassIcon);
+				existing.SetIconMaxWidth(0, 20);
+			}
+			classTreeItem = existing;
+			parentOfNextNestedClass = existing;
 		}
 
 		Guard.Against.Null(classTreeItem);
