@@ -47,7 +47,7 @@ public partial class TestExplorerPanel : Control
 		{
 			await _buildService.MsBuildAsync(solution.FilePath, buildStartedFlags: BuildStartedFlags.Internal);
 		}
-		var testNodes = await _testRunnerService.DiscoverTests(solution);
+		var testNodes = await _testRunnerService.DiscoverTestsForSolution(solution);
 
 		_testNodeTreeItems.Clear();
 		await this.InvokeAsync(() =>
@@ -87,7 +87,7 @@ public partial class TestExplorerPanel : Control
 				_testNodesTree.CreateItem(); // create a new root
 			});
 			_testNodeTreeItems.Clear();
-			await _testRunnerService.RunTestsForSolutionAsync(solution, HandleTestNodeUpdates);
+			await _testRunnerService.RunTestsForSolution(solution, HandleTestNodeUpdates);
 		});
 	}
 

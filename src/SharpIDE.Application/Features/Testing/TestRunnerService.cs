@@ -11,65 +11,64 @@ public class TestRunnerService(RoslynAnalysis roslynAnalysis, ILogger<TestRunner
 	private readonly RoslynAnalysis _roslynAnalysis = roslynAnalysis;
 	private readonly ILogger<TestRunnerService> _logger = logger;
 
-	public async Task<List<TestNode>> DiscoverTests(SharpIdeSolutionModel solutionModel)
+	public async Task<List<TestNode>> DiscoverTestsForSolution(SharpIdeSolutionModel solutionModel)
 	{
 		await Task.WhenAll(solutionModel.AllProjects.Select(s => s.MsBuildEvaluationProjectTask));
 		var testProjects = solutionModel.AllProjects.Where(p => p.IsMtpTestProject).ToList();
 		List<TestNode> allDiscoveredTestNodes = [];
 		foreach (var testProject in testProjects)
 		{
-			var testNodes = await DiscoverTestsForProject(testProject);
-			foreach (var testNode in testNodes) allDiscoveredTestNodes.Add(testNode);
+			using var client = await GetInitialisedClient(testProject);
+			var testNodes = await DiscoverTestsForProject(client, testProject);
+			foreach (var testNode in testNodes) allDiscoveredTestNodes.Add(testNode.Node);
 		}
 		_logger.LogInformation("Discovered {DiscoveredTestCount} tests", allDiscoveredTestNodes.Count);
 		return allDiscoveredTestNodes;
 	}
 
-	private async Task<List<TestNode>> DiscoverTestsForProject(SharpIdeProjectModel project)
+	private async Task<List<TestNodeUpdate>> DiscoverTestsForProject(TestingPlatformClient clientForProject, SharpIdeProjectModel project)
 	{
-		using var client = await GetInitialisedClientAsync(project);
 		List<TestNodeUpdate> testNodeUpdates = [];
-		var discoveryResponse = await client.DiscoverTestsAsync(Guid.NewGuid(), node =>
+		var discoveryResponse = await clientForProject.DiscoverTestsAsync(Guid.NewGuid(), node =>
 		{
 			testNodeUpdates.AddRange(node);
 			return Task.CompletedTask;
 		});
 		await discoveryResponse.WaitCompletionAsync();
 
-		await client.ExitAsync();
-		var discoveredTestNodes = testNodeUpdates.Select(x => x.Node).ToList();
-		_logger.LogInformation("Discovered {DiscoveredTestCount} tests for project {ProjectName}", discoveredTestNodes.Count, project.Name.Value);
-		return discoveredTestNodes;
+		await clientForProject.ExitAsync();
+		_logger.LogInformation("Discovered {DiscoveredTestCount} tests for project {ProjectName}", testNodeUpdates.Count, project.Name.Value);
+		return testNodeUpdates;
 	}
 
-	public async Task RunTestsForSolutionAsync(SharpIdeSolutionModel solutionModel, Func<TestNodeUpdate[], Task> func)
+	public async Task RunTestsForSolution(SharpIdeSolutionModel solutionModel, Func<TestNodeUpdate[], Task> func)
 	{
 		await Task.WhenAll(solutionModel.AllProjects.Select(s => s.MsBuildEvaluationProjectTask));
 		var testProjects = solutionModel.AllProjects.Where(p => p.IsMtpTestProject).ToList();
 		foreach (var testProject in testProjects)
 		{
-			await RunTestsForProjectAsync(testProject, func);
+			using var client = await GetInitialisedClient(testProject);
+			await RunTestsForProject(client, testProject, func);
 		}
 	}
 
 	// Assumes it has already been built
-	private async Task RunTestsForProjectAsync(SharpIdeProjectModel project, Func<TestNodeUpdate[], Task> func)
+	private async Task RunTestsForProject(TestingPlatformClient clientForProject, SharpIdeProjectModel project, Func<TestNodeUpdate[], Task> func)
 	{
-		using var client = await GetInitialisedClientAsync(project);
 		List<TestNodeUpdate> testNodeUpdates = [];
-		var discoveryResponse = await client.DiscoverTestsAsync(Guid.NewGuid(), async nodeUpdates =>
+		var discoveryResponse = await clientForProject.DiscoverTestsAsync(Guid.NewGuid(), async nodeUpdates =>
 		{
 			testNodeUpdates.AddRange(nodeUpdates);
 			await func(nodeUpdates);
 		});
 		await discoveryResponse.WaitCompletionAsync();
 
-		ResponseListener runRequest = await client.RunTestsAsync(Guid.NewGuid(), testNodeUpdates.Select(x => x.Node).ToArray(), func);
+		ResponseListener runRequest = await clientForProject.RunTestsAsync(Guid.NewGuid(), testNodeUpdates.Select(x => x.Node).ToArray(), func);
 		await runRequest.WaitCompletionAsync();
-		await client.ExitAsync();
+		await clientForProject.ExitAsync();
 	}
 
-	private async Task<TestingPlatformClient> GetInitialisedClientAsync(SharpIdeProjectModel project)
+	private async Task<TestingPlatformClient> GetInitialisedClient(SharpIdeProjectModel project)
 	{
 		var outputDllPath = await _roslynAnalysis.GetOutputDllPathForProject(project);
 		var outputExecutablePath = 0 switch
