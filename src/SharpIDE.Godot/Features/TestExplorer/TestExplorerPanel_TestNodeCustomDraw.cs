@@ -1,4 +1,5 @@
 ﻿using Godot;
+using SharpIDE.Application.Features.Testing.Client;
 
 namespace SharpIDE.Godot.Features.TestExplorer;
 
@@ -56,4 +57,26 @@ public partial class TestExplorerPanel
 		var statusColor = GetTextColour(executionState);
 		_testNodesTree.DrawString(font, new Vector2(currentX + nameWidth + spacing, textYPos), executionState, HorizontalAlignment.Left, -1, fontSize, statusColor);
 	}
+
+	private static Color GetTextColour(string executionState)
+	{
+		var colour = executionState switch
+		{
+			ExecutionStates.Passed => SuccessTextColour,
+			ExecutionStates.InProgress => RunningTextColour,
+			ExecutionStates.Discovered => PendingTextColour,
+			ExecutionStates.Failed => FailedTextColour,
+			ExecutionStates.Cancelled => CancelledTextColour,
+			ExecutionStates.Skipped => SkippedTextColour,
+			_ => Colors.White,
+		};
+		return colour;
+	}
+
+	private static readonly Color SuccessTextColour = new Color("499c54");
+	private static readonly Color RunningTextColour = new Color("a77fd2");
+	private static readonly Color PendingTextColour = new Color("2aa9e7");
+	private static readonly Color FailedTextColour = new Color("c65344");
+	private static readonly Color CancelledTextColour = new Color("e4a631");
+	private static readonly Color SkippedTextColour = new Color("c0c0c0");
 }
