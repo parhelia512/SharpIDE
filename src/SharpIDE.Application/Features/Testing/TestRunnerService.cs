@@ -34,18 +34,18 @@ public class TestRunnerService(RoslynAnalysis roslynAnalysis, ILogger<TestRunner
 		return allDiscoveredTestNodes;
 	}
 
-	public async Task RunTestsAsync(SharpIdeSolutionModel solutionModel, Func<TestNodeUpdate[], Task> func)
+	public async Task RunTestsForSolutionAsync(SharpIdeSolutionModel solutionModel, Func<TestNodeUpdate[], Task> func)
 	{
 		await Task.WhenAll(solutionModel.AllProjects.Select(s => s.MsBuildEvaluationProjectTask));
 		var testProjects = solutionModel.AllProjects.Where(p => p.IsMtpTestProject).ToList();
 		foreach (var testProject in testProjects)
 		{
-			await RunTestsAsync(testProject, func);
+			await RunTestsForProjectAsync(testProject, func);
 		}
 	}
 
 	// Assumes it has already been built
-	public async Task RunTestsAsync(SharpIdeProjectModel project, Func<TestNodeUpdate[], Task> func)
+	public async Task RunTestsForProjectAsync(SharpIdeProjectModel project, Func<TestNodeUpdate[], Task> func)
 	{
 		using var client = await GetInitialisedClientAsync(project);
 		List<TestNodeUpdate> testNodeUpdates = [];

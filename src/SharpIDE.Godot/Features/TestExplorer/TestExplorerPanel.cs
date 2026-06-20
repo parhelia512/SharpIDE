@@ -87,7 +87,7 @@ public partial class TestExplorerPanel : Control
 				_testNodesTree.CreateItem(); // create a new root
 			});
 			_testNodeTreeItems.Clear();
-			await _testRunnerService.RunTestsAsync(solution, HandleTestNodeUpdates);
+			await _testRunnerService.RunTestsForSolutionAsync(solution, HandleTestNodeUpdates);
 		});
 	}
 
